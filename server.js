@@ -26,6 +26,7 @@ function json(res, code, obj) {
   res.writeHead(code, { "Content-Type": "application/json", "Cache-Control": "no-store" });
   res.end(JSON.stringify(obj));
 }
+const ttsCache = new Map();
 function readBody(req) {
   return new Promise((resolve) => {
     let data = "";
@@ -66,6 +67,18 @@ const currentStep = () => STEPS[state.step];
 const sceneOpt = (si, oid) => SCENES[si].options.find((o) => o.id === oid);
 
 // ---------- aggregates ----------
+// players who tried something the system forbids in this scene (for Master Lin's warning calls on the projector)
+function offenders(si) {
+  const scene = SCENES[si], out = [];
+  for (const p of state.players.values()) {
+    const a = p.answers[scene.id]; if (!a) continue;
+    if (a.blacklisted) { out.push({ name: p.name, opt: "blacklist" }); continue; }
+    const bad = a.attempts.find((id) => { const o = sceneOpt(si, id); return o && o.outcome !== "ok"; });
+    if (bad) out.push({ name: p.name, opt: bad });
+  }
+  return out;
+}
+
 function sceneStats(si) {
   const scene = SCENES[si];
   const counts = {}, attempts = {};
@@ -139,7 +152,7 @@ function pollStats(pi) {
 function screenPayload() {
   const step = currentStep();
   const out = { step, stepIndex: state.step, stepCount: STEPS.length, players: state.players.size, names: [...state.players.values()].map((p) => p.name).slice(-60), feed: state.feed.slice(-14), totalPoints: state.totalPoints };
-  if (step.type === "scene" || step.type === "reveal") out.stats = sceneStats(step.i);
+  if (step.type === "scene" || step.type === "reveal") { out.stats = sceneStats(step.i); out.offenders = offenders(step.i); }
   if (step.type === "unique") { const u = uniqueness(); out.unique = { total: u.total, smallUnique: u.smallUnique, fullUnique: u.fullUnique }; }
   if (step.type === "file") out.files = [...state.players.values()].map((p) => { const f = buildFile({ name: p.name, answers: p.answers, faces: p.faces, seed: p.pid, device: p.device }); return { name: p.name, id: f.id, tags: f.tags, alerts: f.alerts.length, points: f.points + f.inferences.length, mtags: f.market.tags.map((x) => x.t) }; });
   if (step.type === "meta") out.meta = metaStats();
@@ -258,6 +271,31 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method !== "POST") { res.writeHead(405); return res.end(); }
   const body = await readBody(req);
+
+  // Text-to-speech for Secretary Lin's calls via ElevenLabs (host only; set ELEVENLABS_API_KEY).
+  if (p === "/api/tts") {
+    if (body.key !== HOST_KEY) return json(res, 403, { error: "wrong key" });
+    const key = process.env.ELEVENLABS_API_KEY;
+    if (!key) return json(res, 501, { error: "no ElevenLabs key" });
+    const text = String(body.text || "").slice(0, 600);
+    if (!text) return json(res, 400, { error: "no text" });
+    if (!ttsCache.has(text)) {
+      try {
+        const voice = process.env.ELEVENLABS_VOICE_ID || "pNInz6obpgDQGcFmaJgB";
+        const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_128`, {
+          method: "POST",
+          headers: { "xi-api-key": key, "Content-Type": "application/json", Accept: "audio/mpeg" },
+          body: JSON.stringify({ text, model_id: process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2", voice_settings: { stability: 0.55, similarity_boost: 0.8, style: 0.35 } })
+        });
+        if (!r.ok) { console.error("ElevenLabs", r.status, (await r.text()).slice(0, 200)); return json(res, 502, { error: "tts failed" }); }
+        ttsCache.set(text, Buffer.from(await r.arrayBuffer()));
+        if (ttsCache.size > 200) ttsCache.delete(ttsCache.keys().next().value);
+      } catch (e) { console.error("ElevenLabs", e.message); return json(res, 502, { error: "tts failed" }); }
+    }
+    const buf = ttsCache.get(text);
+    res.writeHead(200, { "Content-Type": "audio/mpeg", "Content-Length": buf.length, "Cache-Control": "no-store" });
+    return res.end(buf);
+  }
 
   if (p === "/api/join") {
     const pid = crypto.randomUUID();

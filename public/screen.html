@@ -198,7 +198,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <header>
   <div class="brand"><span class="rec"></span><span style="color:var(--gold);letter-spacing:.2em">平安上海</span> Citizen Data Center · simulation</div>
   <div class="spacer"></div>
-  <div id="ctl"><button id="guide" title="Master Lin calls in at each step (G)">☎ Guide on</button><button id="music" title="Background music (M on/off · N next track)">♪ Music off</button><span id="stepLbl"></span><button id="prev">◀</button><button id="next">Next ▶</button><button id="reset">Reset</button></div>
+  <div id="ctl"><button id="guide" title="Director Lin phones in when someone breaks the rules (G)">☎ Calls on</button><button id="music" title="Background music (M on/off · N next track)">♪ Music off</button><span id="stepLbl"></span><button id="prev">◀</button><button id="next">Next ▶</button><button id="reset">Reset</button></div>
   <div class="stat">Residents<b id="hPlayers">0</b></div>
   <div class="stat red">Data points logged<b id="hPoints">0</b></div>
   <div class="stat">Local time<b id="hClock">07:00</b></div>
@@ -238,7 +238,7 @@ const host = (action, extra = {}) => fetch("/api/host", { method: "POST", header
 const musicLbl = () => { $("music").textContent = Music.isOn() ? "♪ " + Music.track() : "♪ Music off"; };
 $("music").onclick = async () => { await Music.toggle(); musicLbl(); };
 Music.onChange(musicLbl);
-$("guide").onclick = () => { const on = Guide.toggle(); $("guide").textContent = on ? "☎ Guide on" : "☎ Guide off"; if (on && last) Guide.call(Guide.keyFor(last.step, SCENES)); };
+$("guide").onclick = () => { const on = Guide.toggle(); $("guide").textContent = on ? "☎ Calls on" : "☎ Calls off"; };
 $("next").onclick = () => host("next");
 $("prev").onclick = () => host("prev");
 $("reset").onclick = () => { if (confirm("Wipe all players and restart?")) host("reset"); };
@@ -338,8 +338,9 @@ function render() {
   if (kickoff) startJingle();
   lastKey = key;
   if (entering && window.Music) Music.setMood(trackFor(d.step));
-  // Master Lin phones in on every step change (after the start jingle on the first scene)
-  if (entering && window.Guide) { clearTimeout(window.__gdT); window.__gdT = setTimeout(() => Guide.call(Guide.keyFor(d.step, SCENES)), kickoff ? 8000 : 700); }
+  // Director Lin phones in only when someone breaks the rules, and names them
+  if (window.Guide && d.offenders && (d.step.type === "scene" || d.step.type === "reveal")) Guide.report(SCENES[d.step.i].id, d.offenders);
+  if (window.Guide && d.players === 0) Guide.reset();
   drawStage();
   syncCams(d);
   const S = $("stage");

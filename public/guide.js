@@ -1,34 +1,43 @@
-// "Incoming call" guide for the projector: Master Lin (林师傅 Lín shīfu), an original character,
-// phones in at each step and explains what to do. Subtitles always show; the browser's
-// built-in speech voice reads them out (Chinese greeting in a zh-CN voice when one is installed).
+// "Incoming call" on the projector: Secretary Lin (林书记 Lín shūjì), the local Communist Party secretary of the
+// community (社区党委书记), an original character. He phones in only when players do something against the rules,
+// names them, and speaks Mandarin; the captions on screen are in English.
+// Voice: ElevenLabs through the server's /api/tts (set ELEVENLABS_API_KEY), otherwise the browser's Chinese voice.
 (function () {
-  const LINES = {
-    lobby: { zh: "你好！", py: "Nǐ hǎo!", en: "I am Master Lin, your shīfu for today. Scan the code with your phone and pick a name. In Shanghai, nothing happens until you scan." },
-    sim: { en: "First lesson: in China, a phone number is your identity. Choose how to get your SIM card — and watch what each choice costs you." },
-    breakfast: { zh: "早上好！", py: "Zǎoshang hǎo!", en: "Breakfast starts with a scan. WeChat Pay, Alipay, or cash? Look at the chart — cash has almost disappeared." },
-    metro: { en: "Rush hour. Choose how you ride to work. Every gate and every road camera keeps a little diary about you." },
-    post: { en: "Something bad happened in your city. Do you post about it? Remember: on Weibo, everyone can see which province you are in." },
-    doctor: { en: "You feel unwell. Choose how to see the doctor. Your health record travels further than you do." },
-    healthcode: { en: "Travel back to 2022. The colour on your phone decided where you could go. Choose carefully — the code was watching." },
-    train: { en: "Weekend! Time to take the train home. Your face is your ticket. Not everyone gets on." },
-    night: { zh: "晚上好。", py: "Wǎnshang hǎo.", en: "Last stop: where do you sleep tonight? Every hotel tells the police you have arrived." },
-    reveal: { en: "Now see what the room chose — who received your data, and how the same moment works in Europe and America." },
-    file: { en: "The most important lesson. All your small choices, put together into one file. Look at your phone, and tap through it." },
-    unique: { en: "You think you are just one face in the crowd? Let us see how few details it takes to find you." },
-    meta: { en: "Shīfu must be honest with you: this game was collecting data on you too. Look at what your own phone gave away." },
-    poll: { en: "Your turn to judge. Vote on your phone. There is no wrong answer — only your answer." },
-    pollres: { en: "Here is what this room thinks. Now compare it with what people in China said." },
-    end: { zh: "谢谢！", py: "Xièxie!", en: "Remember: privacy is not about hiding. It is about who holds the power. You can delete your data on your phone now. Zàijiàn!" }
+  const KEY = new URLSearchParams(location.search).get("key");
+  const one = (n) => n.length === 1;
+  const WARN = {
+    "sim:refuse": {
+      en: "you asked to skip the face scan. The real-name system is not optional. Your request has been noted.",
+      zh: (n) => `${one(n) ? "你" : "你们"}要求跳过人脸识别。实名制不是可以选择的。你的要求已经记录在案。` },
+    "post:sensitive": {
+      en: "you reposted a video of a protest. It has been removed. You will be invited to drink tea.",
+      zh: (n) => `${one(n) ? "你" : "你们"}转发了抗议视频。视频已经删除了。过两天，请${one(n) ? "你" : "你们"}来喝茶。` },
+    "healthcode:noscan": {
+      en: "you tried to walk in without scanning your code. No code, no entry. The attempt is in your file.",
+      zh: (n) => `${one(n) ? "你" : "你们"}没有扫码就想进去。没有码，哪里都进不去。这次尝试已经记入档案。` },
+    "healthcode:zhengzhou": {
+      en: "you travelled to Zhengzhou about the bank money. Your health code is now red. Stay where you are.",
+      zh: (n) => `${one(n) ? "你" : "你们"}为了银行的钱去了郑州。现在${one(n) ? "你" : "你们"}的健康码是红码。请原地不动。` },
+    "train:tout": {
+      en: "you tried to buy a ticket from a tout. The name on the ticket must match your face. This has been noted.",
+      zh: (n) => `${one(n) ? "你" : "你们"}想从黄牛手里买票。车票上的名字必须和你的脸一致。这件事已经记录了。` },
+    "train:blacklist": {
+      en: "you are on the court list of judgment defaulters. No train for you. Pay your debts first.",
+      zh: (n) => `${one(n) ? "你" : "你们"}在失信被执行人名单上。不能坐火车。先把债还了。` }
   };
+  const listNames = (n) => n.length === 1 ? n[0] : n.length <= 6 ? n.slice(0, -1).join(", ") + " and " + n[n.length - 1] : n.slice(0, 5).join(", ") + " and " + (n.length - 5) + " others";
+  const listNamesZh = (n) => n.length === 1 ? n[0] : n.length <= 6 ? n.slice(0, -1).join("、") + "和" + n[n.length - 1] : n.slice(0, 5).join("、") + "等" + n.length + "人";
 
-  // Original avatar: an older teacher with round glasses, short grey hair and goatee, blue Tang jacket, holding tea.
+  // Original avatar: an older local Party secretary — round glasses, short grey hair, dark Zhongshan suit, red Party pin, tea mug.
   const AVATAR = `<svg viewBox="0 0 200 200" class="gd-av" aria-hidden="true">
     <defs><radialGradient id="gdbg" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="#3a1a14"/><stop offset="1" stop-color="#140806"/></radialGradient></defs>
     <rect width="200" height="200" fill="url(#gdbg)"/>
     <g opacity=".25" fill="#ffd24a"><circle cx="24" cy="120" r="10"/><rect x="156" y="70" width="28" height="44" rx="4"/></g>
-    <path d="M38 200 C42 150 70 136 100 136 C130 136 158 150 162 200Z" fill="#1d3a6b"/>
-    <path d="M100 136 L100 200" stroke="#0f2448" stroke-width="3"/>
-    <g fill="#ffd24a"><rect x="94" y="152" width="12" height="4" rx="2"/><rect x="94" y="168" width="12" height="4" rx="2"/><rect x="94" y="184" width="12" height="4" rx="2"/></g>
+    <path d="M38 200 C42 150 70 136 100 136 C130 136 158 150 162 200Z" fill="#33363b"/>
+    <path d="M86 136 L100 150 L114 136" fill="#f2f2f2"/><path d="M84 136 L100 152 L100 200 M116 136 L100 152" stroke="#24262a" stroke-width="3" fill="none"/>
+    <g fill="#55585e"><circle cx="100" cy="162" r="2.6"/><circle cx="100" cy="176" r="2.6"/><circle cx="100" cy="190" r="2.6"/></g>
+    <path d="M66 172 h18 v6 h-18z M118 172 h18 v6 h-18z" fill="#2a2c30"/>
+    <g transform="translate(76 158)"><circle r="6.5" fill="#c8102e" stroke="#ffd24a" stroke-width="1.4"/><path d="M0 -3.6 L1.05 -1.1 3.4 -1.1 1.5 0.4 2.2 2.9 0 1.4 -2.2 2.9 -1.5 0.4 -3.4 -1.1 -1.05 -1.1Z" fill="#ffd24a"/></g>
     <path d="M84 132 h32 v12 c0 6 -32 6 -32 0z" fill="#e2b48f"/>
     <ellipse cx="100" cy="92" rx="38" ry="44" fill="#eec29c"/>
     <ellipse cx="62" cy="96" rx="6" ry="10" fill="#e2b48f"/><ellipse cx="138" cy="96" rx="6" ry="10" fill="#e2b48f"/>
@@ -85,10 +94,10 @@
   function build() {
     el = document.createElement("div"); el.id = "gd";
     el.innerHTML = `<div class="gd-top"><span class="dot"></span><span class="lbl">Incoming call</span><span class="t">00:00</span></div>
-      <div class="gd-vid">${AVATAR}<div class="gd-ringtxt"><i>✆</i>林师傅 is calling…</div>
-      <div class="gd-name"><b>Master Lin</b><span>林师傅 · Lín shīfu · your guide</span></div></div>
+      <div class="gd-vid">${AVATAR}<div class="gd-ringtxt"><i>✆</i>林书记 is calling…</div>
+      <div class="gd-name"><b>Secretary Lin</b><span>林书记 · Party Secretary · Community Party Committee</span></div></div>
       <div class="gd-sub"></div><div class="gd-end"><button type="button">End call</button></div>`;
-    el.querySelector("button").onclick = () => hang();
+    el.querySelector("button").onclick = () => window.Guide.hang();
     document.body.appendChild(el);
   }
 
@@ -107,19 +116,31 @@
   }
 
   function voices() { return window.speechSynthesis ? speechSynthesis.getVoices() : []; }
-  function pick(lang) {
-    const v = voices().filter((x) => x.lang && x.lang.toLowerCase().startsWith(lang));
-    return v.find((x) => /google|natural|neural|premium/i.test(x.name)) || v[0] || null;
+  function zhVoice() {
+    const v = voices().filter((x) => x.lang && /^zh(-|_)?(cn|hans)?/i.test(x.lang));
+    return v.find((x) => /cn/i.test(x.lang) && /google|natural|neural|premium/i.test(x.name)) || v.find((x) => /cn/i.test(x.lang)) || v[0] || null;
   }
-  function say(text, lang, rate) {
+  // fetch the ElevenLabs audio while the phone rings (returns null if the server has no key)
+  async function fetchTTS(text) {
+    if (!KEY) return null;
+    try {
+      const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: KEY, text }) });
+      if (!r.ok) return null;
+      const a = new Audio(URL.createObjectURL(await r.blob()));
+      await new Promise((res) => { a.onloadedmetadata = res; a.onerror = res; setTimeout(res, 3000); });
+      return a;
+    } catch (e) { return null; }
+  }
+  let current = null;
+  function playAudio(a) {
+    return new Promise((res) => { current = a; a.onended = a.onerror = () => res(); const pr = a.play(); if (pr) pr.catch(() => res()); });
+  }
+  function sayZh(text) {
     return new Promise((res) => {
-      if (!window.speechSynthesis) return res();
-      const u = new SpeechSynthesisUtterance(text), v = pick(lang);
-      if (lang === "zh" && !v) return res(); // no Chinese voice: subtitles only for the greeting
-      if (v) u.voice = v; u.lang = v ? v.lang : lang; u.rate = rate; u.pitch = 0.85;
-      u.onend = u.onerror = () => res();
-      speechSynthesis.speak(u);
-      setTimeout(res, 20000);
+      const v = zhVoice();
+      if (!window.speechSynthesis || !v) return res();
+      const u = new SpeechSynthesisUtterance(text); u.voice = v; u.lang = v.lang; u.rate = 0.95; u.pitch = 0.8;
+      u.onend = u.onerror = () => res(); speechSynthesis.speak(u); setTimeout(res, 25000);
     });
   }
 
@@ -134,41 +155,64 @@
   function hang() {
     seq++; clearTimeout(ringT); clearTimeout(endT); clearInterval(typeT); clearInterval(mouthT);
     if (window.speechSynthesis) speechSynthesis.cancel();
+    if (current) { try { current.pause(); } catch (e) {} current = null; }
     if (el) { el.classList.remove("in", "talk", "ring"); }
   }
 
-  function call(key) {
-    const L = LINES[key]; if (!enabled || !L) return;
+  function call(L, done) {
+    if (!enabled || !L) { if (done) done(); return; }
     if (!el) build();
     hang(); const my = ++seq;
     const sub = el.querySelector(".gd-sub"), lbl = el.querySelector(".lbl"), tEl = el.querySelector(".t");
     sub.innerHTML = ""; lbl.textContent = "Incoming call"; tEl.textContent = "";
     el.classList.add("ring"); requestAnimationFrame(() => el.classList.add("in"));
     ring(); const r2 = setTimeout(() => my === seq && ring(), 1100);
+    const audioP = fetchTTS(L.zh); // fetched while ringing
     ringT = setTimeout(async () => {
       clearTimeout(r2); if (my !== seq) return;
-      el.classList.remove("ring"); el.classList.add("talk"); lbl.textContent = "On call · 林师傅";
+      el.classList.remove("ring"); el.classList.add("talk"); lbl.textContent = "On call · 林书记";
       const start = Date.now(); const tick = setInterval(() => { if (my !== seq) return clearInterval(tick); const s = ((Date.now() - start) / 1000) | 0; tEl.textContent = "00:" + String(s).padStart(2, "0"); }, 250);
-      if (window.Music && Music.isOn()) Music.duck(Math.min(20000, 1500 + L.en.length * 75));
-      if (L.zh) { const z = document.createElement("span"); z.className = "zh"; z.innerHTML = `${L.zh}<small>${L.py}</small>`; sub.appendChild(z); await say(L.zh, "zh", 0.85); if (my !== seq) return; }
-      const typeMs = L.en.length * 55;
-      typeOut(sub, L.en, typeMs);
-      // stay "on the call" at least as long as the subtitles take, even with no voice installed
-      await Promise.all([say(L.en, "en", 0.95), new Promise((r) => setTimeout(r, typeMs + 600))]);
+      const audio = await audioP; if (my !== seq) return;
+      const dur = audio && isFinite(audio.duration) && audio.duration > 0 ? audio.duration * 1000 : L.en.length * 60;
+      if (window.Music && Music.isOn()) Music.duck(Math.min(30000, dur + 1500));
+      // English captions, paced to the Mandarin audio
+      typeOut(sub, L.en, Math.max(1500, dur - 400));
+      await Promise.all([audio ? playAudio(audio) : sayZh(L.zh), new Promise((r) => setTimeout(r, dur + 300))]);
       if (my !== seq) return;
       el.classList.remove("talk"); lbl.textContent = "Call ended";
-      endT = setTimeout(() => { if (my === seq) { clearInterval(tick); el.classList.remove("in"); } }, 4000);
+      endT = setTimeout(() => { if (my === seq) { clearInterval(tick); el.classList.remove("in"); } if (done) setTimeout(done, 700); }, 3500);
     }, 2000);
   }
 
   if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};
+  // queue: new offenders are batched per offence; calls play one after another
+  const seen = new Set(), pending = new Map(); let busy = false, batchT = null;
+  function flush() {
+    if (busy || !pending.size) return;
+    const [k, names] = pending.entries().next().value; pending.delete(k);
+    busy = true;
+    const w = WARN[k];
+    call({
+      en: "Hello. This is Secretary Lin from the community Party committee. " + listNames(names) + ": " + w.en,
+      zh: "喂，你好。我是社区党委的林书记。" + listNamesZh(names) + "，" + w.zh(names)
+    }, () => { busy = false; flush(); });
+  }
+  function report(sceneId, offenders) {
+    let added = false;
+    (offenders || []).forEach((o) => {
+      const k = sceneId + ":" + o.opt, id = k + ":" + o.name;
+      if (!WARN[k] || seen.has(id)) return;
+      seen.add(id); added = true;
+      if (!pending.has(k)) pending.set(k, []);
+      pending.get(k).push(o.name);
+    });
+    if (added) { clearTimeout(batchT); batchT = setTimeout(flush, 2500); }
+  }
   window.Guide = {
-    call, hang,
-    keyFor(step, scenes) {
-      if (step.type === "scene") return scenes[step.i].id;
-      return step.type;
-    },
-    toggle() { enabled = !enabled; if (!enabled) hang(); return enabled; },
+    report,
+    hang() { hang(); busy = false; },
+    reset() { seen.clear(); pending.clear(); },
+    toggle() { enabled = !enabled; if (!enabled) { hang(); busy = false; pending.clear(); } return enabled; },
     isOn: () => enabled
   };
 })();

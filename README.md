@@ -28,9 +28,13 @@ Phones must be able to reach your laptop. Pick one option:
 
 If the QR ever shows the wrong address, add `&join=https://your-public-url` to the screen link.
 
-## Guide: Master Lin calls in
+## Warning calls: Secretary Lin
 
-At every step an original character, **Master Lin (林师傅 Lín shīfu)**, "phones" the projector: a ringing incoming-call card slides in on the right, he picks up, and his instructions appear as subtitles while the browser's built-in voice reads them (a Chinese greeting is spoken only if a Chinese voice is installed; Chrome on a laptop usually has one). The music dips while he talks. **G** or the ☎ button turns him on/off, **Esc** hangs up. Edit his lines at the top of `public/guide.js`.
+**Secretary Lin (林书记 Lín shūjì)** is an original character: the local Communist Party secretary of your community (社区党委书记). He phones the projector only when someone does something against the rules: asking to skip the SIM face scan, reposting the protest video, walking in without a health code, going to Zhengzhou, buying from a ticket tout, or being on the court debtor list. A ringing call card slides in, he names the players who did it, and speaks in Mandarin while English captions appear. New offenders are batched into one call per offence, and calls queue one after another.
+
+- **Voice (ElevenLabs).** In Railway → *Variables*, set `ELEVENLABS_API_KEY`. Optional: `ELEVENLABS_VOICE_ID` (pick a native Mandarin male voice in the ElevenLabs voice library; the default is a generic premade voice) and `ELEVENLABS_MODEL` (default `eleven_multilingual_v2`). Only the host screen (with `?key=`) can request speech, and each line is cached in memory.
+- Without a key, the browser's built-in Chinese voice is used if the laptop has one; otherwise captions only.
+- **G** or the ☎ button turns calls on/off, **Esc** hangs up. Lines are at the top of `public/guide.js`.
 
 ## Music
 
