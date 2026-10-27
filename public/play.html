@@ -115,7 +115,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 .enter .ap-tag,.enter .ap-need,.enter .ap-ad,.enter .ap-price{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .adprof{background:#17152b;border-color:#2c2850}:root:not([data-theme="light"]) .ap-t,:root:not([data-theme="light"]) .ap-need{color:#ecebff}:root:not([data-theme="light"]) .ap-tag{background:#2a2552;color:#e4e0ff}:root:not([data-theme="light"]) .ap-ad{background:#2b1f22;border-color:#4a3330;color:#ffe9dc}:root:not([data-theme="light"]) .ap-price{background:#2e1d10;color:#ffc9a0}:root:not([data-theme="light"]) .ap-price.law{background:#13243a;color:#bcd4f0}}
 .wordp{margin-top:12px;display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,#9e0b1f,#c8102e);border-radius:12px;padding:10px 14px;color:#ffe9b8}
-.wordp b{font:800 26px "PingFang SC","Noto Sans SC",sans-serif;color:#ffd24a;letter-spacing:.04em}
+.wordp b{font:800 26px "PingFang SC","Noto Sans SC",sans-serif;color:#ffd24a;letter-spacing:.04em;white-space:nowrap;flex:none}
 .wordp span{font-size:13px;line-height:1.3}
 /* ---- motion ---- */
 .enter > *{animation:rise .55s cubic-bezier(.2,.8,.2,1) both}
@@ -188,7 +188,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 .idle .look{color:#bbb;font-size:15px}
 .idle .look b{display:inline-block;animation:eyes 2.4s ease-in-out infinite}
 @keyframes eyes{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
-.idle .zh{font:800 54px/1.1 "PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:#ffd24a;margin-top:14px;letter-spacing:.06em}
+.idle .zh{white-space:nowrap;font:800 clamp(36px,13vw,54px)/1.1 "PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:#ffd24a;margin-top:14px;letter-spacing:.06em}
 .idle .zh span{display:inline-block;opacity:0;animation:zhin .7s cubic-bezier(.2,.8,.2,1) forwards;text-shadow:0 0 18px rgba(255,210,74,.35)}
 @keyframes zhin{from{opacity:0;transform:translateY(14px) scale(.7);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
 .idle .py{font:600 13px ui-monospace,Menlo,monospace;color:#ddd;opacity:0;animation:fadein .6s ease forwards 1.2s}
