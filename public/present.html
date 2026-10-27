@@ -56,6 +56,7 @@ button:active{transform:scale(.98)}
 @media print{header,aside,.side,.printbtn{display:none!important}body{background:#fff;color:#000}main{display:block;padding:0}#now{display:none}#printall{display:block!important}
   .pstep{break-inside:avoid;border-bottom:1px solid #ccc;padding:8px 0}.pstep h3{margin:0;font:700 14px system-ui}.pstep .t{font-weight:700;color:#a00;margin:2px 0}.pstep ul{margin:2px 0 0 18px;padding:0;font-size:12px}}
 #printall{display:none}
+.box.quiet{background:#14122a;border:1px solid #4b3fa8}.box.quiet ol{margin:4px 0 0;padding-left:22px}.box.quiet li{font-size:19px;margin:4px 0}
 </style>
 </head>
 <body>
@@ -72,7 +73,7 @@ button:active{transform:scale(.98)}
 </main>
 <script src="/content.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY } = window.GAME;
+const { SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -141,6 +142,10 @@ function summary(st) {
   const n = NOTES[st.type] || { tldr: "", say: [] };
   return { tldr: n.tldr, say: n.say };
 }
+function backup(st) {
+  if (["reveal", "debrief"].includes(st.type)) return (PROMPTS[SCENES[st.i].id] || {})[st.type] || [];
+  return PROMPTS[st.type] || [];
+}
 function summaryHtml(m) {
   const li = (x) => `<li>${m.raw ? x : esc(x)}</li>`;
   return `<div class="tldr"><small>In one line</small>${esc(m.tldr)}</div>
@@ -150,9 +155,10 @@ function summaryHtml(m) {
     ${m.pro ? `<div class="box" style="background:#0f1f17;border:1px solid #2c6b4a"><span>⚖ The case for it</span>${esc(m.pro)}</div>` : ""}
     ${m.cav ? `<div class="box" style="background:#1f0f10;border:1px solid #6b2c2c"><span>But…</span>${m.cav.map(esc).join("<br>")}</div>` : ""}
     ${m.cmp ? `<div class="sec">Compare</div><div class="cmp"><div><b style="color:#ff8a7e">CHINA</b>${esc(m.cmp.cn)}</div><div><b style="color:#7cc4ff">EU / POLAND</b>${esc(m.cmp.eu)}</div><div><b style="color:#ffbf47">USA</b>${esc(m.cmp.us)}</div></div>` : ""}
+    ${m.backup && m.backup.length ? `<div class="box quiet"><span>🙋 If the room is quiet, ask</span><ol>${m.backup.map((q) => `<li>${esc(q)}</li>`).join("")}</ol></div>` : ""}
     ${m.extra && m.extra.length ? `<div class="sec">If you have time</div><ul class="say">${m.extra.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}`;
 }
-$("printall").innerHTML = "<h2>A Day in Shanghai — presenter notes</h2>" + STEPS.map((st, k) => { const m = summary(st); return `<div class="pstep"><h3>${k + 1}. ${esc(label(st))}</h3><div class="t">${esc(m.tldr)}</div><ul>${m.say.map((x) => `<li>${m.raw ? x : esc(x)}</li>`).join("")}${m.ask ? `<li><b>Ask:</b> ${esc(m.ask)}</li>` : ""}${m.angle ? `<li><b>Angle:</b> ${esc(m.angle)}</li>` : ""}${m.pro ? `<li><b>Case for:</b> ${esc(m.pro)}</li>` : ""}${m.cav ? `<li><b>But:</b> ${esc(m.cav.join(" "))}</li>` : ""}</ul></div>`; }).join("");
+$("printall").innerHTML = "<h2>A Day in Shanghai — presenter notes</h2>" + STEPS.map((st, k) => { const m = summary(st); return `<div class="pstep"><h3>${k + 1}. ${esc(label(st))}</h3><div class="t">${esc(m.tldr)}</div><ul>${m.say.map((x) => `<li>${m.raw ? x : esc(x)}</li>`).join("")}${m.ask ? `<li><b>Ask:</b> ${esc(m.ask)}</li>` : ""}${m.angle ? `<li><b>Angle:</b> ${esc(m.angle)}</li>` : ""}${m.pro ? `<li><b>Case for:</b> ${esc(m.pro)}</li>` : ""}${m.cav ? `<li><b>But:</b> ${esc(m.cav.join(" "))}</li>` : ""}${backup(st).map((q) => `<li><b>If quiet:</b> ${esc(q)}</li>`).join("")}</ul></div>`; }).join("");
 
 function render(d) {
   const st = d.step, sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
@@ -161,7 +167,8 @@ function render(d) {
   $("pos").textContent = `${d.stepIndex + 1} / ${d.stepCount}`;
   $("players").textContent = d.players;
   const isPlay = ["scene", "poll", "inform"].includes(st.type);
-  let body = `<span class="type ${isPlay ? "play" : ""}">${isPlay ? "Phones active" : ["brief", "debrief", "intro", "daily"].includes(st.type) ? "You talk" : "Show & discuss"}</span><h1>${esc(label(st))}</h1>` + summaryHtml(summary(st));
+  const sm = summary(st); sm.backup = backup(st);
+  let body = `<span class="type ${isPlay ? "play" : ""}">${isPlay ? "Phones active" : ["brief", "debrief", "intro", "daily"].includes(st.type) ? "You talk" : "Show & discuss"}</span><h1>${esc(label(st))}</h1>` + summaryHtml(sm);
   $("now").innerHTML = body;
 
   let live = `<div class="k">Live</div>`;

@@ -512,6 +512,35 @@
     say: ["Privacy isn't about hiding — it's about control: who knows what about you", "The idea is young: from “the right to be let alone” (1890) to GDPR (2018)", "Three models today: EU rights, US market, China state security", "Today you'll feel the Chinese model from the inside"]
   };
 
+  // Backup discussion questions for the presenter, if the room is quiet
+  const PROMPTS = {
+    sim: { reveal: ["Did anyone try to skip the face scan? Why?", "Would you notice if a Polish carrier started asking for your face?"],
+      debrief: ["Is a registered SIM card in Poland really so different from China's?", "Who should be allowed to link your number to your identity — police, banks, platforms?", "Does a real-name internet make it safer, or just more censored?"] },
+    breakfast: { reveal: ["Who chose cash — and would you still, with a queue sighing behind you?", "What could Tencent learn about you from one month of breakfasts?"],
+      debrief: ["Would you accept a digital euro with “controllable anonymity”?", "Who should hold payment data — private companies or the state? Which is worse?"] },
+    metro: { reveal: ["Did anyone pick the anonymous card? Did it actually make you anonymous?", "Which app on your phone knows your location right now?"],
+      debrief: ["Is TikTok in the US the mirror image of Didi in New York?", "Should location data get extra protection, like health data?"] },
+    post: { reveal: ["Why did the metro complaint stay up but the protest video got removed?", "Would you post differently if your city showed under your name?"],
+      debrief: ["Is self-censorship worse than censorship?", "European platforms remove content too — what makes the EU's Digital Services Act different?"] },
+    doctor: { reveal: ["Would you book a doctor through a messaging app?", "Who in Poland can see your records in the patient account (IKP)?"],
+      debrief: ["Should insurers ever see data from your health apps?", "Is convenience worth giving up medical privacy?"] },
+    healthcode: { reveal: ["Would you have scanned the code — out of fear, habit or solidarity?", "What would you do if your code turned red for no reason?"],
+      debrief: ["Was the EU's decentralised app better — or just less effective?", "Should emergency surveillance tools switch off automatically after a set time?"] },
+    train: { reveal: ["Is a face gate more or less fair than a human ticket inspector?", "Should people who don't pay court debts be stopped from travelling?"],
+      debrief: ["Why do Western media keep talking about a single “social credit score”?", "Would a travel ban for unpaid debts work in Poland?"] },
+    night: { reveal: ["Did you know EU hotels also register foreign guests?", "Would you accept a face scan at a hotel to skip the queue?"],
+      debrief: ["Which is more dangerous: one camera everywhere, or many databases joined together?", "Who should be allowed to join databases — and who decides?"] },
+    intro: ["What's one thing you'd hate a stranger to know about you?", "Is privacy a Western idea — or universal?"],
+    daily: ["Which number surprised you most?", "How many of these would be true for you in Poland too?"],
+    informres: ["Would you report a classmate who cheated in an exam? Is that different?", "Is informing loyalty or betrayal — and to whom?", "How is this different from “see something, say something” in the West?"],
+    case: ["Would you trade privacy for feeling safe at night?", "Who pays the price for a “safe” society?"],
+    file: ["Which line in your file surprised you most?", "Who should be allowed to see a file like this?"],
+    unique: ["Have you ever believed “anonymous data” was really anonymous?", "What three facts would single you out in this room?"],
+    meta: ["Did anyone notice the game tracking you? Why not?", "What do the apps on your phone collect right now?"],
+    pollres: ["Why did you vote the way you did?", "Would your answer change if you'd grown up in China?"],
+    end: ["Will you change anything after today?", "EU, US or China — which model would you choose, and why?"]
+  };
+
   // "Every day in China": per-day figures derived from official / company annual totals
   const DAILY = {
     tldr: "Every second, China's 1.4 billion people generate a mountain of data.",
@@ -587,7 +616,7 @@
   };
 
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, INTRO, DAILY, buildFile, FILE_WORD };
+  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);
