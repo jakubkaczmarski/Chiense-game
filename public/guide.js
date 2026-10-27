@@ -28,16 +28,17 @@
   const listNames = (n) => n.length === 1 ? n[0] : n.length <= 6 ? n.slice(0, -1).join(", ") + " and " + n[n.length - 1] : n.slice(0, 5).join(", ") + " and " + (n.length - 5) + " others";
   const listNamesZh = (n) => n.length === 1 ? n[0] : n.length <= 6 ? n.slice(0, -1).join("、") + "和" + n[n.length - 1] : n.slice(0, 5).join("、") + "等" + n.length + "人";
 
-  // Original avatar: an older local Party secretary — round glasses, short grey hair, dark Zhongshan suit, red Party pin, tea mug.
+  // Original avatar: an older local Party secretary — round glasses, grey hair, dark suit, red tie, Party pin, tea mug, red backdrop with yellow stars.
   const AVATAR = `<svg viewBox="0 0 200 200" class="gd-av" aria-hidden="true">
-    <defs><radialGradient id="gdbg" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="#3a1a14"/><stop offset="1" stop-color="#140806"/></radialGradient></defs>
+    <defs><radialGradient id="gdbg" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#e3242b"/><stop offset="1" stop-color="#a50e16"/></radialGradient>
+    <path id="gdst" d="M0 -10 L2.9 -3.1 10 -3.1 4.3 1.2 6.5 8.1 0 4 -6.5 8.1 -4.3 1.2 -10 -3.1 -2.9 -3.1Z"/></defs>
     <rect width="200" height="200" fill="url(#gdbg)"/>
-    <g opacity=".25" fill="#ffd24a"><circle cx="24" cy="120" r="10"/><rect x="156" y="70" width="28" height="44" rx="4"/></g>
-    <path d="M38 200 C42 150 70 136 100 136 C130 136 158 150 162 200Z" fill="#33363b"/>
-    <path d="M86 136 L100 150 L114 136" fill="#f2f2f2"/><path d="M84 136 L100 152 L100 200 M116 136 L100 152" stroke="#24262a" stroke-width="3" fill="none"/>
-    <g fill="#55585e"><circle cx="100" cy="162" r="2.6"/><circle cx="100" cy="176" r="2.6"/><circle cx="100" cy="190" r="2.6"/></g>
-    <path d="M66 172 h18 v6 h-18z M118 172 h18 v6 h-18z" fill="#2a2c30"/>
-    <g transform="translate(76 158)"><circle r="6.5" fill="#c8102e" stroke="#ffd24a" stroke-width="1.4"/><path d="M0 -3.6 L1.05 -1.1 3.4 -1.1 1.5 0.4 2.2 2.9 0 1.4 -2.2 2.9 -1.5 0.4 -3.4 -1.1 -1.05 -1.1Z" fill="#ffd24a"/></g>
+    <g fill="#ffde00"><use href="#gdst" transform="translate(22 92) scale(1.7)"/><use href="#gdst" transform="translate(46 62) scale(.7) rotate(20)"/><use href="#gdst" transform="translate(54 80) scale(.7) rotate(40)"/><use href="#gdst" transform="translate(54 102) scale(.7)"/><use href="#gdst" transform="translate(46 120) scale(.7) rotate(20)"/></g>
+    <path d="M38 200 C42 150 70 136 100 136 C130 136 158 150 162 200Z" fill="#1f3340"/>
+    <path d="M84 136 L100 200 L116 136Z" fill="#f4f4f4"/>
+    <path d="M94 142 L106 142 L103 150 L108 192 L100 200 L92 192 L97 150Z" fill="#c8102e"/>
+    <path d="M84 136 L96 168 L88 200 L70 200 L74 150Z M116 136 L104 168 L112 200 L130 200 L126 150Z" fill="#17262f"/>
+    <g transform="translate(70 166)"><circle r="6.5" fill="#c8102e" stroke="#ffd24a" stroke-width="1.4"/><path d="M0 -3.6 L1.05 -1.1 3.4 -1.1 1.5 0.4 2.2 2.9 0 1.4 -2.2 2.9 -1.5 0.4 -3.4 -1.1 -1.05 -1.1Z" fill="#ffd24a"/></g>
     <path d="M84 132 h32 v12 c0 6 -32 6 -32 0z" fill="#e2b48f"/>
     <ellipse cx="100" cy="92" rx="38" ry="44" fill="#eec29c"/>
     <ellipse cx="62" cy="96" rx="6" ry="10" fill="#e2b48f"/><ellipse cx="138" cy="96" rx="6" ry="10" fill="#e2b48f"/>
