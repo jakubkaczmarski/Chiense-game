@@ -72,7 +72,7 @@ button:active{transform:scale(.98)}
 </main>
 <script src="/content.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, NOTES, CASE, INFORM } = window.GAME;
+const { SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -95,6 +95,7 @@ function label(st) {
     case "scene": return `${sc.clock} · Play: ${sc.title}`;
     case "reveal": return `${sc.clock} · Results: ${sc.title}`;
     case "debrief": return `${sc.clock} · Debrief: ${sc.debrief.title}`;
+    case "intro": return "Intro — what is privacy? (1–2 min)";
     case "inform": return "Side quest — the counsellor calls every phone";
     case "informres": return "Side quest results — who reported a classmate";
     case "case": return "The case for it — safety & convenience";
@@ -120,6 +121,7 @@ function summary(st) {
   const sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
   if (st.type === "brief") return { tldr: sc.brief.tldr, say: sc.brief.points, ask: sc.brief.ask, extra: sentences(sc.brief.notes) };
   if (st.type === "debrief") return { tldr: sc.debrief.tldr, say: sc.debrief.points, angle: sc.debrief.ir, pro: sc.debrief.pro, extra: sentences(sc.debrief.notes) };
+  if (st.type === "intro") return { tldr: INTRO.tldr, say: INTRO.say, extra: [`Definition: “${INTRO.def}” (${INTRO.defBy})`, ...INTRO.timeline.map(([y, t]) => `${y}: ${t}`)] };
   if (st.type === "inform") return { tldr: "Every phone gets a private call: name a classmate, or refuse.", say: ["Don't explain — just say: answer your phone", "Teacher Jan asks who complained online, for +50 points", "Watch the answered counter; Next when most have answered"] };
   if (st.type === "informres") return { tldr: "How many of you reported a classmate — for 50 points?", say: INFORM.facts.map(([n, l, src]) => `${n}: ${l} (${src})`), ask: INFORM.ask, angle: INFORM.angle, extra: ["Reporting also shows up in each player's file at the end (informant / uncooperative)."] };
   if (st.type === "case") return { tldr: CASE.tldr, say: [`Safe at night: ${CASE.safe.rows.map(([n, v]) => n + " " + v + "%").join(", ")} (${CASE.safe.src})`, ...CASE.tiles.map(([n, l, src]) => `${n} ${l} (${src})`)], ask: CASE.ask, cav: CASE.caveats, extra: sentences(CASE.notes) };
@@ -157,7 +159,7 @@ function render(d) {
   $("pos").textContent = `${d.stepIndex + 1} / ${d.stepCount}`;
   $("players").textContent = d.players;
   const isPlay = ["scene", "poll", "inform"].includes(st.type);
-  let body = `<span class="type ${isPlay ? "play" : ""}">${isPlay ? "Phones active" : st.type === "brief" || st.type === "debrief" ? "You talk" : "Show & discuss"}</span><h1>${esc(label(st))}</h1>` + summaryHtml(summary(st));
+  let body = `<span class="type ${isPlay ? "play" : ""}">${isPlay ? "Phones active" : ["brief", "debrief", "intro"].includes(st.type) ? "You talk" : "Show & discuss"}</span><h1>${esc(label(st))}</h1>` + summaryHtml(summary(st));
   $("now").innerHTML = body;
 
   let live = `<div class="k">Live</div>`;

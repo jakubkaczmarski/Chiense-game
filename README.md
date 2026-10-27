@@ -49,7 +49,7 @@ When you press Next from the lobby to the first scene, the projector plays a sta
 ## Presenting
 
 - **→ / Space / PageDown**: next step (works with a presentation clicker). **← / PageUp**: back. **h**: hide controls.
-- The order: lobby → 8 × (**explain → play → results → debrief**) → “One person, one file” finale → anonymity test → meta reveal → 3 × (poll → results) → end.
+- The order: lobby → **intro: what is privacy?** (definition, 1890–2021 timeline, EU / US / China models) → 8 × (**explain → play → results → debrief**) → “One person, one file” finale → anonymity test → meta reveal → 3 × (poll → results) → end.
 - **Explain** and **debrief** steps are presenter slides inside the game: three key points, a question to ask the room (before) or a political-science angle (after). Phones show “eyes on the big screen” during these.
 - **Presenter console:** open `/present?key=<HOST_KEY>` on your laptop screen (projector shows `/screen?key=…`). It shows your speaker notes for the current step, what's next, live answer counts, who Secretary Lin is about to call, a timer, and Back/Next buttons. Click any line in the run of show to jump there. Arrow keys work in both windows.
 - The file finale merges each player’s choices and real device data into a police-style profile with system inferences, “key person” tags (petitioner, undermines stability, court defaulter) and Police Cloud–style alerts; the projector shows everyone’s files as a wall.

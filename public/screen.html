@@ -158,6 +158,26 @@ i.rep{background:var(--red)}i.ref{background:var(--green)}
 .enter .ibar i{animation:grow 1.2s cubic-bezier(.2,.8,.2,1) both .5s}
 .enter .informres .irbox,.enter .informres .topn{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 1.2s}
 .enter .informres .ask{animation-delay:1.6s}
+.intro .talkgrid{flex:none}
+.defq{margin:18px 0 0;font-size:28px;line-height:1.4;border-left:6px solid var(--gold);padding:6px 0 6px 22px;max-width:980px;color:#fff}
+.defq cite{display:block;font-style:normal;font-family:var(--mono);font-size:14px;color:var(--muted);margin-top:8px}
+.pdef{font-size:20px;color:#d6e8dd;max-width:980px;margin:16px 0 0}
+.tline{display:grid;grid-template-columns:repeat(7,1fr);gap:14px;margin-top:20px;position:relative}
+.tline::before{content:"";position:absolute;left:0;right:0;top:22px;height:3px;background:linear-gradient(90deg,var(--line),var(--gold))}
+.tl{position:relative;padding-top:42px}
+.tl::before{content:"";position:absolute;left:6px;top:14px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:3px solid var(--gold)}
+.tl b{display:block;font:800 26px var(--mono);color:var(--gold)}
+.tl span{display:block;font-size:17px;line-height:1.35;color:#d9dfdc;margin-top:4px}
+.models{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.models .k{font-family:var(--mono);font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.md{display:flex;gap:14px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line);font-size:21px}
+.md:last-child{border-bottom:0}
+.md b{font:800 18px var(--mono);width:70px}
+.md0 b{color:var(--blue)}.md1 b{color:var(--amber)}.md2 b{color:var(--red)}
+.enter .defq{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .2s}
+.enter .pdef{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .5s}
+.enter .tl{animation:rise .6s cubic-bezier(.2,.8,.2,1) both calc(.9s + var(--j) * .18s)}
+.enter .md{animation:rise .6s cubic-bezier(.2,.8,.2,1) both calc(1.2s + var(--j) * .2s)}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -285,7 +305,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <script src="/music.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, CASE, INFORM } = window.GAME;
+const { SCENES, POLLS, STEPS, CASE, INFORM, INTRO } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const JOIN = (new URLSearchParams(location.search).get("join") || location.origin).replace(/\/$/, "") + "/";
 const $ = (id) => document.getElementById(id);
@@ -401,7 +421,7 @@ function render() {
   const d = last; if (!d) return;
   const key = d.step.type + ":" + (d.step.i ?? "");
   const entering = key !== lastKey, prevKey = lastKey;
-  const kickoff = entering && prevKey === "lobby:" && d.step.type === "scene" && d.step.i === 0;
+  const kickoff = entering && prevKey === "lobby:" && d.step.type !== "lobby"; // start jingle when leaving the lobby
   if (kickoff) startJingle();
   lastKey = key;
   if (entering && window.Music) Music.setMood(trackFor(d.step));
@@ -439,7 +459,7 @@ function drawStage() {
   $("stepLbl").textContent = `${d.stepIndex + 1}/${d.stepCount} · ${step.type}`;
   $("qrmini").style.display = step.type === "lobby" ? "none" : "flex";
   const scene = ["scene", "reveal", "brief", "debrief"].includes(step.type) ? SCENES[step.i] : null;
-  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : "23:59";
+  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" || step.type === "intro" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : "23:59";
 
   // feed
   $("feed").innerHTML = d.feed.map((f) => { const isNew = !seenFeed.has(f.id); seenFeed.add(f.id); return `<div class="fl${isNew ? " new" : ""}"><span class="t">${esc(f.t)}</span> <span class="n">${esc(f.name)}</span><br>${esc(f.text)}</div>`; }).join("");
@@ -467,6 +487,20 @@ function drawStage() {
         ${step.type === "debrief" && b.pro ? `<div class="probox"><span>⚖ The case for it</span>${esc(b.pro)}</div>` : ""}
         <div class="upnext"><span>Up next</span>${step.type === "brief" ? `<b>${esc(scene.title)}</b> — choose on your phone 📱` : nextScene ? `<b>${esc(nextScene.clock)} · ${esc(nextScene.brief.title)}</b>` : `<b>The case for it</b> — safety &amp; convenience`}</div>
       </div></div></div>`;
+    return;
+  }
+
+  if (step.type === "intro") {
+    S.innerHTML = `<div class="talk intro"><div class="eyebrow">Before we start · 1 minute</div>
+      <div class="talkgrid"><div class="talkL">
+        <h1>What is <span style="color:var(--gold)">privacy</span>?</h1>
+        <blockquote class="defq">“${esc(INTRO.def)}”<cite>— ${esc(INTRO.defBy)}</cite></blockquote>
+        <p class="pdef">${esc(INTRO.personal)}</p>
+      </div><div class="talkR">
+        <div class="word"><div class="w-k">词 · Word of the day</div><div class="w-zh">${esc(INTRO.word.zh)}</div><div class="w-py">${esc(INTRO.word.py)}</div><div class="w-en">${esc(INTRO.word.en)}</div><div class="w-note">${esc(INTRO.word.note)}</div></div>
+        <div class="models"><div class="k">Three models</div>${INTRO.models.map(([w, t], j) => `<div class="md md${j}" style="--j:${j}"><b>${esc(w)}</b><span>${esc(t)}</span></div>`).join("")}</div>
+      </div></div>
+      <div class="tline">${INTRO.timeline.map(([y, t], j) => `<div class="tl" style="--j:${j}"><b>${esc(y)}</b><span>${esc(t)}</span></div>`).join("")}</div></div>`;
     return;
   }
 

@@ -349,7 +349,7 @@
   ];
 
   // Linear show order controlled by the presenter.
-  const STEPS = [{ type: "lobby" }];
+  const STEPS = [{ type: "lobby" }, { type: "intro" }];
   // per scene: explain the topic (brief) → play (scene) → results (reveal) → what it means (debrief)
   SCENES.forEach((s, i) => {
     STEPS.push({ type: "brief", i }); STEPS.push({ type: "scene", i }); STEPS.push({ type: "reveal", i }); STEPS.push({ type: "debrief", i });
@@ -492,6 +492,26 @@
     return file;
   }
 
+  // 1–2 minute general intro: what privacy is and where the idea comes from
+  const INTRO = {
+    tldr: "Privacy = control over who knows what about you.",
+    def: "Privacy is the claim of individuals to determine for themselves when, how and to what extent information about them is communicated to others.",
+    defBy: "Alan Westin, Privacy and Freedom (1967)",
+    personal: "Personal data = any information about an identified or identifiable person — name, ID number, location, face, online identifiers (GDPR, Art. 4).",
+    timeline: [
+      ["1890", "“The right to be let alone” — Warren & Brandeis, Harvard Law Review"],
+      ["1948", "Privacy becomes a human right — UN Universal Declaration, Art. 12"],
+      ["1970", "First data-protection law in the world — Hesse, West Germany"],
+      ["1983", "“Informational self-determination” — German Constitutional Court census ruling"],
+      ["2013", "Snowden reveals mass surveillance by the US NSA"],
+      ["2018", "EU GDPR applies — fines up to 4% of global turnover"],
+      ["2021", "China's Personal Information Protection Law (PIPL)"]
+    ],
+    models: [["EU", "a fundamental right"], ["USA", "a consumer & market issue"], ["China", "rules for companies, security for the state"]],
+    word: { zh: "隐私", py: "yǐnsī", en: "privacy", note: "Literally “hidden private matters” — traditionally things kept out of sight, not a right." },
+    say: ["Privacy isn't about hiding — it's about control: who knows what about you", "The idea is young: from “the right to be let alone” (1890) to GDPR (2018)", "Three models today: EU rights, US market, China state security", "Today you'll feel the Chinese model from the inside"]
+  };
+
   // "The case for it": third-party figures on safety, inclusion and public support, with caveats
   const CASE = {
     tldr: "Why many people accept it: it feels safe and it works.",
@@ -554,7 +574,7 @@
   };
 
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, buildFile, FILE_WORD };
+  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, INTRO, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);
