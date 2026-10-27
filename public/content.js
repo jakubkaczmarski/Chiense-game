@@ -92,6 +92,7 @@
     },
     {
       id: "metro",
+      nums: {"items": [["10.2M", "rail-transit trips a day in Shanghai (2025)"], ["64.7bn", "pieces of personal data Didi processed illegally"], ["107M", "passenger face scans Didi over-collected — plus 167M precise locations"], ["168 / 1,000", "cameras per 1,000 people in Chongqing — the world’s most-watched city (2019)"]], "src": "Shanghai Transport via The Paper (2026); CAC Q&A on the ¥8.026bn Didi fine (2022); Comparitech via SCMP."},
       word: { zh: "天网", py: "tiānwǎng", en: "“Sky Net”", note: "The official name of China’s national CCTV network." },
       clock: "08:40",
       cams: ["street", "traffic"],
@@ -127,6 +128,7 @@
     },
     {
       id: "post",
+      nums: {"items": [["1.125bn", "internet users in China (end 2025)"], ["561M", "people use Weibo every month (June 2026)"], ["Apr 2022", "Weibo began showing every user’s province — you can’t turn it off"], ["6.8M", "accounts and 54M posts removed in one year of the “Qinglang” clean-up (2022)"]], "src": "CNNIC 57th report via ECNS (2026); Weibo Q2 2026 results (SEC); Reuters (2022); Cyberspace Administration of China (2023)."},
       word: { zh: "被和谐", py: "bèi héxié", en: "“to be harmonised”", note: "Slang for being censored — from the official goal of a 和谐社会, harmonious society." },
       clock: "12:30",
       cams: [],
@@ -162,6 +164,7 @@
     },
     {
       id: "doctor",
+      nums: {"items": [["1.33bn", "people covered by basic medical insurance (2025)"], ["1.08bn", "activated the medical-insurance QR “e-code” (Jan 2024)"], ["45.7%", "of insurance payments at one top Zhejiang hospital went through the e-code (2023)"], ["2.88M", "patients’ booking records stolen by a hospital’s own software contractor"]], "src": "Xinhua (2026); People’s Daily (2024); Supreme People’s Court case examples via Xinhua (2026)."},
       word: { zh: "刷脸", py: "shuā liǎn", en: "“swipe your face”", note: "Pay, enter or check in with your face instead of a card." },
       clock: "14:00",
       cams: ["kiosk:pay"],
