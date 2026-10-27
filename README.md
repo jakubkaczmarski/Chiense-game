@@ -30,7 +30,7 @@ If the QR ever shows the wrong address, add `&join=https://your-public-url` to t
 
 ## Music
 
-Press **♪ Music** (or **M**) on the projector page for original generative background music: guzheng-style plucked strings in the Chinese pentatonic scale, which turns darker during the file, anonymity and plot-twist steps. To use your own licensed track instead, put it at `public/music.mp3`.
+Press **♪ Music** (or **M**) on the projector page for original generative background music: guzheng-style plucked strings in the Chinese pentatonic scale. The music switches with the day — each scene has its own track (Morning market, Rush hour, Street, Waiting room, Under watch, Night, Reflection), with a short glissando at each change; the button shows the current track. Press **N** to skip to the next track by hand. To use your own licensed track instead, put it at `public/music.mp3`.
 
 ## Presenting
 
@@ -70,6 +70,7 @@ Shown back to each player at the end: device and OS (from the user agent), brows
 - “One person, one file” police software tenders in 22 of 31 provinces — Reuters via Euronews (2022)
 - Police Cloud, 7 “key personnel” categories, hotel-stay alerts — Human Rights Watch (2017)
 - Grid management (≈1M grids, 4.5M grid workers in COVID) — Wikipedia summary of academic sources
+- QR/mobile wallets vs cash in Chinese shops (projector, breakfast scene): wallets 36% (2017), 48% (2019), 54% (2021), 66% (2023), 79% (2027 forecast) of in-store spending; cash 10.3% (2021), 7% (2023), 3% (2027 forecast) — Worldpay Global Payments Reports 2018–2024. Mobile-payment users 469M (2016) → 583M (2018); 75.4% of internet users aged 60+ use mobile payment (June 2024) — CNNIC
 - Core Socialist Values slogans on the projector banner are the official 12 values
 - Face-scan medical insurance payment, nationwide in ~3 years — NHSA via english.gov.cn (Jan 2026)
 - TikTok fined €530m for EU data transfers to China (May 2025) — Irish DPC

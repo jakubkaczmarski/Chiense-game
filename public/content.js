@@ -49,6 +49,18 @@
       word: { zh: "扫码", py: "sǎo mǎ", en: "scan the code", note: "How China pays: point your phone at a QR code." },
       clock: "08:10",
       cams: [],
+      stats: {
+        title: "QR wallets vs cash in Chinese shops",
+        sub: "Share of in-store spending (by value)",
+        years: ["2017", "2019", "2021", "2023", "2027*"],
+        wallet: [36, 48, 54, 66, 79],
+        cash: [null, null, 10.3, 7, 3],
+        facts: [
+          ["469M → 583M", "mobile-payment users, 2016 → 2018 (CNNIC)"],
+          ["75%", "of internet users aged 60+ pay by phone (CNNIC, June 2024)"]
+        ],
+        src: "Worldpay Global Payments Reports 2018–2024 · *forecast · cash share not reported for 2017/2019"
+      },
       title: "Breakfast",
       story: "A jianbing stand outside your building. ¥7. A WeChat Pay and an Alipay QR code are taped to the cart.",
       why: "In a decade China went from cash to QR codes. To use WeChat Pay or Alipay you must first verify your real name and link a Chinese bank card. Cash is still legal tender and shops may not refuse it — but almost nobody uses it.",
