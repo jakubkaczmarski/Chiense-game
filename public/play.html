@@ -172,6 +172,40 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 .call .names button{background:#fff;color:#111;border:0;border-radius:99px;padding:10px 16px;font-weight:700;font-size:15px;cursor:pointer}
 .call .refuse{display:block;width:100%;margin-top:14px;background:transparent;border:1.5px solid #555;color:#ddd;border-radius:14px;padding:12px;font-weight:700;font-size:15px;cursor:pointer}
 .call .pts{font-size:34px;font-weight:800;color:#2fbf71;margin-top:8px}
+.idle{position:relative;border-radius:26px;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#2a0d10 0%,#141414 60%);color:#fff;padding:18px 20px 22px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.idle .live{display:inline-flex;align-items:center;gap:8px;font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.18em;color:#ff6b61;text-transform:uppercase}
+.idle .live i{width:8px;height:8px;border-radius:50%;background:#ff3b30;animation:ib 1s steps(1) infinite}
+@keyframes ib{50%{opacity:.2}}
+.idle svg.cam{width:100%;height:150px;display:block;margin:6px 0 2px}
+.idle .pan{transform-origin:150px 34px;animation:pan 5s ease-in-out infinite}
+@keyframes pan{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(28deg)}}
+.idle .led{animation:ib 1.2s steps(1) infinite}
+.idle .ppl circle,.idle .ppl rect{fill:#3a3a3a}
+.idle .ppl g{animation:spot 5s ease-in-out infinite}
+@keyframes spot{0%,100%{opacity:.45}50%{opacity:1}}
+.idle .kick{font:700 12px ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#ffd24a;margin-top:2px}
+.idle h2{margin:6px 0 4px;font-size:24px}
+.idle .look{color:#bbb;font-size:15px}
+.idle .look b{display:inline-block;animation:eyes 2.4s ease-in-out infinite}
+@keyframes eyes{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+.idle .zh{font:800 54px/1.1 "PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:#ffd24a;margin-top:14px;letter-spacing:.06em}
+.idle .zh span{display:inline-block;opacity:0;animation:zhin .7s cubic-bezier(.2,.8,.2,1) forwards;text-shadow:0 0 18px rgba(255,210,74,.35)}
+@keyframes zhin{from{opacity:0;transform:translateY(14px) scale(.7);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+.idle .py{font:600 13px ui-monospace,Menlo,monospace;color:#ddd;opacity:0;animation:fadein .6s ease forwards 1.2s}
+@keyframes fadein{to{opacity:1}}
+.idle .tipbox{margin-top:16px;background:#1f1f1f;border:1px solid #333;border-radius:14px;padding:12px 14px;text-align:left;min-height:86px}
+.idle .tipbox small{display:block;font:700 10px ui-monospace,Menlo,monospace;letter-spacing:.16em;color:#888;text-transform:uppercase;margin-bottom:4px}
+.idle .tip{font-size:15px;line-height:1.4;transition:opacity .4s}
+.idle .tip b{color:#ffd24a;font-size:18px}
+.idle .next{margin-top:14px;font-size:13px;color:#999}
+.idle .dots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#2fbf71;margin:0 2px;animation:dot 1.2s infinite}
+.idle .dots i:nth-child(2){animation-delay:.2s}.idle .dots i:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+.waitanim{display:flex;flex-direction:column;align-items:center;gap:8px;margin:14px 0}
+.waitanim .bar{width:70%;height:6px;border-radius:99px;background:#e9e6df;overflow:hidden}
+.waitanim .bar i{display:block;width:40%;height:100%;border-radius:99px;background:var(--green);animation:slide 1.4s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+@media (prefers-reduced-motion: reduce){.idle *,.waitanim *{animation:none!important;opacity:1!important}}
 </style>
 </head>
 <body>
@@ -184,7 +218,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 <script src="/facescan.js"></script>
 <script src="/story.js"></script>
 <script>
-const { SCENES, POLLS, WHO, INFORM } = window.GAME;
+const { SCENES, POLLS, WHO, INFORM, DAILY, CASE } = window.GAME;
 const app = document.getElementById("app");
 const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}}, del(k){try{localStorage.removeItem(k)}catch{}} };
 let pid = store.get("dds_pid");
@@ -302,6 +336,7 @@ function render() {
   if (entering && (step.type === "meta" || step.type === "end")) scramble();
   if (entering && step.type === "scene" && step.i === 0 && window.FaceScan) FaceScan.preload();
   if (entering && step.type === "inform" && !d.me.inform) startRing();
+  if (entering && (step.type === "scene" || step.type === "poll") && navigator.vibrate) navigator.vibrate([120, 80, 120]);
   if (entering && step.type !== "inform") stopRing();
 }
 
@@ -329,18 +364,17 @@ function draw(d, step, scene) {
   }
 
   if (step.type === "camhist") {
-    app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">Before the commute</p><h2 style="margin:6px 0 10px">How the cameras came</h2><p class="lead">👀 Eyes on the big screen.</p><p style="margin-top:14px"><span style="font-size:34px;color:#c8102e;font-weight:800">天网</span><br><span class="fine">tiānwǎng · “Sky Net”</span></p></div>`;
+    app.innerHTML = idleCard({ kick: "Before the commute", title: "How the cameras came", word: { zh: "天网", py: "tiānwǎng", en: "“Sky Net”" } });
     return;
   }
 
   if (step.type === "daily") {
-    app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">Before we start</p><h2 style="margin:6px 0 10px">Every day in China…</h2><p class="lead">👀 Eyes on the big screen — watch the counters.</p></div>`;
+    app.innerHTML = idleCard({ kick: "Before we start", title: "Every day in China…", look: "Watch the counters on the big screen", word: { zh: "数据", py: "shùjù", en: "data" } });
     return;
   }
 
   if (step.type === "intro") {
-    app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">Before we start</p><h2 style="margin:6px 0 10px">What is privacy?</h2>
-      <p class="lead">👀 Eyes on the big screen.</p><p style="margin-top:14px"><span style="font-size:34px;color:#c8102e;font-weight:800">隐私</span><br><span class="fine">yǐnsī · privacy</span></p></div>`;
+    app.innerHTML = idleCard({ kick: "Before we start", title: "What is privacy?", word: { zh: "隐私", py: "yǐnsī", en: "privacy" }, next: "The day starts soon — keep your phone ready" });
     return;
   }
 
@@ -373,18 +407,14 @@ function draw(d, step, scene) {
   }
 
   if (step.type === "case") {
-    app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">The other side</p><h2 style="margin:6px 0 10px">The case for it</h2>
-      <p class="lead">👀 Eyes on the big screen: why many people accept this system.</p><p class="fine" style="margin-top:12px">Your file is next.</p></div>`;
+    app.innerHTML = idleCard({ kick: "The other side", title: "The case for it", look: "Why many people accept this — look at the big screen", word: { zh: "安全", py: "ānquán", en: "safety" }, next: "Your file is next" });
     return;
   }
 
   if (step.type === "brief" || step.type === "debrief") {
     const sc = SCENES[step.i], b = step.type === "brief" ? sc.brief : sc.debrief;
-    app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">${esc(sc.clock)} · ${step.type === "brief" ? "Coming up" : "What it means"}</p>
-      <h2 style="margin:6px 0 10px">${esc(b.title)}</h2>
-      <p class="lead">👀 Eyes on the big screen — your presenter is explaining.</p>
-      ${sc.word ? `<p style="margin-top:14px"><span style="font-size:34px;color:#c8102e;font-weight:800">${esc(sc.word.zh)}</span><br><span class="fine">${esc(sc.word.py)} · ${esc(sc.word.en)}</span></p>` : ""}
-      ${step.type === "brief" ? `<p class="fine" style="margin-top:12px">Get ready: you'll choose on this phone next.</p>` : ""}</div>`;
+    app.innerHTML = idleCard({ kick: `${sc.clock} · ${step.type === "brief" ? "Coming up" : "What it means"}`, title: b.title, word: sc.word,
+      next: step.type === "brief" ? "Get ready — you'll choose on this phone next" : "Next moment of the day coming up" });
     return;
   }
 
@@ -499,7 +529,39 @@ function draw(d, step, scene) {
 function explainCard(scene) {
   return `<div class="card"><div class="eyebrow">What's real here</div><p style="margin-top:6px">${esc(scene.explain)}</p></div>`;
 }
-function waitCard() { return `<p class="fine center"><span class="pulse"></span>Waiting for the others…</p>`; }
+// animated "listen to the presenter" screen for steps without a question
+const TIPS = (() => {
+  const t = [];
+  SCENES.forEach((sc) => (sc.nums ? sc.nums.items : []).forEach(([n, l]) => t.push([n, l])));
+  (DAILY ? DAILY.items : []).forEach((it) => t.push([it.n, it.label]));
+  (CASE ? CASE.tiles : []).forEach(([n, l]) => t.push([n, l]));
+  return t.sort(() => Math.random() - 0.5);
+})();
+let tipI = 0;
+setInterval(() => {
+  const el = document.querySelector(".idle .tip"); if (!el || !TIPS.length) return;
+  el.style.opacity = 0;
+  setTimeout(() => { tipI = (tipI + 1) % TIPS.length; el.innerHTML = tipHtml(); el.style.opacity = 1; }, 400);
+}, 6500);
+const tipHtml = () => { const [n, l] = TIPS[tipI % TIPS.length] || ["", ""]; return `<b>${esc(n)}</b> — ${esc(l)}`; };
+function idleCard({ kick, title, look, word, next }) {
+  const ppl = [40, 95, 150, 205, 260].map((x, k) => `<g style="animation-delay:${(k - 2) * 0.55}s"><circle cx="${x}" cy="118" r="8"/><rect x="${x - 9}" y="128" width="18" height="18" rx="6"/></g>`).join("");
+  return `<div class="idle"><div class="live"><i></i>Live · 正在观看 · being watched</div>
+    <svg class="cam" viewBox="0 0 300 150" aria-hidden="true">
+      <defs><linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff3b30" stop-opacity=".45"/><stop offset="1" stop-color="#ff3b30" stop-opacity="0"/></linearGradient></defs>
+      <rect x="140" y="0" width="20" height="14" fill="#555"/>
+      <g class="pan"><path d="M150 40 L95 150 L205 150Z" fill="url(#beam)"/>
+        <rect x="128" y="18" width="44" height="22" rx="5" fill="#e9e9e9"/><rect x="122" y="15" width="56" height="6" rx="3" fill="#cfcfcf"/>
+        <circle cx="150" cy="40" r="7" fill="#111" stroke="#666" stroke-width="2"/><circle class="led" cx="166" cy="28" r="2.5" fill="#ff3b30"/></g>
+      <g class="ppl">${ppl}</g></svg>
+    <div class="kick">${esc(kick)}</div><h2>${esc(title)}</h2>
+    <div class="look"><b>👀</b> ${esc(look || "Look at the big screen — your presenter is talking")}</div>
+    ${word ? `<div class="zh">${[...word.zh].map((c, k) => `<span style="animation-delay:${0.3 + k * 0.35}s">${esc(c)}</span>`).join("")}</div><div class="py">${esc(word.py)} · ${esc(word.en)}</div>` : ""}
+    <div class="tipbox"><small>📊 Did you know?</small><div class="tip">${tipHtml()}</div></div>
+    <div class="next"><span class="dots"><i></i><i></i><i></i></span> ${esc(next || "Your phone will buzz when it's your turn")}</div></div>`;
+}
+
+function waitCard() { return `<div class="waitanim"><div class="bar"><i></i></div><p class="fine center">Waiting for the others… results come on the big screen</p></div>`; }
 function endCard(m) {
   return `<div class="card center"><div class="eyebrow">Your day in Shanghai</div><div class="big" style="margin:8px 0">${m.points}</div><p class="lead">data points logged about you</p></div>
     <button class="btn ghost" id="del">Delete my data now</button>`;
