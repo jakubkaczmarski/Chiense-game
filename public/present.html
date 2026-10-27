@@ -73,7 +73,7 @@ button:active{transform:scale(.98)}
 </main>
 <script src="/content.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST } = window.GAME;
+const { SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, KINDS } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -133,7 +133,7 @@ function summary(st) {
   if (st.type === "scene") {
     const bad = sc.options.filter((o) => o.outcome !== "ok");
     return { tldr: `${sc.title}: let them choose — don't explain yet.`,
-      say: [`<b>Read:</b> ${esc(sc.story)}`, `<b>Options:</b> ${sc.options.map((o) => esc(o.label)).join(" · ")}`,
+      say: [`<b>Read:</b> ${esc(sc.story)}`, `<b>Options:</b> ${sc.options.map((o) => (o.kind ? esc(KINDS[o.kind]) + " " : "") + esc(o.label)).join(" · ")}`,
         ...bad.map((o) => `<b>Catch:</b> “${esc(o.label)}” → ${esc(o.result)}`), "Watch the counter; press Next when most have decided"], raw: true };
   }
   if (st.type === "reveal") return { tldr: sentences(sc.explain)[0], say: sentences(sc.explain).slice(1).concat(["Ask one person why they chose what they did"]), cmp: sc.compare };

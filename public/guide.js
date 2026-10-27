@@ -9,6 +9,9 @@
     "sim:refuse": {
       en: "you asked to skip the face scan. The real-name system is not optional. Your request has been noted.",
       zh: (n) => `${one(n) ? "你" : "你们"}要求跳过人脸识别。实名制不是可以选择的。你的要求已经记录在案。` },
+    "sim:black": {
+      en: "you are using a SIM card registered to someone else. Under the card-breaking campaign that is fraud. Your number has been cut off.",
+      zh: (n) => `${one(n) ? "你" : "你们"}在用别人名下的电话卡。按照断卡行动，这涉嫌诈骗。号码已经停用了。` },
     "post:sensitive": {
       en: "you reposted a video of a protest. It has been removed. You will be invited to drink tea.",
       zh: (n) => `${one(n) ? "你" : "你们"}转发了抗议视频。视频已经删除了。过两天，请${one(n) ? "你" : "你们"}来喝茶。` },

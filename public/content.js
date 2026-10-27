@@ -17,27 +17,27 @@
       cams: ["kiosk"],
       title: "Get a phone number",
       story: "You just moved to Shanghai for a new job. First task: a phone number. WeChat, Alipay, your bank and every delivery app need one.",
-      why: "Since 2010 every Chinese phone number must be registered to an ID card. Since 1 December 2019 carriers must also scan your face and match it to the ID photo. You can do it in a shop or in the carrier's app — but you can't skip it.",
+      why: "Since 2010 every Chinese phone number must be registered to an ID card. Since 1 December 2019 carriers must also scan your face and match it to the ID photo. You can do it in a shop or in the carrier's app — but you can't skip it. There is a black market for SIM cards registered to other people, mostly used by scam gangs.",
       options: [
         {
-          id: "store", label: "China Mobile store: show your ID card", face: "enrol",
+          id: "app", kind: "quick", label: "Order a SIM in the China Unicom app", face: "enrol",
           outcome: "ok",
-          result: "The clerk scans your ID card and asks you to look into the face-check camera. Five minutes later you have a number.",
-          logs: ["ID card number linked to your new +86 number", "Face scan matched to your ID photo"],
-          to: ["chinamobile"], state: "demand"
-        },
-        {
-          id: "app", label: "China Unicom app: upload ID photo + face video", face: "enrol",
-          outcome: "ok",
-          result: "You photograph both sides of your ID card and record a short face video in the app. The SIM arrives by courier.",
+          result: "You photograph both sides of your ID card and record a short face video in the app. The SIM arrives by courier the same day.",
           logs: ["Photo of both sides of your ID card", "Face video matched to your ID photo", "Delivery address"],
           to: ["chinaunicom"], state: "demand"
         },
         {
-          id: "refuse", label: "Ask to skip the face scan",
+          id: "refuse", kind: "private", label: "Go to a store, show your ID — but refuse the face scan",
           outcome: "blocked",
-          result: "Not possible. Without the face check, no carrier can issue you a number — it's a national rule.",
+          result: "The clerk shakes her head: since December 2019 no carrier may issue a number without a face check. No scan, no SIM.",
           logs: [], to: [], state: "none"
+        },
+        {
+          id: "black", kind: "rebel", label: "Buy a SIM already registered to someone else, from a street seller",
+          outcome: "consequence",
+          result: "It works — for a week. Since the 2020 “card-breaking” campaign (断卡行动) police hunt traded SIMs used by scam gangs. The number is cut off, and you and the real owner are flagged.",
+          logs: ["SIM registered to a stranger's ID — linked to you by phone location", "Flagged in the anti-fraud system"],
+          to: ["chinamobile", "police"], state: "direct"
         }
       ],
       explain: "ID has been required for every phone number since 2010. Since 1 Dec 2019 carriers must also verify your face. Your number then becomes your real-name key for every app.",
@@ -67,23 +67,23 @@
         src: "Worldpay Global Payments Reports 2018–2024 · *forecast · cash share not reported for 2017/2019"
       },
       title: "Breakfast",
-      story: "A jianbing stand outside your building. ¥7. A WeChat Pay and an Alipay QR code are taped to the cart.",
-      why: "In a decade China went from cash to QR codes. To use WeChat Pay or Alipay you must first verify your real name and link a Chinese bank card. Cash is still legal tender and shops may not refuse it — but almost nobody uses it.",
+      story: "A jianbing stand outside your building. ¥7. A WeChat Pay QR code is taped to the cart. Or you could just order it on Meituan and eat at your desk.",
+      why: "In a decade China went from cash to QR codes. To use WeChat Pay or Alipay you must first verify your real name and link a Chinese bank card. Delivery apps like Meituan add your address and habits. Cash is still legal tender and shops may not refuse it — but almost nobody uses it.",
       options: [
         {
-          id: "wechat", label: "Scan with WeChat Pay",
+          id: "wechat", kind: "quick", label: "Scan the WeChat Pay QR code on the cart",
           outcome: "ok", result: "Paid in two seconds.",
           logs: ["¥7.00 · street food stall · 08:12", "Linked to your real-name WeChat account and bank card"],
           to: ["tencent"], state: "demand"
         },
         {
-          id: "alipay", label: "Scan with Alipay",
-          outcome: "ok", result: "Paid in two seconds.",
-          logs: ["¥7.00 · street food stall · 08:12", "Added to your Alipay spending history"],
-          to: ["alibaba"], state: "demand"
+          id: "delivery", kind: "comfort", label: "Order it on Meituan, delivered to your desk",
+          outcome: "ok", result: "Arrives in 25 minutes. Meituan now knows where you work, when you eat and what you like.",
+          logs: ["Delivery address: your office, 32nd floor", "Order history: jianbing, extra egg, 08:40", "Rider's GPS route to your door"],
+          to: ["meituan"], state: "demand"
         },
         {
-          id: "cash", label: "Pay with cash",
+          id: "cash", kind: "private", label: "Pay with cash",
           outcome: "ok", result: "The vendor takes it — she has to by law — and digs for change in a tin. The person behind you sighs.",
           logs: [], to: [], state: "none"
         }
@@ -108,19 +108,19 @@
       why: "Every way of getting around leaves a trail. The metro QR code is tied to your account, Didi stores your route, and the city is covered by cameras — in Shenzhen, road cameras capture number plates and drivers' faces to check licences.",
       options: [
         {
-          id: "qr", label: "Metro, with the QR code in the Metro Daduhui app",
+          id: "qr", kind: "quick", label: "Metro, with the QR code in the Metro Daduhui app",
           outcome: "ok", result: "Beep. Through the gate.",
           logs: ["Entered Jing'an Temple 08:41 → exited Lujiazui 09:02", "Ride history tied to your phone number"],
           to: ["metro"], state: "demand"
         },
         {
-          id: "card", label: "Metro, with a transport card bought with cash",
+          id: "card", kind: "private", label: "Metro, with a transport card bought with cash",
           outcome: "ok", result: "No account, no name. The station cameras still record you.",
           logs: ["Station CCTV recording"],
           to: ["metro", "police"], state: "direct"
         },
         {
-          id: "taxi", label: "Order a Didi",
+          id: "taxi", kind: "comfort", label: "Order a Didi",
           outcome: "ok", result: "Your Didi arrives in 3 minutes.",
           logs: ["Pickup and drop-off addresses", "Full GPS route of the ride"],
           to: ["didi"], state: "demand"
@@ -146,19 +146,19 @@
       why: "Social media accounts in China must be real-name registered (since 2017). Everyday complaints are normal and tolerated. Content about sensitive political topics gets removed. Since 2022 Weibo shows every user's province, based on their IP address.",
       options: [
         {
-          id: "lunch", label: "Post a photo of your lunch",
+          id: "lunch", kind: "safe", label: "Post a photo of your lunch",
           outcome: "ok", result: "12 likes. Under your name it says “IP属地: 上海” — IP location: Shanghai.",
           logs: ["Post published under your real-name account", "Your province shown publicly"],
           to: ["weibo"], state: "demand"
         },
         {
-          id: "complain", label: "Complain about the late metro",
+          id: "complain", kind: "voice", label: "Complain about the late metro",
           outcome: "ok", result: "Posted. Complaints like this are everyday content on Weibo.",
           logs: ["Complaint published under your real-name account", "Your province shown publicly"],
           to: ["weibo"], state: "demand"
         },
         {
-          id: "sensitive", label: "Repost a video of a local protest",
+          id: "sensitive", kind: "rebel", label: "Repost a video of a local protest",
           outcome: "consequence", result: "Removed. The notice says it “violates relevant laws and regulations”.",
           logs: ["Repost deleted by content moderation", "Account flagged"],
           to: ["weibo"], state: "demand"
@@ -184,21 +184,21 @@
       why: "Big public hospitals are crowded, so most patients book through the hospital's WeChat account with their ID number and medical insurance card. Since January 2026 China is rolling out face-scan payment for medical insurance. Privacy inside the consulting room is often limited.",
       options: [
         {
-          id: "wechat", label: "Book in the hospital's WeChat account",
+          id: "wechat", kind: "quick", label: "Book in the hospital's WeChat account",
           outcome: "ok",
           result: "Booked with your ID number. In the consulting room, the next patients wait inside while you describe your rash.",
           logs: ["Appointment linked to your ID number", "Diagnosis stored with your medical insurance record"],
           to: ["hospital", "tencent"], state: "demand"
         },
         {
-          id: "counter", label: "Queue at the counter with your insurance card",
+          id: "counter", kind: "private", label: "Queue at the counter with your insurance card",
           outcome: "ok",
           result: "Two hours of queueing. Same doctor, same crowded room.",
           logs: ["Registration linked to your insurance card", "Diagnosis stored with your medical insurance record"],
           to: ["hospital"], state: "demand"
         },
         {
-          id: "face", label: "Pay at the face-scan terminal", face: "pay",
+          id: "face", kind: "future", label: "Pay at the face-scan terminal", face: "pay",
           outcome: "ok",
           result: "No card, no phone. You look at the screen and the insurance pays.",
           logs: ["Face matched to your medical insurance account", "Diagnosis stored with your medical insurance record"],
@@ -225,18 +225,18 @@
       why: "During COVID every resident had a green, yellow or red code. It decided where you could go. In June 2022, officials in Zhengzhou turned the codes of 1,317 bank depositors red to stop them protesting. The officials were later punished. The tracking codes were switched off in December 2022.",
       options: [
         {
-          id: "scan", label: "Scan the venue QR code and show your green code",
+          id: "scan", kind: "quick", label: "Scan the venue QR code and show your green code",
           outcome: "ok", result: "Green. The guard waves you into the office.",
           logs: ["Venue check-in: office tower, 09:02", "Health code status: green"],
           to: ["govt"], state: "direct"
         },
         {
-          id: "noscan", label: "Walk in without scanning",
+          id: "noscan", kind: "private", label: "Walk in without scanning",
           outcome: "blocked", result: "The guard stops you at the door. No code, no entry — anywhere.",
           logs: [], to: [], state: "none"
         },
         {
-          id: "zhengzhou", label: "Travel to Zhengzhou to help your parents get their money back",
+          id: "zhengzhou", kind: "rebel", label: "Travel to Zhengzhou to help your parents get their money back",
           outcome: "consequence", result: "You scan the Zhengzhou code at the station. It turns red. You can't leave the station area or use the metro.",
           logs: ["Code turned red after scanning in Zhengzhou", "Movement restricted"],
           to: ["govt"], state: "direct"
@@ -262,19 +262,19 @@
       why: "Every train ticket in China is sold to a real name — the rule was introduced to stop ticket touts. At many stations the gate reads your ID card and scans your face, so you never show a ticket. People on the court list of judgment defaulters cannot buy high-speed rail or plane tickets.",
       options: [
         {
-          id: "app", label: "Book on 12306, the official railway app", face: "gate",
+          id: "app", kind: "quick", label: "Book on 12306, the official railway app", face: "gate",
           outcome: "ok", result: "Booked. At the station there's no ticket to show: the gate reads your ID card and checks your face.",
           logs: ["Ticket issued to your ID number", "Trip: Shanghai → hometown, Friday 19:05", "Face check at the station gate"],
           to: ["railway"], state: "demand"
         },
         {
-          id: "station", label: "Buy at the station counter with cash", face: "gate",
+          id: "station", kind: "private", label: "Buy at the station counter with cash", face: "gate",
           outcome: "ok", result: "Cash is fine — but you still need your ID card, and the gate still checks your face.",
           logs: ["Ticket issued to your ID number", "Trip: Shanghai → hometown, Friday 19:05", "Face check at the station gate"],
           to: ["railway"], state: "demand"
         },
         {
-          id: "tout", label: "Buy a ticket from a tout outside the station",
+          id: "tout", kind: "rebel", label: "Buy a ticket from a tout outside the station",
           outcome: "blocked", result: "Useless: the name on the ticket must match the ID card you show at the gate.",
           logs: [], to: [], state: "none"
         }
@@ -296,23 +296,23 @@
       clock: "22:30",
       cams: ["gate:compound"],
       title: "Where do you sleep?",
-      story: "Drinks after work ran late. You're on the other side of the city.",
-      why: "Hotels and guesthouses in China must register every guest's ID card with the police. Many used to require a face scan too — since 2024 Shanghai and other cities say they can't force one if you show a valid ID. Many residential compounds open their gates by face recognition.",
+      story: "Drinks after work ran late. You're on the other side of the city — and it's 23:00.",
+      why: "Hotels and guesthouses in China must register every guest's ID card with the police. Many used to require a face scan too — since 2024 Shanghai and other cities say they can't force one if you show a valid ID. Internet cafés (网吧) are a cheap place to crash, but they scan your ID card too — real-name internet access has been required since 2002. Many residential compounds open their gates by face recognition.",
       options: [
         {
-          id: "hotel", label: "Check into a hotel nearby",
+          id: "hotel", kind: "comfort", label: "Check into a hotel nearby",
           outcome: "ok", result: "The receptionist scans your ID card. The face scan is optional now — you decline it.",
           logs: ["Guest registration sent to the local police system"],
           to: ["hotel", "police"], state: "direct"
         },
         {
-          id: "guesthouse", label: "Book a guesthouse on Ctrip",
-          outcome: "ok", result: "Same rule: the host must register your ID with the police too.",
-          logs: ["Booking stored by Ctrip", "Guest registration sent to the local police system"],
-          to: ["ctrip", "police"], state: "direct"
+          id: "wangba", kind: "cheap", label: "Sleep in a 24-hour internet café (网吧)",
+          outcome: "ok", result: "¥15 for the night. You scan your ID card at the counter; the system logs your ID, your seat and the sites you visit.",
+          logs: ["ID card scanned at internet café 23:05", "Browsing log tied to your ID number"],
+          to: ["netcafe"], state: "demand"
         },
         {
-          id: "home", label: "Take a Didi home",
+          id: "home", kind: "quick", label: "Take a Didi home",
           outcome: "ok", result: "Your compound's gate opens when it recognises your face.",
           logs: ["Didi route across the city", "Face recognised at your compound gate 23:14"],
           to: ["didi", "compound"], state: "demand"
@@ -381,7 +381,12 @@
     chinamobile: "China Mobile", chinaunicom: "China Unicom", tencent: "Tencent (WeChat)", alibaba: "Ant Group (Alipay)",
     didi: "Didi", weibo: "Weibo", metro: "Shanghai Metro", railway: "China Railway (12306)", hospital: "Hospital",
     insurance: "Medical insurance bureau", hotel: "Hotel", ctrip: "Ctrip", compound: "Compound management",
-    govt: "Local government", police: "Police"
+    govt: "Local government", police: "Police", meituan: "Meituan", netcafe: "Internet café (real-name system)"
+  };
+  // what kind of choice each option is — shown as a tag so the choices are clearly different
+  const KINDS = {
+    quick: "⚡ Quick", private: "🛡 Private", rebel: "✊ Push back", comfort: "🛋 Comfort", cheap: "💸 Cheap",
+    safe: "🙂 Play safe", voice: "📣 Speak up", future: "🤖 High-tech"
   };
   const STATE = {
     direct: "Sent to the state automatically",
@@ -413,13 +418,14 @@
       m ? ["Morning location", m === "taxi" ? "home address (Didi pickup)" : "Jing'an Temple station area"] : null,
       m ? ["Workplace", "Lujiazui, Pudong"] : null,
       n === "home" ? ["Home", "compound gate, face entry 23:14"] : null,
-      n === "hotel" || n === "guesthouse" ? ["Overnight", (n === "hotel" ? "hotel" : "guesthouse") + " in own city, 22:30"] : null,
+      n === "hotel" ? ["Overnight", "hotel in own city, 22:30"] : null,
+      n === "wangba" ? ["Overnight", "24-hour internet café, ID scanned 23:05"] : null,
       a("train") ? ["Hometown", "train booked Fri 19:05"] : null
     ]);
     const b = a("breakfast");
     sec("Money", [
       b === "wechat" ? ["Payments", "WeChat Pay · street food 08:12"] : null,
-      b === "alipay" ? ["Payments", "Alipay · street food 08:12"] : null,
+      b === "delivery" ? ["Payments", "Meituan · breakfast delivered to office 08:40"] : null,
       b === "cash" ? ["Payments", "cash — no record (gap in file)"] : null
     ]);
     const p = a("post");
@@ -438,6 +444,8 @@
     if (b === "cash" || m === "card" || faces.some((f) => f.how === "refused")) file.inferences.push("Avoids digital traces (cash / anonymous card / refused scan) → privacy-conscious");
     if (hc === "zhengzhou") file.inferences.push("Family affected by the Henan bank freeze → grievance against authorities");
     if (p === "sensitive") file.inferences.push("Shares protest content → politically sensitive views");
+    if (sim === "black") file.inferences.push("Uses a phone number registered to someone else → possible fraud link");
+    if (b === "delivery") file.inferences.push("Orders breakfast to the office → workplace address confirmed");
     if (rec.inform && rec.inform.target) file.inferences.push(`Reported a classmate (${rec.inform.target}) to the counsellor → reliable informant (信息员)`);
     if (rec.inform && rec.inform.refused) file.inferences.push("Refused to inform on classmates → uncooperative attitude");
     if (d) file.inferences.push("Recurring skin condition → health status known to insurer and state");
@@ -449,7 +457,9 @@
     if (bl) file.tags.push("COURT LIST · judgment defaulter");
 
     // Police Cloud-style alerts
-    if (n === "hotel" || n === "guesthouse") file.alerts.push("Local resident stayed in a hotel in their own city");
+    if (n === "hotel") file.alerts.push("Local resident stayed in a hotel in their own city");
+    if (n === "wangba") file.alerts.push("Overnight at an internet café — browsing log available");
+    if (sim === "black") file.alerts.push("Traded SIM card — anti-fraud system");
     if (hc === "zhengzhou") file.alerts.push("Travel to Zhengzhou during depositor protests");
     if (p === "sensitive") file.alerts.push("Sensitive content posted from a real-name account");
     if (file.tags.length) file.alerts.push("Assigned to grid worker for regular check-ins");
@@ -463,7 +473,8 @@
     if (m) tag("Above-average income (inferred from workplace)", 74);
     if (m === "taxi" || n === "home") tag("Pays for convenience · Didi user", 85);
     if (m === "qr" || m === "card") tag("Daily metro commuter", 95);
-    if (b === "wechat" || b === "alipay") tag("Street-food breakfast · price-sensitive mornings", 68);
+    if (b === "wechat") tag("Street-food breakfast · price-sensitive mornings", 68);
+    if (b === "delivery") tag("Busy professional · orders food to work", 86);
     if (b === "cash" || m === "card") tag("Hard to profile · uses cash", 60);
     if (sim === "app") tag("Online-first · orders by courier", 70);
     if (p === "lunch") tag("Foodie · posts food photos", 81);
@@ -473,7 +484,8 @@
     if (d === "face") tag("Comfortable with biometric payment", 83);
     if (hc === "zhengzhou") tag("Family financial stress · Henan bank freeze", 79);
     if (a("train")) tag("Hometown outside Shanghai · weekend traveller", 90);
-    if (n === "hotel" || n === "guesthouse") tag("Late nights out · stays in hotels locally", 72);
+    if (n === "hotel") tag("Late nights out · stays in hotels locally", 72);
+    if (n === "wangba") tag("Gamer · late nights, low budget", 80);
     if (/iPhone|iPad|Mac/.test(os)) tag("Apple user · premium segment", 97);
 
     if (d) { mk.needs.push("Clear skin — skincare, private clinics"); mk.ads.push(["Health", "Dermatologist-approved serum · results in 7 days"]); }
@@ -481,7 +493,9 @@
     if (a("train")) { mk.needs.push("Cheap trips home, gifts for parents"); mk.ads.push(["Travel", "Weekend high-speed rail deals · plus gift boxes for parents"]); }
     if (m === "qr" || m === "card") { mk.needs.push("A faster commute"); mk.ads.push(["Mobility", "E-bike for your Jing’an → Lujiazui commute"]); }
     if (m === "taxi" || n === "home") { mk.needs.push("Rides when tired, late at night"); mk.ads.push(["Rides", "Night-ride membership · skip surge pricing"]); }
-    if (n === "hotel" || n === "guesthouse") { mk.needs.push("Late food and a place to crash"); mk.ads.push(["Food", "Hotpot delivered in 30 min · open till 3 am"]); }
+    if (n === "hotel") { mk.needs.push("Late food and a place to crash"); mk.ads.push(["Food", "Hotpot delivered in 30 min · open till 3 am"]); }
+    if (n === "wangba") { mk.needs.push("Cheap fun, a place to stay"); mk.ads.push(["Games", "New mobile game · 7-day login bonus"]); }
+    if (b === "delivery") mk.ads.push(["Food", "Breakfast subscription delivered to your desk · ¥199/month"]);
     if (m) { mk.needs.push("Career growth, savings"); mk.ads.push(["Finance", "Wealth-management app for finance professionals"]); }
     if (p === "lunch") mk.ads.push(["Food", "New restaurants near Lujiazui · lunch set ¥39"]);
 
@@ -634,7 +648,7 @@
   };
 
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, buildFile, FILE_WORD };
+  const api = { SCENES, POLLS, STEPS, WHO, STATE, KINDS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);

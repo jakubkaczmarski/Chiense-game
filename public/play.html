@@ -206,6 +206,10 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 .waitanim .bar i{display:block;width:40%;height:100%;border-radius:99px;background:var(--green);animation:slide 1.4s ease-in-out infinite}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
 @media (prefers-reduced-motion: reduce){.idle *,.waitanim *{animation:none!important;opacity:1!important}}
+.optl{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.kind{display:inline-block;font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:#eef2ef;color:#3b4a43}
+.k-quick{background:#fff3d6;color:#8a5a00}.k-private{background:#e3f1ff;color:#0b4f8a}.k-rebel{background:#fde3e1;color:#a3221a}.k-comfort{background:#efe6ff;color:#5a2fa0}
+.k-cheap{background:#e6f6ec;color:#1d6b3e}.k-safe{background:#eef2ef;color:#3b4a43}.k-voice{background:#ffe9d6;color:#9a4a00}.k-future{background:#e0f7f7;color:#0d6a6a}
 </style>
 </head>
 <body>
@@ -218,7 +222,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 <script src="/facescan.js"></script>
 <script src="/story.js"></script>
 <script>
-const { SCENES, POLLS, WHO, INFORM, DAILY, CASE } = window.GAME;
+const { SCENES, POLLS, WHO, INFORM, DAILY, CASE, KINDS } = window.GAME;
 const app = document.getElementById("app");
 const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}}, del(k){try{localStorage.removeItem(k)}catch{}} };
 let pid = store.get("dds_pid");
@@ -431,7 +435,7 @@ function draw(d, step, scene) {
         <p class="lead" style="margin-top:8px">${esc(scene.story)}</p>
         ${scene.word ? `<div class="wordp"><b>${esc(scene.word.zh)}</b><span>${esc(scene.word.py)} · ${esc(scene.word.en)}</span></div>` : ""}
         ${scene.why ? `<details class="why"><summary>Why these choices?</summary><p>${esc(scene.why)}</p></details>` : ""}</div>
-        <div class="opts">${scene.options.map((o) => `<button class="opt" data-id="${o.id}" ${tried.has(o.id) && o.outcome === "blocked" ? "disabled" : ""}>${esc(o.label)}</button>`).join("")}</div>`;
+        <div class="opts">${scene.options.map((o) => `<button class="opt" data-id="${o.id}" ${tried.has(o.id) && o.outcome === "blocked" ? "disabled" : ""}><span class="optl">${o.kind && KINDS[o.kind] ? `<span class="kind k-${o.kind}">${esc(KINDS[o.kind])}</span>` : ""}${esc(o.label)}</span></button>`).join("")}</div>`;
       app.querySelectorAll(".opt").forEach((b) => b.onclick = () => choose(step.i, b.dataset.id, b));
       return;
     }

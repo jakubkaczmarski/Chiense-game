@@ -1,6 +1,6 @@
 # A Day in Shanghai — live classroom data-privacy game
 
-Everyone scans a QR code and lives through eight documented real-life situations as a Chinese resident: SIM registration with a face check, WeChat Pay / Alipay, the commute, a Weibo post, a hospital visit, the 2022 health code (Zhengzhou red-code case), a 12306 train with face-check gates, and a hotel night. Each choice shows up live on the projector: what is collected, who holds it (China Mobile, Tencent, Ant Group, Didi, Weibo, 12306…) and whether the state gets it automatically or can demand it, and how the same moment works in the EU/Poland and the US. Then come an anonymity test, a "this game was tracking you too" reveal, and three class polls compared with Chinese survey data.
+Everyone scans a QR code and lives through eight documented real-life situations as a Chinese resident. Every moment offers clearly different strategies, tagged on the phone (⚡ Quick, 🛡 Private, ✊ Push back, 🛋 Comfort, 💸 Cheap…): SIM registration with a face check, WeChat Pay / Alipay, the commute, a Weibo post, a hospital visit, the 2022 health code (Zhengzhou red-code case), a 12306 train with face-check gates, and a hotel night. Each choice shows up live on the projector: what is collected, who holds it (China Mobile, Tencent, Ant Group, Didi, Weibo, 12306…) and whether the state gets it automatically or can demand it, and how the same moment works in the EU/Poland and the US. Then come an anonymity test, a "this game was tracking you too" reveal, and three class polls compared with Chinese survey data.
 
 No dependencies. Node 18+. All data lives in memory and is gone when the server stops. Every player can also delete their own record at the end.
 
@@ -92,6 +92,7 @@ Shown back to each player at the end: device and OS (from the user agent), brows
 - Every day in China: 41.06 ZB of data in 2024 — National Data Administration via Xinhua (2025); 306bn non-bank online payments in Q1 2025 — PBOC; 45bn WeChat messages and 410M calls a day (2018) — Tencent via Caixin; 174.5bn parcels in 2024 — State Post Bureau via Jiemian
 - Anonymity / fingerprinting facts: Sweeney (2000); de Montjoye et al., Scientific Reports (2013); Eckersley, EFF Panopticlick (2010)
 - How the cameras came (before the commute): Skynet 2005, Sharp Eyes 2015 "100% coverage by 2020" — IPVM; 40,000 cameras in Urumqi after the 2009 riots (197 dead) — Washington Post via China Digital Times (2010); IJOP app — Human Rights Watch (2019); "may constitute crimes against humanity" — OHCHR (2022)
+- "Card-breaking" campaign (断卡行动) against traded SIM cards and bank accounts since October 2020 — Caixin (2024); internet cafés: real-name registration and face-recognition pilots — Identity Week / China Daily (2016)
 - Core Socialist Values slogans on the projector banner are the official 12 values
 - Face-scan medical insurance payment, nationwide in ~3 years — NHSA via english.gov.cn (Jan 2026)
 - TikTok fined €530m for EU data transfers to China (May 2025) — Irish DPC
