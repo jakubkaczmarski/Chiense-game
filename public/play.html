@@ -490,7 +490,7 @@ function draw(d, step, scene) {
   }
 
   if (step.type === "file") {
-    const f = window.GAME.buildFile({ name: d.me.name, answers: d.me.answers, faces: (d.meta && d.meta.faces) || [], seed: pid, device: d.meta && d.meta.device, inform: d.me.inform });
+    const f = window.GAME.buildFile({ name: d.me.name, answers: d.me.answers, faces: (d.meta && d.meta.faces) || [], seed: pid, device: d.meta && d.meta.device, inform: d.me.inform, lin: d.me.lin });
     const openStory = () => {
       if (document.querySelector(".story") || !window.FileStory) return;
       FileStory.mount(document.body, { f, me: d.me, meta: d.meta || {}, G: window.GAME, start: local.storyIdx || 0, onIndex: (i) => { local.storyIdx = i; } });
@@ -615,18 +615,41 @@ function linCall(key) {
   linShown.add(key);
   const me = (last && last.me && last.me.name) || "Comrade";
   const el = document.createElement("div"); el.className = "linph ring";
-  const head = (st) => `<div class="av">${Guide.avatar}</div><div class="who">林书记 Secretary Lin<small>Communist Party Committee</small></div><div class="st">${st}</div>`;
-  const ringing = (st) => { el.className = "linph ring"; el.innerHTML = head(st) + `<div class="btns"><button class="dec" aria-label="Decline">✕</button><button class="acc" aria-label="Accept">✆</button></div>`;
-    el.querySelector(".acc").onclick = talk; el.querySelector(".dec").onclick = () => { stopRing(); el.innerHTML = head("Declined…"); setTimeout(() => { startRing(); ringing("Calling again…"); }, 1400); }; };
+  let declines = 0, disguised = false, auto = false;
+  const MOM = `<svg viewBox="0 0 200 200"><rect width="200" height="200" fill="#ffd6e4"/><text x="100" y="128" font-size="96" text-anchor="middle">👩‍🦳</text></svg>`;
+  const head = (st, mom) => mom
+    ? `<div class="av" style="border-color:#ff8fb1">${MOM}</div><div class="who">妈妈 Mom ❤️<small style="color:#ff8fb1">mobile</small></div><div class="st">${st}</div>`
+    : `<div class="av">${Guide.avatar}</div><div class="who">林书记 Secretary Lin<small>Communist Party Committee</small></div><div class="st">${st}</div>`;
+  const ringing = (st) => {
+    disguised = declines === 1; // decline once and he calls back from your mum's number
+    el.className = "linph ring";
+    el.innerHTML = head(st, disguised) + `<div class="btns"><button class="dec" aria-label="Decline">✕</button><button class="acc" aria-label="Accept">✆</button></div>${declines >= 2 ? `<p class="fine" style="color:#ff8f86;margin-top:-18px">Declining is not available in your region 🇨🇳</p>` : ""}`;
+    el.querySelector(".acc").onclick = talk;
+    const dec = el.querySelector(".dec");
+    if (declines >= 2) {
+      // the decline button runs away; after three dodges the call answers itself
+      let dodges = 0;
+      const flee = (e) => { e.preventDefault(); dodges++;
+        dec.style.transition = "transform .25s"; dec.style.transform = `translate(${(Math.random() * 220 - 110) | 0}px, ${-(80 + Math.random() * 300) | 0}px) rotate(${(Math.random() * 60 - 30) | 0}deg)`;
+        if (navigator.vibrate) navigator.vibrate(40);
+        if (dodges >= 3) { auto = true; setTimeout(talk, 500); } };
+      dec.addEventListener("pointerdown", flee); dec.onclick = flee;
+      return;
+    }
+    dec.onclick = () => { declines++; stopRing(); el.className = "linph"; el.innerHTML = head("Declined…", disguised);
+      setTimeout(() => { startRing(); ringing(declines === 1 ? "is calling you…" : "Calling again… and again…"); }, 1400); };
+  };
   const talk = () => {
     stopRing(); el.className = "linph";
-    const lines = ["Hello. This is Secretary Lin from the Communist Party committee.", `${me}: ${Guide.warn(key).en}`, "This is your official warning. You are invited to a learning camp (学习班 xuéxí bān) to study the correct thinking."];
+    const pre = auto ? ["📵 Auto-answered (自动接听) by order of the Party committee."] : disguised ? ["Surprise! Not your mum. 😊 Did you really think you could hang up on the Party?"] : declines ? [`You declined ${declines} time${declines > 1 ? "s" : ""}. That has been noted.`] : [];
+    const lines = [...pre, "Hello. This is Secretary Lin from the Communist Party committee.", `${me}: ${Guide.warn(key).en}`, "This is your official warning. You are invited to a learning camp (学习班 xuéxí bān) to study the correct thinking."];
     el.innerHTML = head("On call · 林书记") + `<div class="msgs">${lines.map((l, i) => `<div class="bub" style="animation-delay:${0.4 + i * 1.6}s">${esc(l)}</div>`).join("")}</div>
-      <div class="acts" style="animation-delay:${0.4 + lines.length * 1.6}s"><button class="sign">✍ Sign the self-criticism</button><button class="hang">Hang up</button></div>`;
-    el.querySelector(".sign").onclick = () => end("SIGNED · 已签字", "Your self-criticism has been added to your file.");
-    el.querySelector(".hang").onclick = () => end("NOTED · 已记录", "Hanging up on a Party official has also been noted.");
+      <div class="acts" style="animation-delay:${0.4 + lines.length * 1.6}s"><button class="sign">✍ Sign the self-criticism</button><button class="hang">✋ Refuse to sign</button></div>`;
+    el.querySelector(".sign").onclick = () => { post("/api/lin", { pid, key, signed: true }); end("SIGNED · 已签字", "Your self-criticism goes into your file. The matter is closed — for now."); };
+    el.querySelector(".hang").onclick = () => { post("/api/lin", { pid, key, signed: false });
+      end("ESCALATED · 已上报", "Refusing makes it worse. Your case goes to the local police station — expect to be “invited to drink tea” (喝茶 hē chá). Your employer and family may be contacted."); };
   };
-  const end = (stamp, txt) => { el.innerHTML = head("Call ended") + `<div class="stamp">${stamp}</div><p style="margin-top:18px;color:#ddd">${esc(txt)}</p>`; setTimeout(() => el.remove(), 2600); };
+  const end = (stamp, txt) => { el.innerHTML = head("Call ended") + `<div class="stamp">${stamp}</div><p style="margin-top:18px;color:#ddd">${esc(txt)}</p>`; setTimeout(() => el.remove(), 4200); };
   document.body.appendChild(el); startRing(); ringing("is calling you…");
 }
 

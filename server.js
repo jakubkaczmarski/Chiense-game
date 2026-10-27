@@ -172,7 +172,7 @@ function screenPayload() {
   if (step.type === "scene" || step.type === "reveal") { out.stats = sceneStats(step.i); out.offenders = offenders(step.i); }
   if (step.type === "brief" || step.type === "reveal") out.guess = guessStats(step.i);
   if (step.type === "unique") { const u = uniqueness(); out.unique = { total: u.total, smallUnique: u.smallUnique, fullUnique: u.fullUnique }; }
-  if (step.type === "file") out.files = [...state.players.values()].map((p) => { const f = buildFile({ name: p.name, answers: p.answers, faces: p.faces, seed: p.pid, device: p.device, inform: p.inform }); return { name: p.name, id: f.id, tags: f.tags, alerts: f.alerts.length, points: f.points + f.inferences.length, mtags: f.market.tags.map((x) => x.t) }; });
+  if (step.type === "file") out.files = [...state.players.values()].map((p) => { const f = buildFile({ name: p.name, answers: p.answers, faces: p.faces, seed: p.pid, device: p.device, inform: p.inform, lin: p.lin }); return { name: p.name, id: f.id, tags: f.tags, alerts: f.alerts.length, points: f.points + f.inferences.length, mtags: f.market.tags.map((x) => x.t) }; });
   if (step.type === "inform" || step.type === "informres") out.inform = informStats(step.type === "informres");
   if (step.type === "meta") out.meta = metaStats();
   if (step.type === "poll" || step.type === "pollres") { out.poll = pollStats(step.i); out.voted = [...state.players.values()].filter((p) => p.polls[POLLS[step.i].id] !== undefined).length; }
@@ -181,7 +181,7 @@ function screenPayload() {
 }
 function playerPayload(p) {
   const step = currentStep();
-  const out = { step, stepIndex: state.step, players: state.players.size, me: { name: p.name, answers: p.answers, polls: p.polls, points: p.points, inform: p.inform || null, guesses: p.guesses || {} } };
+  const out = { step, stepIndex: state.step, players: state.players.size, me: { name: p.name, answers: p.answers, polls: p.polls, points: p.points, inform: p.inform || null, guesses: p.guesses || {}, lin: p.lin || {} } };
   if (step.type === "reveal") out.guess = guessStats(step.i);
   if (step.type === "inform") out.classmates = [...state.players.values()].filter((q) => q.pid !== p.pid).map((q) => q.name).sort((a, b) => a.localeCompare(b)).slice(0, 30);
   if (step.type === "informres") out.inform = informStats(false);
@@ -388,6 +388,20 @@ const server = http.createServer(async (req, res) => {
     player.inform = target ? { target, at: now() } : { refused: true, at: now() };
     broadcast();
     return json(res, 200, player.inform);
+  }
+
+  // what the player did when Secretary Lin called: signed the self-criticism or refused
+  if (p === "/api/lin") {
+    if (!player) return json(res, 404, {});
+    const key = String(body.key || "").slice(0, 40);
+    if (!/^[a-z]+:[a-z]+$/.test(key)) return json(res, 400, {});
+    player.lin = player.lin || {};
+    if (player.lin[key] === undefined) {
+      player.lin[key] = !!body.signed;
+      addLogs(player, [body.signed ? "Signed a self-criticism for the Party committee" : "Refused to sign a self-criticism — case escalated to police"], currentStep().type === "scene" ? SCENES[currentStep().i].clock : "—");
+    }
+    broadcast();
+    return json(res, 200, {});
   }
 
   if (p === "/api/guess") {

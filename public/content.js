@@ -456,11 +456,15 @@
     if (b === "delivery") file.inferences.push("Orders breakfast to the office → workplace address confirmed");
     if (rec.inform && rec.inform.target) file.inferences.push(`Reported a classmate (${rec.inform.target}) to the counsellor → reliable informant (信息员)`);
     if (rec.inform && rec.inform.refused) file.inferences.push("Refused to inform on classmates → uncooperative attitude");
+    const lin = rec.lin || {}, linVals = Object.values(lin);
+    if (linVals.includes(true)) file.inferences.push("Signed a self-criticism → admitted wrongdoing, on record");
+    if (linVals.includes(false)) { file.inferences.push("Refused to sign a self-criticism → defiant"); file.alerts.push("Refused self-criticism — escalated to local police station (喝茶)"); }
     if (d) file.inferences.push("Recurring skin condition → health status known to insurer and state");
 
     // key personnel (重点人员) — Ministry of Public Security categories reported by HRW
     if (hc === "zhengzhou") file.tags.push("KEY PERSON · petitioner");
     if (p === "sensitive") file.tags.push("KEY PERSON · undermines stability");
+    if (linVals.includes(false) && !file.tags.length) file.tags.push("KEY PERSON · uncooperative");
     const bl = rec.answers && rec.answers.train && rec.answers.train.blacklisted;
     if (bl) file.tags.push("COURT LIST · judgment defaulter");
 
