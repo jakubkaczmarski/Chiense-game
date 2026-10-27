@@ -210,6 +210,30 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 .kind{display:inline-block;font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:#eef2ef;color:#3b4a43}
 .k-quick{background:#fff3d6;color:#8a5a00}.k-private{background:#e3f1ff;color:#0b4f8a}.k-rebel{background:#fde3e1;color:#a3221a}.k-comfort{background:#efe6ff;color:#5a2fa0}
 .k-cheap{background:#e6f6ec;color:#1d6b3e}.k-safe{background:#eef2ef;color:#3b4a43}.k-voice{background:#ffe9d6;color:#9a4a00}.k-future{background:#e0f7f7;color:#0d6a6a}
+.linph{position:fixed;inset:0;z-index:80;background:radial-gradient(120% 70% at 50% 0%,#5a0a12 0%,#141010 55%);color:#fff;display:flex;flex-direction:column;align-items:center;padding:28px 22px;text-align:center;animation:fadein .3s ease}
+.linph .av{width:150px;height:150px;border-radius:50%;overflow:hidden;border:3px solid #ffd24a;margin-top:18px}
+.linph .av svg{width:100%;height:100%;display:block}
+.linph.ring .av{animation:ringp 1s infinite}
+.linph .who{font-size:26px;font-weight:800;margin-top:14px}.linph .who small{display:block;font:600 12px ui-monospace,Menlo,monospace;color:#ffd24a;letter-spacing:.06em;margin-top:4px}
+.linph .st{color:#bbb;font-size:14px;margin-top:6px}
+.linph .btns{display:flex;justify-content:space-around;width:100%;margin-top:auto;margin-bottom:30px}
+.linph .btns button{width:72px;height:72px;border-radius:50%;border:0;font-size:30px;color:#fff}
+.linph .acc{background:#2fbf71;animation:wig 1s infinite}.linph .dec{background:#e5484d}
+.linph .msgs{width:100%;margin-top:18px;text-align:left}
+.linph .bub{background:#2a2222;border-radius:16px 16px 16px 4px;padding:10px 14px;margin:8px 0;font-size:16px;line-height:1.4;opacity:0;animation:bubin .4s ease forwards}
+.linph .acts{width:100%;margin-top:auto;display:grid;gap:10px;opacity:0;animation:bubin .4s ease forwards}
+.linph .acts button{border:0;border-radius:14px;padding:14px;font-weight:800;font-size:16px}
+.linph .sign{background:#ffd24a;color:#3a1a00}.linph .hang{background:transparent;color:#ddd;border:1.5px solid #555!important}
+.linph .stamp{margin-top:24px;font:800 22px ui-monospace,Menlo,monospace;color:#ff6b61;border:3px solid #ff6b61;border-radius:8px;padding:8px 14px;transform:rotate(-6deg);animation:bubin .3s ease}
+.guess{background:#fff;border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 1px 0 var(--line);border:2px solid #ffd24a}
+.guess .gk{font:800 12px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#b07a00}
+.guess .gq{font-weight:800;font-size:18px;line-height:1.3;margin:6px 0 12px}
+.guess .gopts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.guess .gopts button{border:1.5px solid var(--line);background:#fffbea;border-radius:12px;padding:14px 6px;font-weight:800;font-size:15px}
+.guess .gopts button.on{background:#ffd24a;border-color:#e0b400}
+.guess .glock{font-size:16px}.guess .glock small{color:var(--muted)}
+.gres{background:#fffbea;border:2px solid #ffd24a;border-radius:16px;padding:12px 14px;margin:10px 0}
+.gres b{font-size:18px}
 </style>
 </head>
 <body>
@@ -221,6 +245,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 <script src="/content.js"></script>
 <script src="/facescan.js"></script>
 <script src="/story.js"></script>
+<script src="/guide.js"></script>
 <script>
 const { SCENES, POLLS, WHO, INFORM, DAILY, CASE, KINDS } = window.GAME;
 const app = document.getElementById("app");
@@ -417,8 +442,13 @@ function draw(d, step, scene) {
 
   if (step.type === "brief" || step.type === "debrief") {
     const sc = SCENES[step.i], b = step.type === "brief" ? sc.brief : sc.debrief;
-    app.innerHTML = idleCard({ kick: `${sc.clock} · ${step.type === "brief" ? "Coming up" : "What it means"}`, title: b.title, word: sc.word,
+    const g = step.type === "brief" && sc.guess, mine = g ? (d.me.guesses || {})[sc.id] : undefined;
+    const guessBox = g ? `<div class="guess"><div class="gk">🎯 Guess the number</div><div class="gq">${esc(g.q)}</div>
+      ${mine === undefined ? `<div class="gopts">${g.options.map((o, i) => `<button data-g="${i}">${esc(o)}</button>`).join("")}</div>`
+        : `<div class="glock">Locked in: <b>${esc(g.options[mine])}</b> ✓<br><small>The answer comes after you play.</small></div>`}</div>` : "";
+    app.innerHTML = guessBox + idleCard({ kick: `${sc.clock} · ${step.type === "brief" ? "Coming up" : "What it means"}`, title: b.title, word: sc.word,
       next: step.type === "brief" ? "Get ready — you'll choose on this phone next" : "Next moment of the day coming up" });
+    app.querySelectorAll("[data-g]").forEach((bt) => bt.onclick = async () => { app.querySelectorAll("[data-g]").forEach((x) => x.disabled = true); bt.classList.add("on"); await post("/api/guess", { pid, option: Number(bt.dataset.g) }); });
     return;
   }
 
@@ -444,18 +474,18 @@ function draw(d, step, scene) {
       if (a.blacklisted) {
         app.innerHTML = `<div class="banner red shake" style="font-size:17px">🚫 ${esc(scene.blacklist)}</div>
           ${receipt(["Ticket purchase refused — court defaulter list match", "Travel restriction linked to your ID"], ["railway"], "Your record", scene.id + ":bl", "direct")}
-          ${step.type === "reveal" ? explainCard(scene) : waitCard()}`;
+          ${step.type === "reveal" ? guessRes(scene, d) + explainCard(scene) : waitCard()}`;
         return;
       }
       const cls = opt.outcome === "consequence" ? "amber" : "green";
       app.innerHTML = `<div class="banner ${cls}">${opt.outcome === "consequence" ? "⚠️ " : "✓ "}${esc(opt.result)}</div>
         ${receipt(opt.logs, opt.to, "Data logged", scene.id + ":" + opt.id, opt.state)}
         ${!opt.logs.length ? `<div class="card fine">Nothing new logged this time.</div>` : ""}
-        ${step.type === "reveal" ? explainCard(scene) : waitCard()}`;
+        ${step.type === "reveal" ? guessRes(scene, d) + explainCard(scene) : waitCard()}`;
       return;
     }
     // reveal but never answered
-    app.innerHTML = `<div class="card"><div class="eyebrow">${esc(scene.title)}</div><p class="lead" style="margin-top:6px">You didn't decide in time. In real life, the day goes on anyway.</p></div>${explainCard(scene)}`;
+    app.innerHTML = `<div class="card"><div class="eyebrow">${esc(scene.title)}</div><p class="lead" style="margin-top:6px">You didn't decide in time. In real life, the day goes on anyway.</p></div>${guessRes(scene, d)}${explainCard(scene)}`;
     return;
   }
 
@@ -565,6 +595,12 @@ function idleCard({ kick, title, look, word, next }) {
     <div class="next"><span class="dots"><i></i><i></i><i></i></span> ${esc(next || "Your phone will buzz when it's your turn")}</div></div>`;
 }
 
+function guessRes(sc, d) {
+  const g = sc.guess; if (!g) return "";
+  const mine = (d.me.guesses || {})[sc.id], gs = d.guess;
+  const pctR = gs && gs.n ? Math.round(gs.right / gs.n * 100) : 0;
+  return `<div class="gres">🎯 <b>${esc(g.answer)}</b><br>${mine === undefined ? "You didn't guess." : mine === g.correct ? "✅ You guessed right!" : `❌ You guessed ${esc(g.options[mine])}.`}${gs && gs.n ? ` ${pctR}% of the room got it.` : ""}</div>`;
+}
 function waitCard() { return `<div class="waitanim"><div class="bar"><i></i></div><p class="fine center">Waiting for the others… results come on the big screen</p></div>`; }
 function endCard(m) {
   return `<div class="card center"><div class="eyebrow">Your day in Shanghai</div><div class="big" style="margin:8px 0">${m.points}</div><p class="lead">data points logged about you</p></div>
@@ -572,6 +608,28 @@ function endCard(m) {
 }
 
 let faceConsented = false;
+// Secretary Lin also rings the phone of whoever broke the rule
+const linShown = new Set();
+function linCall(key) {
+  if (!window.Guide || !Guide.warn(key) || linShown.has(key) || document.querySelector(".linph")) return;
+  linShown.add(key);
+  const me = (last && last.me && last.me.name) || "Comrade";
+  const el = document.createElement("div"); el.className = "linph ring";
+  const head = (st) => `<div class="av">${Guide.avatar}</div><div class="who">林书记 Secretary Lin<small>Communist Party Committee</small></div><div class="st">${st}</div>`;
+  const ringing = (st) => { el.className = "linph ring"; el.innerHTML = head(st) + `<div class="btns"><button class="dec" aria-label="Decline">✕</button><button class="acc" aria-label="Accept">✆</button></div>`;
+    el.querySelector(".acc").onclick = talk; el.querySelector(".dec").onclick = () => { stopRing(); el.innerHTML = head("Declined…"); setTimeout(() => { startRing(); ringing("Calling again…"); }, 1400); }; };
+  const talk = () => {
+    stopRing(); el.className = "linph";
+    const lines = ["Hello. This is Secretary Lin from the Communist Party committee.", `${me}: ${Guide.warn(key).en}`, "This is your official warning. You are invited to a learning camp (学习班 xuéxí bān) to study the correct thinking."];
+    el.innerHTML = head("On call · 林书记") + `<div class="msgs">${lines.map((l, i) => `<div class="bub" style="animation-delay:${0.4 + i * 1.6}s">${esc(l)}</div>`).join("")}</div>
+      <div class="acts" style="animation-delay:${0.4 + lines.length * 1.6}s"><button class="sign">✍ Sign the self-criticism</button><button class="hang">Hang up</button></div>`;
+    el.querySelector(".sign").onclick = () => end("SIGNED · 已签字", "Your self-criticism has been added to your file.");
+    el.querySelector(".hang").onclick = () => end("NOTED · 已记录", "Hanging up on a Party official has also been noted.");
+  };
+  const end = (stamp, txt) => { el.innerHTML = head("Call ended") + `<div class="stamp">${stamp}</div><p style="margin-top:18px;color:#ddd">${esc(txt)}</p>`; setTimeout(() => el.remove(), 2600); };
+  document.body.appendChild(el); startRing(); ringing("is calling you…");
+}
+
 async function choose(si, oid, btn) {
   btn.disabled = true;
   const opt = SCENES[si].options.find((o) => o.id === oid);
@@ -588,6 +646,7 @@ async function choose(si, oid, btn) {
   } else local.blockedMsg = null;
   if (r.outcome === "blacklisted") { flash(); if (navigator.vibrate) navigator.vibrate([200, 80, 200, 80, 400]); }
   render();
+  if (r.outcome && r.outcome !== "ok") { const k = SCENES[si].id + ":" + (r.outcome === "blacklisted" ? "blacklist" : oid); setTimeout(() => linCall(k), r.outcome === "blocked" ? 2500 : 2000); }
 }
 
 if (pid) connect(); else { connect(); }

@@ -122,7 +122,7 @@ const sentences = (t) => String(t || "").split(/(?<=[.!?])\s+(?=[A-Z“"(])/).fi
 // One summary per step: tldr (one line), say (short bullets), plus optional ask / angle / compare
 function summary(st) {
   const sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
-  if (st.type === "brief") return { tldr: sc.brief.tldr, say: sc.brief.points, ask: sc.brief.ask, extra: sentences(sc.brief.notes) };
+  if (st.type === "brief") return { tldr: sc.brief.tldr, say: sc.brief.points.concat(sc.guess ? [`📱 Phones: “${sc.guess.q}” — answer ${sc.guess.answer} (revealed on the results screen)`] : []), ask: sc.brief.ask, extra: sentences(sc.brief.notes) };
   if (st.type === "debrief") return { tldr: sc.debrief.tldr, say: sc.debrief.points, angle: sc.debrief.ir, pro: sc.debrief.pro, extra: sentences(sc.debrief.notes) };
   if (st.type === "camhist") return { tldr: CAMHIST.tldr, say: CAMHIST.say, angle: CAMHIST.callout, extra: CAMHIST.timeline.map(([y, t, zh, txt]) => `${y} · ${t} (${zh}): ${txt}`) };
   if (st.type === "daily") return { tldr: DAILY.tldr, say: DAILY.say, extra: DAILY.items.map((it) => `${it.n} ${it.label} — ${it.src}`) };
@@ -177,6 +177,8 @@ function render(d) {
   if (st.type === "scene" && d.stats) {
     live += `<div class="big">${d.stats.answered} / ${d.players}</div><div>decided${d.stats.blocked ? ` · <span style="color:var(--red)">${d.stats.blocked} blocked</span>` : ""}</div><div class="prog"><i style="width:${d.players ? Math.round(d.stats.answered / d.players * 100) : 0}%"></i></div>`;
     if (d.offenders && d.offenders.length) live += `<p style="margin:10px 0 0">☎ Secretary Lin will call: <b>${esc(d.offenders.map((o) => o.name).join(", "))}</b></p>`;
+  } else if (st.type === "brief" && d.guess) {
+    live += `<div class="big">${d.guess.n} / ${d.players}</div><div>guessed the number · ${d.guess.right} right so far</div>`;
   } else if (st.type === "inform" && d.inform) {
     live += `<div class="big">${d.inform.answered} / ${d.players}</div><div>answered · <span style="color:var(--red)">${d.inform.reported} reported</span> · ${d.inform.refused} refused</div>`;
   } else if (st.type === "poll") {

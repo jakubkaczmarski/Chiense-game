@@ -32,9 +32,13 @@ If the QR ever shows the wrong address, add `&join=https://your-public-url` to t
 
 Right after the Weibo scene, **Teacher Jan (扬老师), the class counsellor (辅导员)**, phones every player privately: the phone rings and vibrates, they accept, and she asks who in the group complained online, offering +50 points. Players tap a classmate's name or refuse. The projector only shows how many have answered; the next step reveals how many reported someone, how many refused, the most-reported names, and real facts about student informants (学生信息员) in Chinese universities. Reporting or refusing also appears in each player's file at the end.
 
+## Guess the number
+
+On every explain slide, phones get a quick “guess the number” question (e.g. *How many mobile phone subscriptions does China have?* 900 million / 1.3 billion / 1.8 billion). The projector shows how many have guessed; after the scene, the results screen and every phone reveal the answer and the share of the room that got it right.
+
 ## Warning calls: Secretary Lin
 
-**Secretary Lin (林书记 Lín shūjì)** is an original character: the local Communist Party secretary of your community (社区党委书记). He phones the projector only when someone does something against the rules: asking to skip the SIM face scan, reposting the protest video, walking in without a health code, going to Zhengzhou, buying from a ticket tout, or being on the court debtor list. A ringing call card slides in, he names the players who did it, and speaks in Mandarin while English captions appear. New offenders are batched into one call per offence, and calls queue one after another.
+**Secretary Lin (林书记 Lín shūjì)** is an original character: the local Communist Party secretary of your community (社区党委书记). He phones the projector — and the rule-breaker's own phone, where they can sign a self-criticism or hang up — only when someone does something against the rules: asking to skip the SIM face scan, reposting the protest video, walking in without a health code, going to Zhengzhou, buying from a ticket tout, or being on the court debtor list. A ringing call card slides in, he names the players who did it, and speaks in Mandarin while English captions appear. New offenders are batched into one call per offence, and calls queue one after another.
 
 - **Voice (ElevenLabs).** In Railway → *Variables*, set `ELEVENLABS_API_KEY`. Optional: `ELEVENLABS_VOICE_ID` (pick a native Mandarin male voice in the ElevenLabs voice library; the default is a generic premade voice) and `ELEVENLABS_MODEL` (default `eleven_multilingual_v2`). Only the host screen (with `?key=`) can request speech, and each line is cached in memory.
 - Without a key, the browser's built-in Chinese voice is used if the laptop has one; otherwise captions only.

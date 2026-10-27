@@ -294,6 +294,8 @@
   }
   window.Guide = {
     report,
+    avatar: AVATAR,                // used by the phone version of the call
+    warn: (k) => WARN[k] || null,
     hang() { hang(); busy = false; },
     reset() { seen.clear(); pending.clear(); },
     toggle() { enabled = !enabled; if (!enabled) { hang(); busy = false; pending.clear(); } return enabled; },
