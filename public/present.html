@@ -72,7 +72,7 @@ button:active{transform:scale(.98)}
 </main>
 <script src="/content.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, NOTES } = window.GAME;
+const { SCENES, POLLS, STEPS, NOTES, CASE } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -95,6 +95,7 @@ function label(st) {
     case "scene": return `${sc.clock} · Play: ${sc.title}`;
     case "reveal": return `${sc.clock} · Results: ${sc.title}`;
     case "debrief": return `${sc.clock} · Debrief: ${sc.debrief.title}`;
+    case "case": return "The case for it — safety & convenience";
     case "file": return "Finale — one person, one file";
     case "unique": return "Anonymity test";
     case "meta": return "Plot twist — the game tracked you";
@@ -116,7 +117,8 @@ const sentences = (t) => String(t || "").split(/(?<=[.!?])\s+(?=[A-Z“"(])/).fi
 function summary(st) {
   const sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
   if (st.type === "brief") return { tldr: sc.brief.tldr, say: sc.brief.points, ask: sc.brief.ask, extra: sentences(sc.brief.notes) };
-  if (st.type === "debrief") return { tldr: sc.debrief.tldr, say: sc.debrief.points, angle: sc.debrief.ir, extra: sentences(sc.debrief.notes) };
+  if (st.type === "debrief") return { tldr: sc.debrief.tldr, say: sc.debrief.points, angle: sc.debrief.ir, pro: sc.debrief.pro, extra: sentences(sc.debrief.notes) };
+  if (st.type === "case") return { tldr: CASE.tldr, say: [`Safe at night: ${CASE.safe.rows.map(([n, v]) => n + " " + v + "%").join(", ")} (${CASE.safe.src})`, ...CASE.tiles.map(([n, l, src]) => `${n} ${l} (${src})`)], ask: CASE.ask, cav: CASE.caveats, extra: sentences(CASE.notes) };
   if (st.type === "scene") {
     const bad = sc.options.filter((o) => o.outcome !== "ok");
     return { tldr: `${sc.title}: let them choose — don't explain yet.`,
@@ -137,10 +139,12 @@ function summaryHtml(m) {
     <div class="sec">Say</div><ul class="say">${m.say.map(li).join("")}</ul>
     ${m.ask ? `<div class="box ask"><span>Ask the room</span>${esc(m.ask)}</div>` : ""}
     ${m.angle ? `<div class="box ir"><span>Political-science angle</span>${esc(m.angle)}</div>` : ""}
+    ${m.pro ? `<div class="box" style="background:#0f1f17;border:1px solid #2c6b4a"><span>⚖ The case for it</span>${esc(m.pro)}</div>` : ""}
+    ${m.cav ? `<div class="box" style="background:#1f0f10;border:1px solid #6b2c2c"><span>But…</span>${m.cav.map(esc).join("<br>")}</div>` : ""}
     ${m.cmp ? `<div class="sec">Compare</div><div class="cmp"><div><b style="color:#ff8a7e">CHINA</b>${esc(m.cmp.cn)}</div><div><b style="color:#7cc4ff">EU / POLAND</b>${esc(m.cmp.eu)}</div><div><b style="color:#ffbf47">USA</b>${esc(m.cmp.us)}</div></div>` : ""}
     ${m.extra && m.extra.length ? `<div class="sec">If you have time</div><ul class="say">${m.extra.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}`;
 }
-$("printall").innerHTML = "<h2>A Day in Shanghai — presenter notes</h2>" + STEPS.map((st, k) => { const m = summary(st); return `<div class="pstep"><h3>${k + 1}. ${esc(label(st))}</h3><div class="t">${esc(m.tldr)}</div><ul>${m.say.map((x) => `<li>${m.raw ? x : esc(x)}</li>`).join("")}${m.ask ? `<li><b>Ask:</b> ${esc(m.ask)}</li>` : ""}${m.angle ? `<li><b>Angle:</b> ${esc(m.angle)}</li>` : ""}</ul></div>`; }).join("");
+$("printall").innerHTML = "<h2>A Day in Shanghai — presenter notes</h2>" + STEPS.map((st, k) => { const m = summary(st); return `<div class="pstep"><h3>${k + 1}. ${esc(label(st))}</h3><div class="t">${esc(m.tldr)}</div><ul>${m.say.map((x) => `<li>${m.raw ? x : esc(x)}</li>`).join("")}${m.ask ? `<li><b>Ask:</b> ${esc(m.ask)}</li>` : ""}${m.angle ? `<li><b>Angle:</b> ${esc(m.angle)}</li>` : ""}${m.pro ? `<li><b>Case for:</b> ${esc(m.pro)}</li>` : ""}${m.cav ? `<li><b>But:</b> ${esc(m.cav.join(" "))}</li>` : ""}</ul></div>`; }).join("");
 
 function render(d) {
   const st = d.step, sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;

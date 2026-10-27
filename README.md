@@ -83,6 +83,7 @@ Shown back to each player at the end: device and OS (from the user agent), brows
 - Police Cloud, 7 “key personnel” categories, hotel-stay alerts — Human Rights Watch (2017)
 - Grid management (≈1M grids, 4.5M grid workers in COVID) — Wikipedia summary of academic sources
 - QR/mobile wallets vs cash in Chinese shops (projector, breakfast scene): wallets 36% (2017), 48% (2019), 54% (2021), 66% (2023), 79% (2027 forecast) of in-store spending; cash 10.3% (2021), 7% (2023), 3% (2027 forecast) — Worldpay Global Payments Reports 2018–2024. Mobile-payment users 469M (2016) → 583M (2018); 75.4% of internet users aged 60+ use mobile payment (June 2024) — CNNIC
+- "The case for it" step: 94% feel safe walking alone at night in China (3rd in the world) vs 73% world, 71% US, 68% Poland — Gallup Global Safety Report 2025; homicide rate 0.5 per 100k (China 2020) vs Poland 0.68, US 5.8 — UNODC; 89% account ownership, 82% digital merchant payments (2021) — World Bank Global Findex; 95.5% satisfied with central government (2016) — Harvard Ash Center; ~80% of internet users approve of social credit systems (2018) — FU Berlin (Kostka); Mao Yin reunited after 32 years via facial recognition (2020) — AP/ABC
 - Core Socialist Values slogans on the projector banner are the official 12 values
 - Face-scan medical insurance payment, nationwide in ~3 years — NHSA via english.gov.cn (Jan 2026)
 - TikTok fined €530m for EU data transfers to China (May 2025) — Irish DPC

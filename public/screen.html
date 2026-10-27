@@ -111,6 +111,33 @@ aside h3{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(-
 .enter .tpoints li{animation:rise .7s cubic-bezier(.2,.8,.2,1) both calc(.25s + var(--j) * .35s)}
 .enter .ask,.enter .irbox{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 1.4s}
 .enter .talkR > *{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .4s}
+.probox{background:#0f1f17;border:1px solid #2c6b4a;border-radius:14px;padding:14px 18px;font-size:19px;line-height:1.4;color:#d8f3e4}
+.probox span{display:block;font-family:var(--mono);font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--green);margin-bottom:6px}
+.enter .probox{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 1.7s}
+.case h1{font-size:54px;margin:4px 0 18px}
+.casegrid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.safechart{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 24px}
+.safechart .k{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.srow{display:grid;grid-template-columns:110px 1fr 90px;align-items:center;gap:14px;margin:12px 0;font-size:24px}
+.srow .sbar{height:34px;background:#1d2427;border-radius:8px;overflow:hidden}
+.srow .sbar i{display:block;height:100%;background:#5f7a8a;border-radius:8px;transform-origin:left}
+.srow.cn .sbar i{background:linear-gradient(90deg,var(--cred),var(--gold))}
+.srow.cn .sn,.srow.cn b{color:var(--gold)}
+.srow b{font:800 30px var(--mono);text-align:right}
+.ssrc{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:10px}
+.ctiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ct{background:#0f1f17;border:1px solid #234d38;border-left:5px solid var(--green);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.ct b{font:800 40px/1 var(--mono);color:var(--green)}
+.ct span{font-size:17px;line-height:1.35}
+.ct em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.cavrow{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;margin-top:20px}
+.cav{background:#1f0f10;border:1px solid #6b2c2c;border-radius:14px;padding:14px 20px}
+.cav span{font-family:var(--mono);font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--red)}
+.cav ul{margin:6px 0 0;padding-left:20px;font-size:19px;line-height:1.45}
+.cavrow .ask{margin-top:0;font-size:22px}
+.enter .srow .sbar i{animation:grow 1.2s cubic-bezier(.2,.8,.2,1) both calc(.4s + var(--j) * .2s)}
+.enter .ct{animation:rise .7s cubic-bezier(.2,.8,.2,1) both calc(.9s + var(--j) * .2s)}
+.enter .cavrow{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 1.9s}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -238,7 +265,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <script src="/music.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { SCENES, POLLS, STEPS } = window.GAME;
+const { SCENES, POLLS, STEPS, CASE } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const JOIN = (new URLSearchParams(location.search).get("join") || location.origin).replace(/\/$/, "") + "/";
 const $ = (id) => document.getElementById(id);
@@ -313,7 +340,7 @@ const SCENE_TRACK = { sim: "morning", breakfast: "morning", metro: "commute", po
 function trackFor(step) {
   if (["scene", "reveal", "brief", "debrief"].includes(step.type)) return SCENE_TRACK[SCENES[step.i].id] || "welcome";
   if (["file", "unique", "meta"].includes(step.type)) return "tense";
-  if (step.type === "poll" || step.type === "pollres") return "reflect";
+  if (step.type === "poll" || step.type === "pollres" || step.type === "case") return "reflect";
   return "welcome";
 }
 
@@ -416,8 +443,25 @@ function drawStage() {
         <ol class="tpoints">${b.points.map((x, j) => `<li style="--j:${j}"><span class="tn">${j + 1}</span><span>${esc(x)}</span></li>`).join("")}</ol>
         ${step.type === "brief" ? `<div class="ask"><span>Ask the room</span>${esc(b.ask)}</div>` : `<div class="irbox"><span>☆ Political-science angle</span>${esc(b.ir)}</div>`}
       </div><div class="talkR">${wordCard}
-        <div class="upnext"><span>Up next</span>${step.type === "brief" ? `<b>${esc(scene.title)}</b> — choose on your phone 📱` : nextScene ? `<b>${esc(nextScene.clock)} · ${esc(nextScene.brief.title)}</b>` : `<b>One person, one file</b> — look at your phone`}</div>
+        ${step.type === "debrief" && b.pro ? `<div class="probox"><span>⚖ The case for it</span>${esc(b.pro)}</div>` : ""}
+        <div class="upnext"><span>Up next</span>${step.type === "brief" ? `<b>${esc(scene.title)}</b> — choose on your phone 📱` : nextScene ? `<b>${esc(nextScene.clock)} · ${esc(nextScene.brief.title)}</b>` : `<b>The case for it</b> — safety &amp; convenience`}</div>
       </div></div></div>`;
+    return;
+  }
+
+  if (step.type === "case") {
+    const max = 100;
+    S.innerHTML = `<div class="talk case">
+      <div class="eyebrow">⚖ The other side · third-party data</div>
+      <h1>The case for it: <span style="color:var(--green)">safety</span> &amp; <span style="color:var(--gold)">convenience</span></h1>
+      <div class="casegrid">
+        <div class="safechart"><div class="k">${esc(CASE.safe.title)}</div>
+          ${CASE.safe.rows.map(([n, v], j) => `<div class="srow ${n === "China" ? "cn" : ""}" style="--j:${j}"><span class="sn">${esc(n)}</span><span class="sbar"><i style="width:${v / max * 100}%"></i></span><b><span data-count="${v}">${v}</span>%</b></div>`).join("")}
+          <div class="ssrc">${esc(CASE.safe.src)}</div></div>
+        <div class="ctiles">${CASE.tiles.map(([n, l, src], j) => `<div class="ct" style="--j:${j}"><b>${esc(n)}</b><span>${esc(l)}</span><em>${esc(src)}</em></div>`).join("")}</div>
+      </div>
+      <div class="cavrow"><div class="cav"><span>But…</span><ul>${CASE.caveats.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>
+        <div class="ask"><span>Ask the room</span>${esc(CASE.ask)}</div></div></div>`;
     return;
   }
 

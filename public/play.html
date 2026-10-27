@@ -293,6 +293,12 @@ function draw(d, step, scene) {
     return;
   }
 
+  if (step.type === "case") {
+    app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">The other side</p><h2 style="margin:6px 0 10px">The case for it</h2>
+      <p class="lead">👀 Eyes on the big screen: why many people accept this system.</p><p class="fine" style="margin-top:12px">Your file is next.</p></div>`;
+    return;
+  }
+
   if (step.type === "brief" || step.type === "debrief") {
     const sc = SCENES[step.i], b = step.type === "brief" ? sc.brief : sc.debrief;
     app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">${esc(sc.clock)} · ${step.type === "brief" ? "Coming up" : "What it means"}</p>
