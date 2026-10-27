@@ -100,6 +100,11 @@ aside h3{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(-
 .enter .pb{animation:pgrow 1.1s cubic-bezier(.2,.8,.2,1) both calc(.7s + var(--d))}
 .enter .pb.c{animation-delay:calc(1.1s + var(--d))}
 @keyframes pgrow{from{transform:scaleY(0)}}
+#kickoff{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(200,16,46,.92),rgba(80,4,12,.96));pointer-events:none;animation:ko 2.6s ease both}
+#kickoff .ko-zh{font:900 220px/1 "PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:var(--gold);text-shadow:0 0 60px rgba(255,210,74,.6);animation:kozoom 2.6s cubic-bezier(.2,.8,.2,1) both}
+#kickoff .ko-en{font:600 28px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:#ffe9b8;margin-top:18px}
+@keyframes ko{0%{opacity:0}12%{opacity:1}75%{opacity:1}100%{opacity:0}}
+@keyframes kozoom{0%{transform:scale(2.4);opacity:0}25%{transform:scale(1);opacity:1}100%{transform:scale(.92)}}
 .enter .word{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .3s}
 /* ---- motion ---- */
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
@@ -286,10 +291,22 @@ function statsHtml(st) {
     <div class="ps-src">${esc(st.src)}</div></div>`;
 }
 
+// start jingle: plays once when the host moves from the lobby to the first scene
+const jingle = new Audio("/start.mp3"); jingle.preload = "auto"; jingle.volume = 0.9;
+function startJingle() {
+  try { jingle.currentTime = 0; const pr = jingle.play(); if (pr) pr.catch(() => {}); } catch (e) {}
+  if (window.Music && Music.isOn()) Music.duck(9000);
+  const o = document.createElement("div"); o.id = "kickoff";
+  o.innerHTML = `<div class="ko-zh">开始</div><div class="ko-en">kāishǐ · The day begins</div>`;
+  document.body.appendChild(o); setTimeout(() => o.remove(), 2600);
+}
+
 function render() {
   const d = last; if (!d) return;
   const key = d.step.type + ":" + (d.step.i ?? "");
-  const entering = key !== lastKey; lastKey = key;
+  const entering = key !== lastKey;
+  if (entering && lastKey === "lobby:" && d.step.type === "scene" && d.step.i === 0) startJingle();
+  lastKey = key;
   if (entering && window.Music) Music.setMood(trackFor(d.step));
   drawStage();
   syncCams(d);

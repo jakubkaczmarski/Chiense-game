@@ -233,6 +233,7 @@ const server = http.createServer(async (req, res) => {
     if (p === "/story.js") return serveFile(res, "story.js");
     if (p === "/music.js") return serveFile(res, "music.js");
     if (p === "/music.mp3") return serveFile(res, "music.mp3");
+    if (p === "/start.mp3") return serveFile(res, "start.mp3");
     if (/^\/(mediapipe|models)\/[\w./-]+$/.test(p) && !p.includes("..")) return serveFile(res, p.slice(1));
     if (p === "/events") {
       res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-store", Connection: "keep-alive", "X-Accel-Buffering": "no" });

@@ -100,6 +100,11 @@
     if (audioEl) audioEl.pause();
     if (ctx) stopDrone();
   }
+  // lower the background music for a few seconds (e.g. while the start jingle plays)
+  function duck(ms) {
+    if (audioEl) { const v = audioEl.volume; audioEl.volume = 0.1; setTimeout(() => (audioEl.volume = v), ms); }
+    if (master && ctx) { const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setTargetAtTime(0.06, t, 0.15); master.gain.setTargetAtTime(0.55, t + ms / 1000, 0.8); }
+  }
   let onChange = null;
   function setMood(m) {
     if (m === "calm") m = "welcome";
@@ -108,6 +113,6 @@
     if (onChange) onChange(TRACKS[mood].name);
   }
   const next = () => setMood(ORDER[(ORDER.indexOf(mood) + 1) % ORDER.length]);
-  window.Music = { start, stop, toggle: () => (on ? (stop(), false) : start()), setMood, next, isOn: () => on,
+  window.Music = { start, stop, toggle: () => (on ? (stop(), false) : start()), setMood, next, duck, isOn: () => on,
     track: () => TRACKS[mood].name, onChange: (fn) => (onChange = fn) };
 })();

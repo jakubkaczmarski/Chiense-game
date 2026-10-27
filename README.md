@@ -32,6 +32,8 @@ If the QR ever shows the wrong address, add `&join=https://your-public-url` to t
 
 Press **♪ Music** (or **M**) on the projector page for original generative background music: guzheng-style plucked strings in the Chinese pentatonic scale. The music switches with the day — each scene has its own track (Morning market, Rush hour, Street, Waiting room, Under watch, Night, Reflection), with a short glissando at each change; the button shows the current track. Press **N** to skip to the next track by hand. To use your own licensed track instead, put it at `public/music.mp3`.
 
+When you press Next from the lobby to the first scene, the projector plays a start jingle (`public/start.mp3`) with a full-screen 开始 *kāishǐ* ("begin") flash, and ducks the background music while it plays. Replace or delete `public/start.mp3` to change or silence it.
+
 ## Presenting
 
 - **→ / Space / PageDown**: next step (works with a presentation clicker). **← / PageUp**: back. **h**: hide controls.
