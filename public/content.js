@@ -349,7 +349,7 @@
   ];
 
   // Linear show order controlled by the presenter.
-  const STEPS = [{ type: "lobby" }, { type: "intro" }];
+  const STEPS = [{ type: "lobby" }, { type: "intro" }, { type: "daily" }];
   // per scene: explain the topic (brief) → play (scene) → results (reveal) → what it means (debrief)
   SCENES.forEach((s, i) => {
     STEPS.push({ type: "brief", i }); STEPS.push({ type: "scene", i }); STEPS.push({ type: "reveal", i }); STEPS.push({ type: "debrief", i });
@@ -512,6 +512,19 @@
     say: ["Privacy isn't about hiding — it's about control: who knows what about you", "The idea is young: from “the right to be let alone” (1890) to GDPR (2018)", "Three models today: EU rights, US market, China state security", "Today you'll feel the Chinese model from the inside"]
   };
 
+  // "Every day in China": per-day figures derived from official / company annual totals
+  const DAILY = {
+    tldr: "Every second, China's 1.4 billion people generate a mountain of data.",
+    items: [
+      { n: "112 million TB", per: 1.3e3, unit: "TB of data", label: "of data generated per day (41.06 zettabytes in 2024 ÷ 366)", src: "National Data Administration via Xinhua (2025)" },
+      { n: "3.4 billion", per: 3.4e9 / 86400, unit: "online payments", label: "online payments a day through Alipay, WeChat Pay & co. (306bn in Q1 2025 ÷ 90)", src: "People's Bank of China (2025)" },
+      { n: "45 billion", per: 45e9 / 86400, unit: "WeChat messages", label: "WeChat messages a day — plus 410 million calls (2018)", src: "Tencent via Caixin (2019)" },
+      { n: "477 million", per: 174.5e9 / 366 / 86400, unit: "parcels", label: "parcels a day — each with a name, phone number and address (174.5bn in 2024)", src: "State Post Bureau via Jiemian (2025)" },
+      { n: "12.6 million", per: 4.59e9 / 365 / 86400, unit: "rail trips", label: "real-name train trips a day (4.59bn in 2025)", src: "gov.cn (2026)" }
+    ],
+    say: ["These are per-day averages from official annual totals", "Watch the counters — they tick while we talk", "Every one of these records is tied to a real name"]
+  };
+
   // "The case for it": third-party figures on safety, inclusion and public support, with caveats
   const CASE = {
     tldr: "Why many people accept it: it feels safe and it works.",
@@ -574,7 +587,7 @@
   };
 
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, INTRO, buildFile, FILE_WORD };
+  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, INTRO, DAILY, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);

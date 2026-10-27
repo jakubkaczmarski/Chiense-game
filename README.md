@@ -49,7 +49,7 @@ When you press Next from the lobby to the first scene, the projector plays a sta
 ## Presenting
 
 - **→ / Space / PageDown**: next step (works with a presentation clicker). **← / PageUp**: back. **h**: hide controls.
-- The order: lobby → **intro: what is privacy?** (definition, 1890–2021 timeline, EU / US / China models) → 8 × (**explain → play → results → debrief**) → “One person, one file” finale → anonymity test → meta reveal → 3 × (poll → results) → end.
+- The order: lobby → **intro: what is privacy?** (definition, 1890–2021 timeline, EU / US / China models) → **every day in China** (live-ticking data counters) → 8 × (**explain → play → results → debrief**) → “One person, one file” finale → anonymity test → meta reveal → 3 × (poll → results) → end.
 - **Explain** and **debrief** steps are presenter slides inside the game: three key points, a question to ask the room (before) or a political-science angle (after). Phones show “eyes on the big screen” during these.
 - **Presenter console:** open `/present?key=<HOST_KEY>` on your laptop screen (projector shows `/screen?key=…`). It shows your speaker notes for the current step, what's next, live answer counts, who Secretary Lin is about to call, a timer, and Back/Next buttons. Click any line in the run of show to jump there. Arrow keys work in both windows.
 - The file finale merges each player’s choices and real device data into a police-style profile with system inferences, “key person” tags (petitioner, undermines stability, court defaulter) and Police Cloud–style alerts; the projector shows everyone’s files as a wall.
@@ -89,6 +89,8 @@ Shown back to each player at the end: device and OS (from the user agent), brows
 - QR/mobile wallets vs cash in Chinese shops (projector, breakfast scene): wallets 36% (2017), 48% (2019), 54% (2021), 66% (2023), 79% (2027 forecast) of in-store spending; cash 10.3% (2021), 7% (2023), 3% (2027 forecast) — Worldpay Global Payments Reports 2018–2024. Mobile-payment users 469M (2016) → 583M (2018); 75.4% of internet users aged 60+ use mobile payment (June 2024) — CNNIC
 - "The case for it" step: 94% feel safe walking alone at night in China (3rd in the world) vs 73% world, 71% US, 68% Poland — Gallup Global Safety Report 2025; homicide rate 0.5 per 100k (China 2020) vs Poland 0.68, US 5.8 — UNODC; 89% account ownership, 82% digital merchant payments (2021) — World Bank Global Findex; 95.5% satisfied with central government (2016) — Harvard Ash Center; ~80% of internet users approve of social credit systems (2018) — FU Berlin (Kostka); Mao Yin reunited after 32 years via facial recognition (2020) — AP/ABC
 - Side quest: university student-informant teams since 2008, ¥20–200 per report, lecturers disciplined in 2018 after student reports — China Media Project (2018); up to ≈$15,000 for national-security tips (2022 MSS rules) — China Digital Times
+- Every day in China: 41.06 ZB of data in 2024 — National Data Administration via Xinhua (2025); 306bn non-bank online payments in Q1 2025 — PBOC; 45bn WeChat messages and 410M calls a day (2018) — Tencent via Caixin; 174.5bn parcels in 2024 — State Post Bureau via Jiemian
+- Anonymity / fingerprinting facts: Sweeney (2000); de Montjoye et al., Scientific Reports (2013); Eckersley, EFF Panopticlick (2010)
 - Core Socialist Values slogans on the projector banner are the official 12 values
 - Face-scan medical insurance payment, nationwide in ~3 years — NHSA via english.gov.cn (Jan 2026)
 - TikTok fined €530m for EU data transfers to China (May 2025) — Irish DPC

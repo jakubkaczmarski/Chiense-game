@@ -328,6 +328,11 @@ function draw(d, step, scene) {
     return;
   }
 
+  if (step.type === "daily") {
+    app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">Before we start</p><h2 style="margin:6px 0 10px">Every day in China…</h2><p class="lead">👀 Eyes on the big screen — watch the counters.</p></div>`;
+    return;
+  }
+
   if (step.type === "intro") {
     app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">Before we start</p><h2 style="margin:6px 0 10px">What is privacy?</h2>
       <p class="lead">👀 Eyes on the big screen.</p><p style="margin-top:14px"><span style="font-size:34px;color:#c8102e;font-weight:800">隐私</span><br><span class="fine">yǐnsī · privacy</span></p></div>`;

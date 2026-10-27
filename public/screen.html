@@ -178,6 +178,31 @@ i.rep{background:var(--red)}i.ref{background:var(--green)}
 .enter .pdef{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .5s}
 .enter .tl{animation:rise .6s cubic-bezier(.2,.8,.2,1) both calc(.9s + var(--j) * .18s)}
 .enter .md{animation:rise .6s cubic-bezier(.2,.8,.2,1) both calc(1.2s + var(--j) * .2s)}
+.daily h1{font-size:60px;margin:4px 0 22px}
+.dgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.dt{grid-column:span 2;background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--gold);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.dt0{grid-column:span 6;border-top-color:var(--red);flex-direction:row;align-items:center;gap:30px}
+.dt0 b{font-size:64px!important;color:var(--red)!important;white-space:nowrap}
+.dt0 span{flex:1;min-width:300px;font-size:22px!important}
+.dt0 i{position:absolute;right:20px;bottom:10px}
+.dt0{position:relative}
+.dt1,.dt2{grid-column:span 3}.dt3,.dt4{grid-column:span 3}
+.dt b{font:800 44px/1 var(--mono);color:var(--gold)}
+.dt span{font-size:18px;line-height:1.35;color:#dfe5e2}
+.dtick{font-family:var(--mono);font-size:15px;color:var(--muted);margin-top:auto}
+.dtick em{display:block;font-style:normal;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.dtick strong{font-size:28px;color:#fff;font-variant-numeric:tabular-nums}
+.dt0 .dtick{margin:0;min-width:360px}
+.dt0 .dtick strong{font-size:40px;color:var(--red)}
+.dt i{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.dnote{margin-top:16px;font-size:18px;color:var(--muted)}
+.enter .dt{animation:rise .7s cubic-bezier(.2,.8,.2,1) both calc(.3s + var(--j) * .2s)}
+.factrow{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:auto;padding-top:20px}
+.fr{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--blue);border-radius:12px;padding:14px 18px;display:flex;flex-direction:column;gap:6px}
+.fr b{font:800 34px/1 var(--mono);color:var(--blue)}
+.fr span{font-size:18px;line-height:1.35}
+.fr em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.enter .fr{animation:rise .7s cubic-bezier(.2,.8,.2,1) both calc(1s + var(--j) * .2s)}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -305,7 +330,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <script src="/music.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, CASE, INFORM, INTRO } = window.GAME;
+const { SCENES, POLLS, STEPS, CASE, INFORM, INTRO, DAILY } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const JOIN = (new URLSearchParams(location.search).get("join") || location.origin).replace(/\/$/, "") + "/";
 const $ = (id) => document.getElementById(id);
@@ -392,6 +417,20 @@ function numsHtml(n) {
     <div class="nsrc">${esc(n.src)}</div></div>`;
 }
 
+// research facts that fill the "show & discuss" screens
+const SHOWFACTS = {
+  unique: [["87%", "of Americans can be identified by ZIP code + birth date + sex alone", "Sweeney (2000)"],
+    ["4 points", "of time and place were enough to single out 95% of 1.5 million phone users", "de Montjoye et al., Scientific Reports (2013)"],
+    ["Still personal", "GDPR treats pseudonymised data as personal data — “anonymised” rarely is", "GDPR Recital 26"]],
+  meta: [["83.6%", "of browsers had a unique fingerprint in the EFF's Panopticlick study", "Eckersley, EFF (2010)"],
+    ["Consent", "in the EU, fingerprinting a device for tracking needs your consent", "ePrivacy Directive Art. 5(3), EDPB (2023)"],
+    ["0 banners", "this game asked for none of it — like most apps in China", ""]],
+  end: [["Access", "EU: ask any company for a copy of your data — free, within one month", "GDPR Art. 15"],
+    ["Erasure", "EU: demand deletion when there's no reason to keep it", "GDPR Art. 17"],
+    ["China", "PIPL (2021) gives similar rights against companies — state organs process data for their “statutory duties”", "PIPL Arts. 13, 34, 45, 47"]]
+};
+const factRow = (type) => SHOWFACTS[type] ? `<div class="factrow">${SHOWFACTS[type].map(([n, l, src], j) => `<div class="fr" style="--j:${j}"><b>${esc(n)}</b><span>${esc(l)}</span>${src ? `<em>${esc(src)}</em>` : ""}</div>`).join("")}</div>` : "";
+
 function statsHtml(st) {
   const bars = st.years.map((y, i) => {
     const w = st.wallet[i], c = st.cash[i], fc = y.includes("*");
@@ -417,11 +456,20 @@ function startJingle() {
   document.body.appendChild(o); setTimeout(() => o.remove(), 2600);
 }
 
+// live counters on the "Every day in China" step
+let dailyStart = 0;
+setInterval(() => {
+  const els = document.querySelectorAll(".tick[data-per]"); if (!els.length) return;
+  const t = (performance.now() - dailyStart) / 1000;
+  els.forEach((el) => { el.textContent = Math.floor(Number(el.dataset.per) * t).toLocaleString("en-US"); });
+}, 80);
+
 function render() {
   const d = last; if (!d) return;
   const key = d.step.type + ":" + (d.step.i ?? "");
   const entering = key !== lastKey, prevKey = lastKey;
   const kickoff = entering && prevKey === "lobby:" && d.step.type !== "lobby"; // start jingle when leaving the lobby
+  if (entering && d.step.type === "daily") dailyStart = performance.now();
   if (kickoff) startJingle();
   lastKey = key;
   if (entering && window.Music) Music.setMood(trackFor(d.step));
@@ -459,7 +507,7 @@ function drawStage() {
   $("stepLbl").textContent = `${d.stepIndex + 1}/${d.stepCount} · ${step.type}`;
   $("qrmini").style.display = step.type === "lobby" ? "none" : "flex";
   const scene = ["scene", "reveal", "brief", "debrief"].includes(step.type) ? SCENES[step.i] : null;
-  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" || step.type === "intro" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : "23:59";
+  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" || step.type === "intro" || step.type === "daily" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : "23:59";
 
   // feed
   $("feed").innerHTML = d.feed.map((f) => { const isNew = !seenFeed.has(f.id); seenFeed.add(f.id); return `<div class="fl${isNew ? " new" : ""}"><span class="t">${esc(f.t)}</span> <span class="n">${esc(f.name)}</span><br>${esc(f.text)}</div>`; }).join("");
@@ -487,6 +535,15 @@ function drawStage() {
         ${step.type === "debrief" && b.pro ? `<div class="probox"><span>⚖ The case for it</span>${esc(b.pro)}</div>` : ""}
         <div class="upnext"><span>Up next</span>${step.type === "brief" ? `<b>${esc(scene.title)}</b> — choose on your phone 📱` : nextScene ? `<b>${esc(nextScene.clock)} · ${esc(nextScene.brief.title)}</b>` : `<b>The case for it</b> — safety &amp; convenience`}</div>
       </div></div></div>`;
+    return;
+  }
+
+  if (step.type === "daily") {
+    S.innerHTML = `<div class="talk daily"><div class="eyebrow">Before we start · scale</div>
+      <h1>Every day in <span style="color:var(--red)">China</span>…</h1>
+      <div class="dgrid">${DAILY.items.map((it, j) => `<div class="dt dt${j}" style="--j:${j}"><b>${esc(it.n)}</b><span>${esc(it.label)}</span>
+        <div class="dtick"><em>since this slide opened</em><strong class="tick" data-per="${it.per}">0</strong> ${esc(it.unit)}</div><i>${esc(it.src)}</i></div>`).join("")}</div>
+      <p class="dnote">Per-day figures are annual totals divided by days. Every one of these records is tied to a real name.</p></div>`;
     return;
   }
 
@@ -605,7 +662,7 @@ function drawStage() {
         <div class="tile"><div class="k">Phone type + language + 3 choices</div><div class="v" style="color:var(--red)"><span data-count="${u.smallUnique}">0</span> <span style="font-size:30px;color:var(--muted)">/ ${u.total}</span></div><div class="s">of you are uniquely identifiable in this room (${pct(u.smallUnique, u.total)}%)</div></div>
         <div class="tile"><div class="k">Phone type + language + the whole day</div><div class="v" style="color:var(--red)"><span data-count="${u.fullUnique}">0</span> <span style="font-size:30px;color:var(--muted)">/ ${u.total}</span></div><div class="s">uniquely identifiable (${pct(u.fullUnique, u.total)}%)</div></div>
       </div>
-      <div class="note">No names used. In a city of 25 million there are more people per profile — but real trackers have far more than 9 data points. Check your phone to see if you're unique.</div>`;
+      <div class="note">No names used. In a city of 25 million there are more people per profile — but real trackers have far more than 9 data points. Check your phone to see if you're unique.</div>${factRow("unique")}`;
     return;
   }
 
@@ -621,7 +678,7 @@ function drawStage() {
           ${m.battery != null && !m.faceScans ? `<div class="tile"><div class="k">Average battery (where readable)</div><div class="v"><span data-count="${m.battery}">0</span>%</div><div class="s">${m.lowBattery} of you are under 20%</div></div>` : ""}
         </div>
       </div>
-      <div class="note">No cookie banner, no permission prompt. Any website gets your device, browser, language, time zone, screen and IP for free — and can measure how you behave.</div>`;
+      <div class="note">No cookie banner, no permission prompt. Any website gets your device, browser, language, time zone, screen and IP for free — and can measure how you behave.</div>${factRow("meta")}`;
     return;
   }
 
@@ -639,7 +696,7 @@ function drawStage() {
   if (step.type === "end") {
     S.innerHTML = `<div class="eyebrow">End of the day</div><h1><span data-count="${d.totalPoints}">0</span> data points</h1>
       <p class="lead">collected about ${d.players} people in one simulated day. In China, much of it would flow to companies — and the state can reach it. In the EU, you can demand to see it and delete it.</p>
-      <div class="note" style="font-size:24px">Try it: tap <b>“Delete my data now”</b> on your phone — and watch the counter.</div>`;
+      <div class="note" style="font-size:24px">Try it: tap <b>“Delete my data now”</b> on your phone — and watch the counter.</div>${factRow("end")}`;
   }
 }
 </script>
