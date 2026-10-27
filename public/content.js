@@ -9,6 +9,7 @@
   const SCENES = [
     {
       id: "sim",
+      nums: {"chain": ["Phone number", "+", "ID card", "+", "Your face", "=", "Train ticket", "WeChat / Alipay", "Hospital", "Hotel"], "items": [["1.83bn", "mobile phone subscriptions — 130 per 100 people (2025)"], ["1 Dec 2019", "new SIM cards need a face scan matched to your ID"], ["Apr 2020", "paper tickets gone on all high-speed rail — your ID + face is the ticket"], ["1.44bn", "people use WeChat every month — signed up with this number (2026)"]], "src": "MIIT 2025 bulletin via China News Service (2026); China Daily (2019, 2020); Tencent Q2 2026 results."},
       word: { zh: "实名制", py: "shímíngzhì", en: "real-name system", note: "Every phone number, account and ticket is tied to your real ID." },
       clock: "07:30",
       cams: ["kiosk"],
@@ -238,6 +239,7 @@
     },
     {
       id: "train",
+      nums: {"items": [["4.59bn", "rail passenger trips in 2025 — every ticket in a real name"], ["3 sec", "to pass a face-check gate: ID card + face, no ticket (2018)"], ["5.61M", "rail trips blocked for people on the court debtor list (to 2019)"], ["502", "banned debtors caught using passports to dodge the ban — 8,000+ trips (2025)"]], "src": "gov.cn (2026); National Business Daily (2018); China Daily (2019); Guangming Daily (2025)."},
       word: { zh: "失信被执行人", py: "shīxìn bèi zhíxíng rén", en: "“person who broke trust”", note: "The official term for someone on the court list of judgment defaulters." },
       clock: "18:30",
       cams: ["gate"],
@@ -273,6 +275,7 @@
     },
     {
       id: "night",
+      nums: {"items": [["Every guest", "hotels must check your ID and send it to local police"], ["130M", "Huazhu hotel guests’ data leaked — ~500M records (2018)"], ["1bn", "people in a Shanghai police database offered for 10 bitcoin (2022, unverified claim)"], ["Jun 2025", "nationwide: hotels can’t force a face scan if you show ID"]], "src": "Hotel Public Security Measures (gov.cn); Sixth Tone (2024); Caixin (2018); Reuters (2022); China Daily HK (2025)."},
       word: { zh: "登记", py: "dēngjì", en: "to register", note: "Hotels must 登记 every guest’s ID with the police." },
       clock: "22:30",
       cams: ["gate:compound"],
