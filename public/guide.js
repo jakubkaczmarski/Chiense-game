@@ -271,8 +271,10 @@
     busy = true;
     const w = WARN[k];
     call({
-      en: "Hello. This is Secretary Lin from the Communist Party committee. " + listNames(names) + ": " + w.en,
-      zh: "喂，你好。我是中共社区委员会的林书记。" + listNamesZh(names) + "，" + w.zh(names)
+      en: "Hello. This is Secretary Lin from the Communist Party committee. " + listNames(names) + ": " + w.en +
+        " This is your official warning. You are invited to a learning camp — xuéxí bān — to study the correct thinking.",
+      zh: "喂，你好。我是中共社区委员会的林书记。" + listNamesZh(names) + "，" + w.zh(names) +
+        "这是对" + (names.length === 1 ? "你" : "你们") + "的正式警告。请" + (names.length === 1 ? "你" : "你们") + "参加学习班，好好学习正确的思想。"
     }, () => { busy = false; flush(); });
   }
   function report(sceneId, offenders) {
