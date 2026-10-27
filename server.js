@@ -239,6 +239,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET") {
     if (p === "/" || p === "/play") return serveFile(res, "play.html");
     if (p === "/screen") return serveFile(res, "screen.html");
+    if (p === "/present") return serveFile(res, "present.html");
     if (p === "/content.js") return serveFile(res, "content.js");
     if (p === "/qr.js") return serveFile(res, "qr.js");
     if (p === "/cams.js") return serveFile(res, "cams.js");
@@ -395,6 +396,7 @@ server.listen(PORT, () => {
   console.log(`\n  A Day in Shanghai is running`);
   console.log(`  Phones join at:      http://localhost:${PORT}/`);
   console.log(`  Projector (control): http://localhost:${PORT}/screen?key=${HOST_KEY}`);
+  console.log(`  Presenter console:   http://localhost:${PORT}/present?key=${HOST_KEY}`);
   console.log(`  Host key: ${HOST_KEY}  (set HOST_KEY=... to choose your own)`);
   const lan = Object.values(require("os").networkInterfaces()).flat().filter((i) => i && i.family === "IPv4" && !i.internal).map((i) => i.address);
   lan.forEach((ip) => console.log(`  Same Wi-Fi screen:   http://${ip}:${PORT}/screen?key=${HOST_KEY}`));

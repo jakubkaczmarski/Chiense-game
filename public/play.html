@@ -257,7 +257,8 @@ function render() {
   const d = last; if (!d || !d.me) return;
   const step = d.step;
   const scene = step.i !== undefined && (step.type === "scene" || step.type === "reveal") ? SCENES[step.i] : null;
-  document.getElementById("sclock").textContent = scene ? scene.clock : step.type === "lobby" ? "07:00" : "23:59";
+  const tsc = (step.type === "brief" || step.type === "debrief") ? SCENES[step.i] : null;
+  document.getElementById("sclock").textContent = scene ? scene.clock : tsc ? tsc.clock : step.type === "lobby" ? "07:00" : "23:59";
   const key = step.type + ":" + (step.i ?? "");
   const entering = key !== local.sceneKey;
   if (entering) { local = { blockedMsg: null, fresh: false, sceneKey: key }; }
@@ -289,6 +290,16 @@ function draw(d, step, scene) {
 
   if (step.type === "lobby") {
     app.innerHTML = `<div class="redband"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><div>欢迎来到上海 · 平安中国<small>WELCOME TO SHANGHAI · SAFE CHINA</small></div></div>${idCard(d.me)}<div class="card center" style="margin-top:12px"><p><span class="pulse"></span><b>${d.players}</b> residents registered</p><p class="fine">Look at the big screen. The day starts soon.</p></div>`;
+    return;
+  }
+
+  if (step.type === "brief" || step.type === "debrief") {
+    const sc = SCENES[step.i], b = step.type === "brief" ? sc.brief : sc.debrief;
+    app.innerHTML = `<div class="card center"><p class="fine" style="letter-spacing:.14em;text-transform:uppercase">${esc(sc.clock)} · ${step.type === "brief" ? "Coming up" : "What it means"}</p>
+      <h2 style="margin:6px 0 10px">${esc(b.title)}</h2>
+      <p class="lead">👀 Eyes on the big screen — your presenter is explaining.</p>
+      ${sc.word ? `<p style="margin-top:14px"><span style="font-size:34px;color:#c8102e;font-weight:800">${esc(sc.word.zh)}</span><br><span class="fine">${esc(sc.word.py)} · ${esc(sc.word.en)}</span></p>` : ""}
+      ${step.type === "brief" ? `<p class="fine" style="margin-top:12px">Get ready: you'll choose on this phone next.</p>` : ""}</div>`;
     return;
   }
 

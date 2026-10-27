@@ -92,6 +92,25 @@ aside h3{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(-
 .camcol .nt b{font-size:38px}
 .enter .camcol > .nums{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .45s}
 .enter .nt,.enter .chain span{animation:rise .6s cubic-bezier(.2,.8,.2,1) both calc(.7s + var(--i) * .12s)}
+.talk{display:flex;flex-direction:column;flex:1;min-height:0}
+.talkgrid{display:grid;grid-template-columns:1fr 560px;gap:40px;flex:1;min-height:0;margin-top:6px}
+.talk h1{font-size:64px;line-height:1.05;letter-spacing:-.02em}
+.talk.debrief h1{color:var(--gold)}
+.tpoints{list-style:none;margin:26px 0 0;padding:0;display:flex;flex-direction:column;gap:16px;max-width:980px}
+.tpoints li{display:grid;grid-template-columns:52px 1fr;gap:18px;align-items:start;font-size:27px;line-height:1.38;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px}
+.tn{width:44px;height:44px;border-radius:50%;background:var(--cred);color:var(--gold);display:grid;place-items:center;font:800 22px var(--mono);border:2px solid var(--gold2)}
+.ask,.irbox{margin-top:22px;border-radius:14px;padding:16px 22px;font-size:26px;line-height:1.4;max-width:980px}
+.ask{background:#101b16;border:1px solid #1f3a2c;color:#d6e8dd}
+.irbox{background:linear-gradient(135deg,#2a1d06,#1a1205);border:1px solid var(--gold2);color:#ffe9b8}
+.ask span,.irbox span,.upnext span{display:block;font-family:var(--mono);font-size:13px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px}
+.ask span{color:var(--green)}.irbox span{color:var(--gold)}
+.talkR{display:flex;flex-direction:column;gap:16px}
+.upnext{margin-top:auto;background:var(--panel);border:1px dashed var(--line);border-radius:14px;padding:16px 20px;font-size:22px;color:var(--ink)}
+.upnext span{color:var(--muted)}
+.enter .talk h1{animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.enter .tpoints li{animation:rise .7s cubic-bezier(.2,.8,.2,1) both calc(.25s + var(--j) * .35s)}
+.enter .ask,.enter .irbox{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 1.4s}
+.enter .talkR > *{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .4s}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -292,7 +311,7 @@ const seenFeed = new Set(), seenNames = new Set();
 // background music switches with the day: each scene has its own mode and tempo
 const SCENE_TRACK = { sim: "morning", breakfast: "morning", metro: "commute", post: "street", doctor: "clinic", healthcode: "tense", train: "commute", night: "night" };
 function trackFor(step) {
-  if (step.type === "scene" || step.type === "reveal") return SCENE_TRACK[SCENES[step.i].id] || "welcome";
+  if (["scene", "reveal", "brief", "debrief"].includes(step.type)) return SCENE_TRACK[SCENES[step.i].id] || "welcome";
   if (["file", "unique", "meta"].includes(step.type)) return "tense";
   if (step.type === "poll" || step.type === "pollres") return "reflect";
   return "welcome";
@@ -371,7 +390,7 @@ function drawStage() {
   countUp($("hPoints"), d.totalPoints);
   $("stepLbl").textContent = `${d.stepIndex + 1}/${d.stepCount} · ${step.type}`;
   $("qrmini").style.display = step.type === "lobby" ? "none" : "flex";
-  const scene = (step.type === "scene" || step.type === "reveal") ? SCENES[step.i] : null;
+  const scene = ["scene", "reveal", "brief", "debrief"].includes(step.type) ? SCENES[step.i] : null;
   $("hClock").textContent = scene ? scene.clock : step.type === "lobby" ? "07:00" : "23:59";
 
   // feed
@@ -384,6 +403,21 @@ function drawStage() {
       <p class="lead">Live through one ordinary day as a Chinese resident. Every choice you make shows up here.</p>
       <div class="url">${esc(JOIN)}</div>
       <div class="names">${d.names.map((n) => { const isNew = !seenNames.has(n); seenNames.add(n); return `<span class="${isNew ? "new" : ""}">${esc(n)}</span>`; }).join("")}</div></div></div>`;
+    return;
+  }
+
+  if (step.type === "brief" || step.type === "debrief") {
+    const b = step.type === "brief" ? scene.brief : scene.debrief, nextScene = SCENES[step.i + 1];
+    const wordCard = scene.word ? `<div class="word"><div class="w-k">词 · Word of the scene</div><div class="w-zh">${esc(scene.word.zh)}</div><div class="w-py">${esc(scene.word.py)}</div><div class="w-en">${esc(scene.word.en)}</div><div class="w-note">${esc(scene.word.note)}</div></div>` : "";
+    S.innerHTML = `<div class="talk ${step.type}">
+      <div class="eyebrow"><span class="clock">${scene.clock}</span> · Topic ${step.i + 1} of ${SCENES.length} · ${step.type === "brief" ? "before you choose" : "what it means"}</div>
+      <div class="talkgrid"><div class="talkL">
+        <h1>${esc(b.title)}</h1>
+        <ol class="tpoints">${b.points.map((x, j) => `<li style="--j:${j}"><span class="tn">${j + 1}</span><span>${esc(x)}</span></li>`).join("")}</ol>
+        ${step.type === "brief" ? `<div class="ask"><span>Ask the room</span>${esc(b.ask)}</div>` : `<div class="irbox"><span>☆ Political-science angle</span>${esc(b.ir)}</div>`}
+      </div><div class="talkR">${wordCard}
+        <div class="upnext"><span>Up next</span>${step.type === "brief" ? `<b>${esc(scene.title)}</b> — choose on your phone 📱` : nextScene ? `<b>${esc(nextScene.clock)} · ${esc(nextScene.brief.title)}</b>` : `<b>One person, one file</b> — look at your phone`}</div>
+      </div></div></div>`;
     return;
   }
 
