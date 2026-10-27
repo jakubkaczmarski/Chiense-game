@@ -252,10 +252,11 @@
       const start = Date.now(); const tick = setInterval(() => { if (my !== seq) return clearInterval(tick); const s = ((Date.now() - start) / 1000) | 0; tEl.textContent = "00:" + String(s).padStart(2, "0"); }, 250);
       const audio = await audioP; if (my !== seq) return;
       const dur = audio && isFinite(audio.duration) && audio.duration > 0 ? audio.duration * 1000 : L.en.length * 60;
-      if (window.Music && Music.isOn()) Music.duck(Math.min(30000, dur + 1500));
+      if (window.Music && Music.isOn()) Music.duck(Math.min(30000, Math.max(dur, L.en.length * 45) + 2000));
       // English captions, paced to the Mandarin audio
-      typeOut(sub, L.en, Math.max(1500, dur - 400));
-      await Promise.all([audio ? playAudio(audio) : sayZh(L.zh), new Promise((r) => setTimeout(r, dur + 300))]);
+      const typeMs = Math.max(dur - 400, L.en.length * 45);
+      typeOut(sub, L.en, typeMs);
+      await Promise.all([audio ? playAudio(audio) : sayZh(L.zh), new Promise((r) => setTimeout(r, typeMs + 1200))]);
       if (my !== seq) return;
       el.classList.remove("talk"); lbl.textContent = "Call ended";
       endT = setTimeout(() => { if (my === seq) { clearInterval(tick); el.classList.remove("in"); } if (done) setTimeout(done, 700); }, 3500);
@@ -273,8 +274,8 @@
     call({
       en: "Hello. This is Secretary Lin from the Communist Party committee. " + listNames(names) + ": " + w.en +
         " This is your official warning. You are invited to a learning camp — xuéxí bān — to study the correct thinking.",
-      zh: "喂，你好。我是中共社区委员会的林书记。" + listNamesZh(names) + "，" + w.zh(names) +
-        "这是对" + (names.length === 1 ? "你" : "你们") + "的正式警告。请" + (names.length === 1 ? "你" : "你们") + "参加学习班，好好学习正确的思想。"
+      // spoken out loud: only a short call naming the offenders; the full story is in the English captions
+      zh: "喂！我是林书记。" + listNamesZh(names) + "！这是正式警告。请" + (names.length === 1 ? "你" : "你们") + "参加学习班。"
     }, () => { busy = false; flush(); });
   }
   function report(sceneId, offenders) {
