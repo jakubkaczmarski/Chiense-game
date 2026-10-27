@@ -34,7 +34,7 @@ Right after the Weibo scene, **Teacher Jan (扬老师), the class counsellor (�
 
 ## Banned or allowed? (flip cards)
 
-After the Weibo scene, every phone gets 9 cards — Winnie the Pooh, “empty chair”, “May 35th”, “I disagree”, the letter N, “lying flat”, Peng Shuai, hot pot, panda. Tap **Banned** or **Allowed** and the card flips to show the real story. The projector shows how the room voted; press **F** (or the console button) to flip all cards.
+After the Weibo scene, every phone gets 12 cards — 7 censored (Winnie the Pooh, “empty chair”, “May 35th”, “I disagree”, the letter N, “lying flat”, Peng Shuai) and 5 trick cards that are allowed (“Democracy”, “Freedom”, “Xi Jinping”, “Tiananmen”, panda). Tap **Banned** or **Allowed** and the card flips to show the real story. The projector shows how the room voted; press **F** (or the console button) to flip all cards.
 
 ## Jaywalker caught
 
