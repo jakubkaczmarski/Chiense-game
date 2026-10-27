@@ -245,6 +245,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 <script src="/content.js"></script>
 <script src="/facescan.js"></script>
 <script src="/story.js"></script>
+<script src="/anthem.js"></script>
 <script src="/guide.js"></script>
 <script>
 const { SCENES, POLLS, WHO, INFORM, DAILY, CASE, KINDS } = window.GAME;
@@ -346,7 +347,8 @@ function ringOnce() {
   } catch (e) {}
   if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
 }
-function startRing() { stopRing(); ringN = 0; ringOnce(); ringT = setInterval(() => { if (++ringN > 12) return stopRing(); ringOnce(); }, 2000); }
+function ringtone() { if (window.Anthem) { Anthem.play(0.9); if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]); } else ringOnce(); }
+function startRing() { stopRing(); ringN = 0; ringtone(); ringT = setInterval(() => { if (++ringN > 6) return stopRing(); ringtone(); }, window.Anthem ? Anthem.length * 1000 + 700 : 2000); }
 function stopRing() { clearInterval(ringT); ringT = null; if (navigator.vibrate) navigator.vibrate(0); }
 
 function render() {

@@ -162,6 +162,7 @@
   }
 
   function ring() {
+    if (window.Anthem) { if (!ring.busy) { ring.busy = true; Anthem.play(0.7); setTimeout(() => (ring.busy = false), Anthem.length * 1000); } return; }
     try {
       ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
       if (ctx.state === "suspended") ctx.resume();
@@ -246,7 +247,7 @@
     const sub = el.querySelector(".gd-sub"), lbl = el.querySelector(".lbl"), tEl = el.querySelector(".t");
     sub.innerHTML = ""; lbl.textContent = "Incoming call"; tEl.textContent = "";
     el.classList.add("ring"); requestAnimationFrame(() => el.classList.add("in"));
-    ring(); const r2 = setTimeout(() => my === seq && ring(), 1100);
+    ring(); const r2 = setTimeout(() => my === seq && !window.Anthem && ring(), 1100);
     const audioP = fetchTTS(L.zh); // fetched while ringing
     ringT = setTimeout(async () => {
       clearTimeout(r2); if (my !== seq) return;
@@ -263,7 +264,7 @@
       if (my !== seq) return;
       el.classList.remove("talk"); lbl.textContent = "Call ended";
       endT = setTimeout(() => { if (my === seq) { clearInterval(tick); el.classList.remove("in"); } if (done) setTimeout(done, 700); }, 3500);
-    }, 2000);
+    }, window.Anthem ? Anthem.length * 1000 + 300 : 2000);
   }
 
   if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};
