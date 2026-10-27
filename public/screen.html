@@ -198,7 +198,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <header>
   <div class="brand"><span class="rec"></span><span style="color:var(--gold);letter-spacing:.2em">平安上海</span> Citizen Data Center · simulation</div>
   <div class="spacer"></div>
-  <div id="ctl"><button id="music" title="Background music (M on/off · N next track)">♪ Music off</button><span id="stepLbl"></span><button id="prev">◀</button><button id="next">Next ▶</button><button id="reset">Reset</button></div>
+  <div id="ctl"><button id="guide" title="Master Lin calls in at each step (G)">☎ Guide on</button><button id="music" title="Background music (M on/off · N next track)">♪ Music off</button><span id="stepLbl"></span><button id="prev">◀</button><button id="next">Next ▶</button><button id="reset">Reset</button></div>
   <div class="stat">Residents<b id="hPlayers">0</b></div>
   <div class="stat red">Data points logged<b id="hPoints">0</b></div>
   <div class="stat">Local time<b id="hClock">07:00</b></div>
@@ -217,6 +217,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <script src="/content.js"></script>
 <script src="/cams.js"></script>
 <script src="/music.js"></script>
+<script src="/guide.js"></script>
 <script>
 const { SCENES, POLLS, STEPS } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
@@ -237,6 +238,7 @@ const host = (action, extra = {}) => fetch("/api/host", { method: "POST", header
 const musicLbl = () => { $("music").textContent = Music.isOn() ? "♪ " + Music.track() : "♪ Music off"; };
 $("music").onclick = async () => { await Music.toggle(); musicLbl(); };
 Music.onChange(musicLbl);
+$("guide").onclick = () => { const on = Guide.toggle(); $("guide").textContent = on ? "☎ Guide on" : "☎ Guide off"; if (on && last) Guide.call(Guide.keyFor(last.step, SCENES)); };
 $("next").onclick = () => host("next");
 $("prev").onclick = () => host("prev");
 $("reset").onclick = () => { if (confirm("Wipe all players and restart?")) host("reset"); };
@@ -246,6 +248,8 @@ document.addEventListener("keydown", (e) => {
   if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); host("prev"); }
   if (e.key === "h") $("ctl").classList.toggle("hidden");
   if (e.key === "m") $("music").click();
+  if (e.key === "g") $("guide").click();
+  if (e.key === "Escape") Guide.hang();
   if (e.key === "n" && Music.isOn()) Music.next(); // N: skip to the next music track
 });
 
@@ -329,10 +333,13 @@ function startJingle() {
 function render() {
   const d = last; if (!d) return;
   const key = d.step.type + ":" + (d.step.i ?? "");
-  const entering = key !== lastKey;
-  if (entering && lastKey === "lobby:" && d.step.type === "scene" && d.step.i === 0) startJingle();
+  const entering = key !== lastKey, prevKey = lastKey;
+  const kickoff = entering && prevKey === "lobby:" && d.step.type === "scene" && d.step.i === 0;
+  if (kickoff) startJingle();
   lastKey = key;
   if (entering && window.Music) Music.setMood(trackFor(d.step));
+  // Master Lin phones in on every step change (after the start jingle on the first scene)
+  if (entering && window.Guide) { clearTimeout(window.__gdT); window.__gdT = setTimeout(() => Guide.call(Guide.keyFor(d.step, SCENES)), kickoff ? 8000 : 700); }
   drawStage();
   syncCams(d);
   const S = $("stage");

@@ -28,6 +28,10 @@ Phones must be able to reach your laptop. Pick one option:
 
 If the QR ever shows the wrong address, add `&join=https://your-public-url` to the screen link.
 
+## Guide: Master Lin calls in
+
+At every step an original character, **Master Lin (林师傅 Lín shīfu)**, "phones" the projector: a ringing incoming-call card slides in on the right, he picks up, and his instructions appear as subtitles while the browser's built-in voice reads them (a Chinese greeting is spoken only if a Chinese voice is installed; Chrome on a laptop usually has one). The music dips while he talks. **G** or the ☎ button turns him on/off, **Esc** hangs up. Edit his lines at the top of `public/guide.js`.
+
 ## Music
 
 Press **♪ Music** (or **M**) on the projector page for original generative background music: guzheng-style plucked strings in the Chinese pentatonic scale. The music switches with the day — each scene has its own track (Morning market, Rush hour, Street, Waiting room, Under watch, Night, Reflection), with a short glissando at each change; the button shows the current track. Press **N** to skip to the next track by hand. To use your own licensed track instead, put it at `public/music.mp3`.

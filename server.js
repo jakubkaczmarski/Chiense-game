@@ -232,6 +232,7 @@ const server = http.createServer(async (req, res) => {
     if (p === "/facescan.js") return serveFile(res, "facescan.js");
     if (p === "/story.js") return serveFile(res, "story.js");
     if (p === "/music.js") return serveFile(res, "music.js");
+    if (p === "/guide.js") return serveFile(res, "guide.js");
     if (p === "/music.mp3") return serveFile(res, "music.mp3");
     if (p === "/start.mp3") return serveFile(res, "start.mp3");
     if (/^\/(mediapipe|models)\/[\w./-]+$/.test(p) && !p.includes("..")) return serveFile(res, p.slice(1));
