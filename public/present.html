@@ -73,7 +73,7 @@ button:active{transform:scale(.98)}
 </main>
 <script src="/content.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, KINDS } = window.GAME;
+const { SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR, CARRY } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -85,6 +85,7 @@ $("prev").onclick = () => host("prev");
 addEventListener("keydown", (e) => {
   if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); host("next"); }
   if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); host("prev"); }
+  if (e.key === "f") host("flip");
 });
 
 function label(st) {
@@ -96,6 +97,8 @@ function label(st) {
     case "scene": return `${sc.clock} · Play: ${sc.title}`;
     case "reveal": return `${sc.clock} · Results: ${sc.title}`;
     case "debrief": return `${sc.clock} · Debrief: ${sc.debrief.title}`;
+    case "jaywalk": return "Jaywalker caught! (Shenzhen 2017)";
+    case "censor": return "Side game — banned or allowed on Weibo?";
     case "camhist": return "How the cameras came — Sky Net & Xinjiang";
     case "daily": return "Intro — every day in China (data scale)";
     case "intro": return "Intro — what is privacy? (1–2 min)";
@@ -124,6 +127,8 @@ function summary(st) {
   const sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
   if (st.type === "brief") return { tldr: sc.brief.tldr, say: sc.brief.points.concat(sc.guess ? [`📱 Phones: “${sc.guess.q}” — answer ${sc.guess.answer} (revealed on the results screen)`] : []), ask: sc.brief.ask, extra: sentences(sc.brief.notes) };
   if (st.type === "debrief") return { tldr: sc.debrief.tldr, say: sc.debrief.points, angle: sc.debrief.ir, pro: sc.debrief.pro, extra: sentences(sc.debrief.notes) };
+  if (st.type === "jaywalk") return { tldr: JAYWALK.tldr, say: JAYWALK.say, angle: JAYWALK.angle, extra: ["Sources: " + JAYWALK.sources] };
+  if (st.type === "censor") return { tldr: CENSOR.tldr, say: CENSOR.say, extra: CENSOR.cards.map((c) => `${c.en} ${c.zh} — ${c.verdict}: ${c.story}`) };
   if (st.type === "camhist") return { tldr: CAMHIST.tldr, say: CAMHIST.say, angle: CAMHIST.callout, extra: CAMHIST.timeline.map(([y, t, zh, txt]) => `${y} · ${t} (${zh}): ${txt}`) };
   if (st.type === "daily") return { tldr: DAILY.tldr, say: DAILY.say, extra: DAILY.items.map((it) => `${it.n} ${it.label} — ${it.src}`) };
   if (st.type === "intro") return { tldr: INTRO.tldr, say: INTRO.say, extra: [`Definition: “${INTRO.def}” (${INTRO.defBy})`, ...INTRO.timeline.map(([y, t]) => `${y}: ${t}`)] };
@@ -148,6 +153,7 @@ function backup(st) {
   if (["reveal", "debrief"].includes(st.type)) return (PROMPTS[SCENES[st.i].id] || {})[st.type] || [];
   return PROMPTS[st.type] || [];
 }
+function quizFor(st) { const k = st.type === "debrief" ? "debrief:" + SCENES[st.i].id : st.type; return QUIZ[k] || null; }
 function summaryHtml(m) {
   const li = (x) => `<li>${m.raw ? x : esc(x)}</li>`;
   return `<div class="tldr"><small>In one line</small>${esc(m.tldr)}</div>
@@ -168,15 +174,22 @@ function render(d) {
   if (key !== curKey) { curKey = key; since = Date.now(); }
   $("pos").textContent = `${d.stepIndex + 1} / ${d.stepCount}`;
   $("players").textContent = d.players;
-  const isPlay = ["scene", "poll", "inform"].includes(st.type);
+  const isPlay = ["scene", "poll", "inform", "censor"].includes(st.type);
   const sm = summary(st); sm.backup = backup(st);
-  let body = `<span class="type ${isPlay ? "play" : ""}">${isPlay ? "Phones active" : ["brief", "debrief", "intro", "daily", "camhist"].includes(st.type) ? "You talk" : "Show & discuss"}</span><h1>${esc(label(st))}</h1>` + summaryHtml(sm);
+  const qz = quizFor(st); if (qz) sm.say = sm.say.concat([`❓ Phone quiz: “${qz.q}” → ${qz.options[qz.correct]}`]);
+  if (st.type === "scene") { const id = SCENES[st.i].id; const cc = { breakfast: ["simFrozen"], train: ["trainKeyPerson", "trainReported"], night: ["nightGrid", "nightPetitioner"] }[id]; if (cc) sm.say = sm.say.concat(cc.map((k) => `⏪ Carry-over: ${CARRY[k].because} ${CARRY[k].result}`)); }
+  let body = `<span class="type ${isPlay ? "play" : ""}">${isPlay ? "Phones active" : ["brief", "debrief", "intro", "daily", "camhist", "jaywalk"].includes(st.type) ? "You talk" : "Show & discuss"}</span><h1>${esc(label(st))}</h1>` + summaryHtml(sm);
   $("now").innerHTML = body;
 
   let live = `<div class="k">Live</div>`;
   if (st.type === "scene" && d.stats) {
     live += `<div class="big">${d.stats.answered} / ${d.players}</div><div>decided${d.stats.blocked ? ` · <span style="color:var(--red)">${d.stats.blocked} blocked</span>` : ""}</div><div class="prog"><i style="width:${d.players ? Math.round(d.stats.answered / d.players * 100) : 0}%"></i></div>`;
     if (d.offenders && d.offenders.length) live += `<p style="margin:10px 0 0">☎ Secretary Lin will call: <b>${esc(d.offenders.map((o) => o.name).join(", "))}</b></p>`;
+  } else if (d.quiz) {
+    live += `<div class="big">${d.quiz.n} / ${d.players}</div><div>answered the quiz · ${d.quiz.n ? Math.round(d.quiz.right / d.quiz.n * 100) : 0}% right</div>`;
+    if (st.type === "jaywalk" && d.jaywalker) live += `<p style="margin:8px 0 0">📸 Caught: <b>${esc(d.jaywalker.name)}</b></p>`;
+  } else if (st.type === "censor") {
+    live += `<button id="flipBtn" style="width:100%;margin-top:6px">🃏 ${d.flip ? "Unflip" : "Flip all"} cards on projector (F)</button>`;
   } else if (st.type === "brief" && d.guess) {
     live += `<div class="big">${d.guess.n} / ${d.players}</div><div>guessed the number · ${d.guess.right} right so far</div>`;
   } else if (st.type === "inform" && d.inform) {
@@ -185,6 +198,7 @@ function render(d) {
     live += `<div class="big">${d.voted || 0} / ${d.players}</div><div>voted</div>`;
   } else live += `<div class="big">${d.players}</div><div>players in the room</div>`;
   $("live").innerHTML = live;
+  const fb = document.getElementById("flipBtn"); if (fb) fb.onclick = () => host("flip");
 
   const nx = STEPS[d.stepIndex + 1];
   $("upnext").innerHTML = nx ? `<h2>${esc(label(nx))}</h2>` : "<h2>— end —</h2>";

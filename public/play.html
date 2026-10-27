@@ -234,6 +234,28 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 .guess .glock{font-size:16px}.guess .glock small{color:var(--muted)}
 .gres{background:#fffbea;border:2px solid #ffd24a;border-radius:16px;padding:12px 14px;margin:10px 0}
 .gres b{font-size:18px}
+.quiz .qopts{display:grid;gap:8px}
+.quiz .qopts button{text-align:left;border:1.5px solid var(--line);background:#fffbea;border-radius:12px;padding:12px 14px;font-weight:700;font-size:15px}
+.quiz .qopts button.on{background:#ffd24a}
+.quiz.ok{border-color:#2fbf71}.quiz.ok .gk{color:#12804a}.quiz.no{border-color:#e5484d}.quiz.no .gk{color:#c0322a}
+.jw{background:#111;color:#fff;border-radius:20px;padding:16px;margin-bottom:12px;text-align:center;border:3px solid #ff3b30;animation:jwflash 1s steps(2) 3}
+@keyframes jwflash{50%{border-color:#ffd24a;background:#3a0a0a}}
+.jw-k{font:800 15px ui-monospace,Menlo,monospace;color:#ff6b61;letter-spacing:.08em}
+.jw-px{display:grid;grid-template-columns:repeat(8,1fr);width:120px;height:120px;margin:12px auto;border:2px solid #ff3b30}
+.jw-px i{display:block}
+.jw-n{font-size:26px;font-weight:800}.jw-t{font:600 12px ui-monospace,Menlo,monospace;color:#aaa;margin-bottom:8px}
+.jw p{font-size:14px;color:#ddd;margin:0}
+.flips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fc{perspective:900px;min-height:190px}
+.fc-in{position:relative;width:100%;height:100%;min-height:190px;transition:transform .6s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d}
+.fc.flip .fc-in{transform:rotateY(180deg)}
+.fc-f,.fc-bk{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:12px;display:flex;flex-direction:column}
+.fc-f{background:#fff;border:1.5px solid var(--line);align-items:center;justify-content:center;text-align:center;gap:4px}
+.fc-zh{font:800 26px "PingFang SC","Noto Sans SC",sans-serif;color:#c8102e}.fc-en{font-weight:700;font-size:14px}
+.fc-b{display:flex;gap:6px;margin-top:8px;width:100%}.fc-b button{flex:1;border:0;border-radius:10px;padding:9px 2px;font-weight:800;font-size:12px;background:#f1efe8}
+.fc-bk{transform:rotateY(180deg);overflow:auto;font-size:12.5px;line-height:1.35}
+.fc-bk.ban{background:#2a0b0f;color:#ffe9e6;border:1.5px solid #c8102e}.fc-bk.okk{background:#0f2a1b;color:#e2fbe9;border:1.5px solid #2fbf71}
+.fc-v{font-weight:800;font-size:13px;margin-bottom:3px}.fc-r{font:700 11px ui-monospace,Menlo,monospace;color:#ffd24a;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -248,7 +270,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 <script src="/anthem.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { SCENES, POLLS, WHO, INFORM, DAILY, CASE, KINDS } = window.GAME;
+const { SCENES, POLLS, WHO, INFORM, DAILY, CASE, KINDS, QUIZ, CARRY, CENSOR } = window.GAME;
 const app = document.getElementById("app");
 const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}}, del(k){try{localStorage.removeItem(k)}catch{}} };
 let pid = store.get("dds_pid");
@@ -356,18 +378,21 @@ function render() {
   const step = d.step;
   const scene = step.i !== undefined && (step.type === "scene" || step.type === "reveal") ? SCENES[step.i] : null;
   const tsc = (step.type === "brief" || step.type === "debrief") ? SCENES[step.i] : null;
-  document.getElementById("sclock").textContent = scene ? scene.clock : tsc ? tsc.clock : step.type === "lobby" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : "23:59";
+  document.getElementById("sclock").textContent = scene ? scene.clock : tsc ? tsc.clock : step.type === "lobby" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : step.type === "jaywalk" ? "08:52" : step.type === "censor" ? "12:45" : "23:59";
   const key = step.type + ":" + (step.i ?? "");
   const entering = key !== local.sceneKey;
   if (entering) { local = { blockedMsg: null, fresh: false, sceneKey: key }; }
   if (entering && step.type !== "file") { const st = document.querySelector(".story"); if (st) st.remove(); }
   draw(d, step, scene);
+  bindQuiz();
   app.className = entering ? "enter" : "";
   if (local.fresh) { app.classList.add("fresh"); local.fresh = false; }
   if (entering && (step.type === "meta" || step.type === "end")) scramble();
   if (entering && step.type === "scene" && step.i === 0 && window.FaceScan) FaceScan.preload();
   if (entering && step.type === "inform" && !d.me.inform) startRing();
   if (entering && (step.type === "scene" || step.type === "poll") && navigator.vibrate) navigator.vibrate([120, 80, 120]);
+  // an unanswered ringing call must never block a new question
+  if (entering && ["scene", "poll", "inform", "censor"].includes(step.type)) { const r = document.querySelector(".linph.ring"); if (r) { r.remove(); stopRing(); } }
   if (entering && step.type !== "inform") stopRing();
 }
 
@@ -394,18 +419,41 @@ function draw(d, step, scene) {
     return;
   }
 
+  if (step.type === "jaywalk") {
+    const caught = d.jaywalked;
+    const px = Array.from({ length: 64 }, (_, k) => { const x = k % 8, y = (k / 8) | 0; const face = (x - 3.5) ** 2 / 9 + (y - 3.8) ** 2 / 14 < 1; const v = face ? 150 + ((k * 37) % 70) : 40 + ((k * 13) % 30); return `<i style="background:rgb(${v},${v - 20},${v - 30})"></i>`; }).join("");
+    app.innerHTML = (caught ? `<div class="jw"><div class="jw-k">⚠️ 闯红灯 · JAYWALKER CAUGHT</div><div class="jw-px">${px}</div>
+        <div class="jw-n">${esc(d.me.name)}</div><div class="jw-t">Century Ave × Lujiazui Ring Rd · 08:52</div>
+        <p>📸 Face recognition caught <b>you</b> crossing on red. Your face, name and part of your ID number are on the big screen right now.</p></div>` : "")
+      + quizBox(d, step) + (caught ? "" : idleCard({ kick: "Meanwhile at a crossing…", title: "Someone got caught", look: "Look at the big screen — is it you?", word: { zh: "闯红灯", py: "chuǎng hóngdēng", en: "running a red light" } }));
+    return;
+  }
+
+  if (step.type === "censor") {
+    const mine = d.me.censor || {}, done = CENSOR.cards.filter((c) => mine[c.id] !== undefined), right = done.filter((c) => mine[c.id] === c.banned).length;
+    app.innerHTML = `<div class="guess" style="border-color:#c8102e"><div class="gk" style="color:#c8102e">🚫 Banned or allowed on Weibo?</div><div class="gq" style="margin-bottom:4px">Guess each card — it flips to show the real story.</div>
+      <div class="fine">${done.length}/${CENSOR.cards.length} flipped · <b>${right}</b> right</div></div>
+      <div class="flips">${CENSOR.cards.map((c) => { const g = mine[c.id], f = g !== undefined;
+        return `<div class="fc ${f ? "flip" : ""}" data-c="${c.id}"><div class="fc-in">
+          <div class="fc-f"><div class="fc-zh">${esc(c.zh)}</div><div class="fc-en">${esc(c.en)}</div><div class="fc-b"><button data-b="1">🚫 Banned</button><button data-b="0">✅ Allowed</button></div></div>
+          <div class="fc-bk ${c.banned ? "ban" : "okk"}"><div class="fc-v">${esc(c.verdict)}</div><div class="fc-r">${f ? (g === c.banned ? "✔ You were right" : "✘ You guessed " + (g ? "banned" : "allowed")) : ""}</div><div class="fc-s">${esc(c.story)}</div></div></div></div>`; }).join("")}</div>`;
+    app.querySelectorAll(".fc").forEach((card) => card.querySelectorAll("[data-b]").forEach((b) => b.onclick = async (e) => { e.stopPropagation();
+      card.classList.add("flip"); if (navigator.vibrate) navigator.vibrate(25); await post("/api/censor", { pid, card: card.dataset.c, banned: b.dataset.b === "1" }); }));
+    return;
+  }
+
   if (step.type === "camhist") {
-    app.innerHTML = idleCard({ kick: "Before the commute", title: "How the cameras came", word: { zh: "天网", py: "tiānwǎng", en: "“Sky Net”" } });
+    app.innerHTML = quizBox(d, step) + idleCard({ kick: "Before the commute", title: "How the cameras came", word: { zh: "天网", py: "tiānwǎng", en: "“Sky Net”" } });
     return;
   }
 
   if (step.type === "daily") {
-    app.innerHTML = idleCard({ kick: "Before we start", title: "Every day in China…", look: "Watch the counters on the big screen", word: { zh: "数据", py: "shùjù", en: "data" } });
+    app.innerHTML = quizBox(d, step) + idleCard({ kick: "Before we start", title: "Every day in China…", look: "Watch the counters on the big screen", word: { zh: "数据", py: "shùjù", en: "data" } });
     return;
   }
 
   if (step.type === "intro") {
-    app.innerHTML = idleCard({ kick: "Before we start", title: "What is privacy?", word: { zh: "隐私", py: "yǐnsī", en: "privacy" }, next: "The day starts soon — keep your phone ready" });
+    app.innerHTML = quizBox(d, step) + idleCard({ kick: "Before we start", title: "What is privacy?", word: { zh: "隐私", py: "yǐnsī", en: "privacy" }, next: "The day starts soon — keep your phone ready" });
     return;
   }
 
@@ -438,7 +486,7 @@ function draw(d, step, scene) {
   }
 
   if (step.type === "case") {
-    app.innerHTML = idleCard({ kick: "The other side", title: "The case for it", look: "Why many people accept this — look at the big screen", word: { zh: "安全", py: "ānquán", en: "safety" }, next: "Your file is next" });
+    app.innerHTML = quizBox(d, step) + idleCard({ kick: "The other side", title: "The case for it", look: "Why many people accept this — look at the big screen", word: { zh: "安全", py: "ānquán", en: "safety" }, next: "Your file is next" });
     return;
   }
 
@@ -448,7 +496,7 @@ function draw(d, step, scene) {
     const guessBox = g ? `<div class="guess"><div class="gk">🎯 Guess the number</div><div class="gq">${esc(g.q)}</div>
       ${mine === undefined ? `<div class="gopts">${g.options.map((o, i) => `<button data-g="${i}">${esc(o)}</button>`).join("")}</div>`
         : `<div class="glock">Locked in: <b>${esc(g.options[mine])}</b> ✓<br><small>The answer comes after you play.</small></div>`}</div>` : "";
-    app.innerHTML = guessBox + idleCard({ kick: `${sc.clock} · ${step.type === "brief" ? "Coming up" : "What it means"}`, title: b.title, word: sc.word,
+    app.innerHTML = guessBox + quizBox(d, step) + idleCard({ kick: `${sc.clock} · ${step.type === "brief" ? "Coming up" : "What it means"}`, title: b.title, word: sc.word,
       next: step.type === "brief" ? "Get ready — you'll choose on this phone next" : "Next moment of the day coming up" });
     app.querySelectorAll("[data-g]").forEach((bt) => bt.onclick = async () => { app.querySelectorAll("[data-g]").forEach((x) => x.disabled = true); bt.classList.add("on"); await post("/api/guess", { pid, option: Number(bt.dataset.g) }); });
     return;
@@ -479,9 +527,10 @@ function draw(d, step, scene) {
           ${step.type === "reveal" ? guessRes(scene, d) + explainCard(scene) : waitCard()}`;
         return;
       }
-      const cls = opt.outcome === "consequence" ? "amber" : "green";
-      app.innerHTML = `<div class="banner ${cls}">${opt.outcome === "consequence" ? "⚠️ " : "✓ "}${esc(opt.result)}</div>
-        ${receipt(opt.logs, opt.to, "Data logged", scene.id + ":" + opt.id, opt.state)}
+      const cr = a.carry && CARRY[a.carry];
+      const cls = cr || opt.outcome === "consequence" ? "amber" : "green";
+      app.innerHTML = `${cr ? `<div class="banner red shake" style="font-size:15px">⏪ ${esc(cr.because)}</div>` : ""}<div class="banner ${cls}">${cr || opt.outcome === "consequence" ? "⚠️ " : "✓ "}${esc(cr ? cr.result : opt.result)}</div>
+        ${receipt(cr ? cr.logs : opt.logs, cr ? cr.to : opt.to, "Data logged", scene.id + ":" + opt.id, cr ? cr.state : opt.state)}
         ${!opt.logs.length ? `<div class="card fine">Nothing new logged this time.</div>` : ""}
         ${step.type === "reveal" ? guessRes(scene, d) + explainCard(scene) : waitCard()}`;
       return;
@@ -597,6 +646,18 @@ function idleCard({ kick, title, look, word, next }) {
     <div class="next"><span class="dots"><i></i><i></i><i></i></span> ${esc(next || "Your phone will buzz when it's your turn")}</div></div>`;
 }
 
+// quick quiz on talk steps
+function quizKeyFor(step) { const k = step.type === "debrief" ? "debrief:" + SCENES[step.i].id : step.type; return QUIZ[k] ? k : null; }
+function quizBox(d, step) {
+  const key = quizKeyFor(step); if (!key) return "";
+  const q = QUIZ[key], mine = (d.me.quiz || {})[key];
+  if (mine === undefined) return `<div class="guess quiz"><div class="gk">❓ Quick quiz</div><div class="gq">${esc(q.q)}</div><div class="qopts">${q.options.map((o, i) => `<button data-q="${i}">${esc(o)}</button>`).join("")}</div></div>`;
+  const ok = mine === q.correct;
+  return `<div class="guess quiz ${ok ? "ok" : "no"}"><div class="gk">${ok ? "✅ Correct!" : "❌ Not quite — the answer:"}</div><div class="gq">${esc(q.options[q.correct])}</div><p class="fine" style="margin:0">${esc(q.why)}</p></div>`;
+}
+function bindQuiz() {
+  app.querySelectorAll("[data-q]").forEach((b) => b.onclick = async () => { app.querySelectorAll("[data-q]").forEach((x) => x.disabled = true); b.classList.add("on"); if (navigator.vibrate) navigator.vibrate(30); await post("/api/quiz", { pid, option: Number(b.dataset.q) }); });
+}
 function guessRes(sc, d) {
   const g = sc.guess; if (!g) return "";
   const mine = (d.me.guesses || {})[sc.id], gs = d.guess;
@@ -665,7 +726,7 @@ async function choose(si, oid, btn) {
   }
   const r = await post("/api/answer", { pid, scene: si, option: oid, face });
   if (r.outcome === "blocked") {
-    local.blockedMsg = SCENES[si].options.find((o) => o.id === oid).result;
+    local.blockedMsg = r.carry ? CARRY[r.carry].because + " " + CARRY[r.carry].result : SCENES[si].options.find((o) => o.id === oid).result;
     local.fresh = true;
     if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
   } else local.blockedMsg = null;

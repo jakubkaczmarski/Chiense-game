@@ -32,6 +32,18 @@ If the QR ever shows the wrong address, add `&join=https://your-public-url` to t
 
 Right after the Weibo scene, **Teacher Jan (扬老师), the class counsellor (辅导员)**, phones every player privately: the phone rings and vibrates, they accept, and she asks who in the group complained online, offering +50 points. Players tap a classmate's name or refuse. The projector only shows how many have answered; the next step reveals how many reported someone, how many refused, the most-reported names, and real facts about student informants (学生信息员) in Chinese universities. Reporting or refusing also appears in each player's file at the end.
 
+## Banned or allowed? (flip cards)
+
+After the Weibo scene, every phone gets 9 cards — Winnie the Pooh, “empty chair”, “May 35th”, “I disagree”, the letter N, “lying flat”, Peng Shuai, hot pot, panda. Tap **Banned** or **Allowed** and the card flips to show the real story. The projector shows how the room voted; press **F** (or the console button) to flip all cards.
+
+## Jaywalker caught
+
+After the commute, the projector flashes a “jaywalker shame screen” with a random player's name, a masked ID number and a pixelated face — like Shenzhen's LED screens from April 2017 (13,930 people shown at one crossing in 10 months; in 2018 Ningbo's system “caught” Dong Mingzhu's face on a bus advert). The caught player's phone says so; everyone else gets a quick quiz.
+
+## Quizzes and consequences
+
+Every talk slide (intro, data scale, camera history, each debrief, the case for it, jaywalker) has a one-tap quiz on the phones with instant right/wrong and the explanation. Earlier choices also come back later in the day: a street SIM freezes your WeChat Pay at breakfast, the protest repost triggers a KEY PERSON alert at the train gate, being reported delays your 12306 ticket, refusing the self-criticism brings a grid worker to your gate, and the Zhengzhou trip gets you a police visit at the hotel. The phone always says “Because you … earlier”.
+
 ## Guess the number
 
 On every explain slide, phones get a quick “guess the number” question (e.g. *How many mobile phone subscriptions does China have?* 900 million / 1.3 billion / 1.8 billion). The projector shows how many have guessed; after the scene, the results screen and every phone reveal the answer and the share of the room that got it right.
@@ -97,6 +109,7 @@ Shown back to each player at the end: device and OS (from the user agent), brows
 - Anonymity / fingerprinting facts: Sweeney (2000); de Montjoye et al., Scientific Reports (2013); Eckersley, EFF Panopticlick (2010)
 - How the cameras came (before the commute): Skynet 2005, Sharp Eyes 2015 "100% coverage by 2020" — IPVM; 40,000 cameras in Urumqi after the 2009 riots (197 dead) — Washington Post via China Digital Times (2010); IJOP app — Human Rights Watch (2019); "may constitute crimes against humanity" — OHCHR (2022)
 - "Card-breaking" campaign (断卡行动) against traded SIM cards and bank accounts since October 2020 — Caixin (2024); internet cafés: real-name registration and face-recognition pilots — Identity Week / China Daily (2016)
+- Jaywalker screens: Sophos Naked Security (2018), SCMP (2018), Biometric Update (2018); censored words: HuffPost UK (2018), CS Monitor / Global Voices (2010), Hong Kong Free Press (2021), Wikipedia/Reclaim The Net on “lying flat” (2021)
 - Core Socialist Values slogans on the projector banner are the official 12 values
 - Face-scan medical insurance payment, nationwide in ~3 years — NHSA via english.gov.cn (Jan 2026)
 - TikTok fined €530m for EU data transfers to China (May 2025) — Irish DPC

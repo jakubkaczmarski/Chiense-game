@@ -6,7 +6,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-const { SCENES, POLLS, STEPS, buildFile } = require("./public/content.js");
+const { QUIZ, CARRY, CENSOR, SCENES, POLLS, STEPS, buildFile } = require("./public/content.js");
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST_KEY = process.env.HOST_KEY || crypto.randomBytes(3).toString("hex");
@@ -86,6 +86,19 @@ function informStats(withNames) {
   const out = { answered: reported + refused, reported, refused, players: ps.length };
   if (withNames) out.top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
   return out;
+}
+
+function quizKey(step) {
+  if (step.type === "debrief") return QUIZ["debrief:" + SCENES[step.i].id] ? "debrief:" + SCENES[step.i].id : null;
+  return QUIZ[step.type] ? step.type : null;
+}
+function quizStats(key) {
+  let n = 0, right = 0;
+  for (const p of state.players.values()) { const v = p.quiz && p.quiz[key]; if (v !== undefined) { n++; if (v === QUIZ[key].correct) right++; } }
+  return { n, right };
+}
+function censorStats() {
+  return CENSOR.cards.map((c) => { let n = 0, banned = 0; for (const p of state.players.values()) { const v = p.censor && p.censor[c.id]; if (v !== undefined) { n++; if (v) banned++; } } return { id: c.id, n, banned }; });
 }
 
 function guessStats(si) {
@@ -171,6 +184,9 @@ function screenPayload() {
   const out = { step, stepIndex: state.step, stepCount: STEPS.length, players: state.players.size, names: [...state.players.values()].map((p) => p.name).slice(-60), feed: state.feed.slice(-14), totalPoints: state.totalPoints };
   if (step.type === "scene" || step.type === "reveal") { out.stats = sceneStats(step.i); out.offenders = offenders(step.i); }
   if (step.type === "brief" || step.type === "reveal") out.guess = guessStats(step.i);
+  { const qk = quizKey(step); if (qk) out.quiz = quizStats(qk); }
+  if (step.type === "jaywalk" && state.jaywalker) out.jaywalker = { name: state.jaywalker.name, id: state.jaywalker.id, at: state.jaywalker.at };
+  if (step.type === "censor") { out.censor = censorStats(); out.flip = !!state.flip; }
   if (step.type === "unique") { const u = uniqueness(); out.unique = { total: u.total, smallUnique: u.smallUnique, fullUnique: u.fullUnique }; }
   if (step.type === "file") out.files = [...state.players.values()].map((p) => { const f = buildFile({ name: p.name, answers: p.answers, faces: p.faces, seed: p.pid, device: p.device, inform: p.inform, lin: p.lin }); return { name: p.name, id: f.id, tags: f.tags, alerts: f.alerts.length, points: f.points + f.inferences.length, mtags: f.market.tags.map((x) => x.t) }; });
   if (step.type === "inform" || step.type === "informres") out.inform = informStats(step.type === "informres");
@@ -181,7 +197,8 @@ function screenPayload() {
 }
 function playerPayload(p) {
   const step = currentStep();
-  const out = { step, stepIndex: state.step, players: state.players.size, me: { name: p.name, answers: p.answers, polls: p.polls, points: p.points, inform: p.inform || null, guesses: p.guesses || {}, lin: p.lin || {} } };
+  const out = { step, stepIndex: state.step, players: state.players.size, me: { name: p.name, answers: p.answers, polls: p.polls, points: p.points, inform: p.inform || null, guesses: p.guesses || {}, lin: p.lin || {}, quiz: p.quiz || {}, censor: p.censor || {} } };
+  if (step.type === "jaywalk") out.jaywalked = !!(state.jaywalker && state.jaywalker.pid === p.pid);
   if (step.type === "reveal") out.guess = guessStats(step.i);
   if (step.type === "inform") out.classmates = [...state.players.values()].filter((q) => q.pid !== p.pid).map((q) => q.name).sort((a, b) => a.localeCompare(b)).slice(0, 30);
   if (step.type === "informres") out.inform = informStats(false);
@@ -231,6 +248,13 @@ function addLogs(p, logs, clock) {
 
 function onStepEnter() {
   const step = currentStep();
+  state.flip = false;
+  if (step.type === "jaywalk" && !state.jaywalker && state.players.size) {
+    const ps = [...state.players.values()], p = ps[Math.floor(Math.random() * ps.length)];
+    const h = [...p.pid].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+    state.jaywalker = { pid: p.pid, name: p.name, id: `3101•• ••••${String(h % 10000).padStart(4, "0")}`, at: new Date().toTimeString().slice(0, 8) };
+    addLogs(p, ["Caught jaywalking by face recognition — photo shown on the public screen"], "08:52");
+  }
   if (step.type === "scene") {
     state.sceneShownAt[step.i] = now();
     if (SCENES[step.i].id === "train" && state.blacklisted.size === 0) {
@@ -360,6 +384,22 @@ const server = http.createServer(async (req, res) => {
     if (!a.ms) a.ms = Math.max(0, now() - (state.sceneShownAt[si] || now()));
     let outcome = opt.outcome;
     const blacklisted = scene.id === "train" && state.blacklisted.has(player.pid) && opt.outcome === "ok";
+    // earlier choices that come back later in the day
+    const prev = (id) => player.answers[id] && player.answers[id].final;
+    let carry = null;
+    if (scene.id === "breakfast" && (opt.id === "wechat" || opt.id === "delivery") && prev("sim") === "black") carry = "simFrozen";
+    if (scene.id === "train" && opt.outcome === "ok" && !blacklisted) {
+      if (prev("post") === "sensitive") carry = "trainKeyPerson";
+      else if ([...state.players.values()].some((q) => q.inform && q.inform.target === player.name)) carry = "trainReported";
+    }
+    if (scene.id === "night" && opt.id === "home" && player.lin && Object.values(player.lin).includes(false)) carry = "nightGrid";
+    if (scene.id === "night" && opt.id === "hotel" && prev("healthcode") === "zhengzhou") carry = "nightPetitioner";
+    if (carry) {
+      const c = CARRY[carry];
+      if (carry === "simFrozen") { a.carryBlocked = carry; addLogs(player, ["WeChat Pay refused: account frozen"], scene.clock); broadcast(); return json(res, 200, { outcome: "blocked", carry }); }
+      a.final = opt.id; a.carry = carry; addLogs(player, c.logs, scene.clock); broadcast();
+      return json(res, 200, { outcome: "consequence", carry });
+    }
     if (outcome === "blocked") {
       addLogs(player, opt.logs, scene.clock);
     } else {
@@ -405,6 +445,26 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, {});
   }
 
+  if (p === "/api/quiz") {
+    if (!player) return json(res, 404, {});
+    const key = quizKey(currentStep()); if (!key) return json(res, 409, {});
+    const v = Number(body.option); if (QUIZ[key].options[v] === undefined) return json(res, 400, {});
+    player.quiz = player.quiz || {};
+    if (player.quiz[key] === undefined) player.quiz[key] = v;
+    broadcast();
+    return json(res, 200, { correct: player.quiz[key] === QUIZ[key].correct });
+  }
+
+  if (p === "/api/censor") {
+    if (!player) return json(res, 404, {});
+    if (currentStep().type !== "censor") return json(res, 409, {});
+    const card = CENSOR.cards.find((c) => c.id === body.card); if (!card) return json(res, 400, {});
+    player.censor = player.censor || {};
+    if (player.censor[card.id] === undefined) player.censor[card.id] = !!body.banned;
+    broadcast();
+    return json(res, 200, {});
+  }
+
   if (p === "/api/guess") {
     if (!player) return json(res, 404, {});
     const step = currentStep();
@@ -445,6 +505,7 @@ const server = http.createServer(async (req, res) => {
     if (body.action === "prev") state.step = Math.max(0, state.step - 1);
     if (body.action === "goto" && Number.isInteger(body.step)) state.step = Math.max(0, Math.min(STEPS.length - 1, body.step));
     if (body.action === "reset") state = freshState();
+    if (body.action === "flip") { state.flip = !state.flip; broadcast(); return json(res, 200, { flip: state.flip }); }
     if (body.action === "next" || body.action === "goto") onStepEnter();
     broadcast();
     return json(res, 200, { step: state.step });

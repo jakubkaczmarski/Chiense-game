@@ -363,7 +363,8 @@
     if (s.id === "metro") STEPS.push({ type: "camhist" }); // how China's camera network was built, before the commute
     STEPS.push({ type: "brief", i }); STEPS.push({ type: "scene", i }); STEPS.push({ type: "reveal", i }); STEPS.push({ type: "debrief", i });
     // side quest after the Weibo scene: the class counsellor phones every player privately
-    if (s.id === "post") { STEPS.push({ type: "inform" }); STEPS.push({ type: "informres" }); }
+    if (s.id === "post") { STEPS.push({ type: "censor" }); STEPS.push({ type: "inform" }); STEPS.push({ type: "informres" }); }
+    if (s.id === "metro") STEPS.push({ type: "jaywalk" }); // a random player gets "caught jaywalking"
   });
   STEPS.push({ type: "case" });
   STEPS.push({ type: "file" });
@@ -539,6 +540,46 @@
     say: ["Privacy isn't about hiding — it's about control: who knows what about you", "The idea is young: from “the right to be let alone” (1890) to GDPR (2018)", "Three models today: EU rights, US market, China state security", "Today you'll feel the Chinese model from the inside"]
   };
 
+  // Quick quizzes on the talk steps: answered on the phone, instant right/wrong
+  const QUIZ = {
+    intro: { q: "Where was the world's first data-protection law passed?", options: ["The USA", "Hesse, West Germany", "China"], correct: 1, why: "Hesse, West Germany, in 1970 — after fears about government computers." },
+    daily: { q: "Roughly how many WeChat messages are sent every day?", options: ["450 million", "4.5 billion", "45 billion"], correct: 2, why: "About 45 billion a day (Tencent, 2018) — every one tied to a real name." },
+    camhist: { q: "Which city got 40,000 HD cameras within a year after the 2009 riots?", options: ["Beijing", "Ürümqi", "Shanghai"], correct: 1, why: "Ürümqi, capital of Xinjiang — the start of the region becoming a surveillance lab." },
+    case: { q: "In Gallup's 2024 safety ranking, which country was ahead of China?", options: ["Singapore", "USA", "Poland"], correct: 0, why: "Singapore (98%) — China was 3rd with 94%; the US 71%, Poland 68%." },
+    jaywalk: { q: "What did Shenzhen do to jaywalkers from 2017?", options: ["Fined them ¥500", "Showed their face and name on giant street screens", "Took away their phone"], correct: 1, why: "LED screens at crossings showed their photo, name and part of their ID number — 13,930 people at one crossing in 10 months." },
+    "debrief:sim": { q: "Can you buy a prepaid SIM in Poland without ID?", options: ["Yes, anonymously", "No — ID required since 2016–17", "Only online"], correct: 1, why: "Poland's 2016 anti-terror law ended anonymous prepaid SIMs (deadline Feb 2017)." },
+    "debrief:breakfast": { q: "What did Beijing do to Ant Group (Alipay) in 2020?", options: ["Gave it a bank licence", "Halted its record IPO", "Nationalised it"], correct: 1, why: "The IPO was suspended days before listing — the state reined in a data giant." },
+    "debrief:metro": { q: "Why was Didi fined ¥8 billion in 2022?", options: ["Unsafe drivers", "Illegal data processing", "Tax evasion"], correct: 1, why: "64.7 billion pieces of personal data processed illegally, incl. face scans and locations." },
+    "debrief:post": { q: "What do Chinese censors delete most, according to research?", options: ["Criticism of leaders", "Calls for collective action", "Foreign news"], correct: 1, why: "King, Pan & Roberts: criticism often stays up — organising gets deleted." },
+    "debrief:doctor": { q: "Under China's PIPL (2021), medical data is…", options: ["Public information", "“Sensitive” — needs separate consent", "Owned by the state"], correct: 1, why: "PIPL lists medical data as sensitive personal information." },
+    "debrief:healthcode": { q: "Why did 1,317 people in Zhengzhou get red codes in June 2022?", options: ["COVID cases", "To stop a bank-depositor protest", "Travel abroad"], correct: 1, why: "Officials misused the health code to stop protests — five were punished." },
+    "debrief:train": { q: "What is China's “social credit system” mostly?", options: ["One national score for everyone", "Court and regulatory blacklists", "An Alipay game"], correct: 1, why: "Mostly blacklists — e.g. the court list of judgment defaulters." },
+    "debrief:night": { q: "Who receives your hotel registration in China?", options: ["Only the hotel", "The local police", "The tourism bureau"], correct: 1, why: "Hotels must pass every guest's ID to local police." }
+  };
+  // "Banned or allowed?" flip-card game after the Weibo scene
+  const CENSOR = {
+    cards: [{"id": "pooh", "en": "Winnie the Pooh", "zh": "小熊维尼", "banned": true, "verdict": "🚫 Censored · 2017–18", "story": "Bloggers compared Xi Jinping to Pooh from 2013. In 2017 Pooh images were blocked on social media, and again in Feb 2018 after presidential term limits were scrapped."}, {"id": "chair", "en": "“Empty chair”", "zh": "空椅子", "banned": true, "verdict": "🚫 Censored · 2010", "story": "Liu Xiaobo won the 2010 Nobel Peace Prize while in prison, so the prize was handed to an empty chair. Even the phrase “empty chair” was scrubbed online."}, {"id": "may35", "en": "“May 35th”", "zh": "五月三十五日", "banned": true, "verdict": "🚫 Censored · every June", "story": "A code for June 4th, 1989 — the Tiananmen crackdown. Users invent dates like this because “June 4” itself is blocked."}, {"id": "disagree", "en": "“I disagree”", "zh": "我不同意", "banned": true, "verdict": "🚫 Censored · Feb 2018", "story": "Blocked on Weibo, with “emperor”, “shameless” and Orwell's Animal Farm, when term limits on the presidency were abolished."}, {"id": "letter_n", "en": "The letter “N”", "zh": "字母 N", "banned": true, "verdict": "🚫 Briefly censored · Feb 2018", "story": "Critics wrote “N > 2” — more than two presidential terms. For a few days the single letter N was blocked."}, {"id": "lying_flat", "en": "“Lying flat”", "zh": "躺平", "banned": true, "verdict": "⚠️ Restricted · 2021", "story": "A youth movement of doing the minimum instead of overworking. A Douban group with 9,000+ members was deleted and platforms were told to “strictly restrict” new posts."}, {"id": "peng", "en": "“Peng Shuai”", "zh": "彭帅", "banned": true, "verdict": "🚫 Censored · Nov 2021", "story": "The tennis star accused a former vice-premier of coercing her into sex. Her post vanished within half an hour; users then wrote “eating melons” and “Eddie Peng is too handsome” to discuss it."}, {"id": "hotpot", "en": "“Hot pot”", "zh": "火锅", "banned": false, "verdict": "✅ Allowed", "story": "Just dinner. Most of Weibo is food, celebrities and complaints about work — censorship targets a narrow set of topics."}, {"id": "panda", "en": "“Panda”", "zh": "熊猫", "banned": false, "verdict": "✅ Allowed", "story": "A national symbol — used in “panda diplomacy”. Not every cute animal is banned, just the one that looks like the leader."}],
+    tldr: "Guess which words are banned on Weibo — then flip for the story.",
+    say: ["Each phone has 9 cards: tap Banned or Allowed, the card flips with the real story", "Censorship is narrow but fast: Peng Shuai's post was gone within half an hour", "Users fight back with code words: “May 35th”, “eating melons”, “N > 2”", "Press F (or the console button) to flip all cards on the projector"],
+    sources: "HuffPost UK (2018); CS Monitor / Global Voices (2010); Hong Kong Free Press (2021); NYT via Deccan Herald (2021)"
+  };
+
+  // The jaywalker moment
+  const JAYWALK = {
+    tldr: "One of you just got caught jaywalking — and the city put your face on a screen.",
+    say: ["Shenzhen, from April 2017: LED screens at big crossings showed jaywalkers' photo, name and part of their ID number", "13,930 people were shown at one busy crossing in 10 months (Shenzhen traffic police, 2018)", "Nov 2018, Ningbo: the system “caught” businesswoman Dong Mingzhu jaywalking — it was her face on a bus advert", "Plans followed to send fines straight to people's phones"],
+    angle: "Public shaming as governance: the camera doesn't just fine you, it shows your neighbours. Is shame a legitimate policy tool?",
+    sources: "Sophos Naked Security (2018); SCMP (2018); Biometric Update (2018)"
+  };
+  // Earlier choices that come back later in the day (applied by the server)
+  const CARRY = {
+    simFrozen: { because: "Because you bought a street SIM at 07:30…", result: "Payment failed: your WeChat account is frozen — it's linked to a number cut off in the card-breaking campaign. Pay cash.", logs: [] },
+    trainKeyPerson: { because: "Because you reposted the protest video at 12:30…", result: "The face gate beeps red: KEY PERSON alert. Two officers question you for 20 minutes before you can board.", logs: ["Face match at station gate: KEY PERSON alert", "20-minute police check, recorded"], to: ["railway", "police"], state: "direct" },
+    trainReported: { because: "Because a classmate reported you to Teacher Jan…", result: "Your 12306 account is “under review” after a report. You get a ticket — 30 minutes later.", logs: ["12306 account flagged after a report", "Ticket issued after manual review"], to: ["railway", "police"], state: "demand" },
+    nightGrid: { because: "Because you refused to sign the self-criticism…", result: "A grid worker (网格员) is waiting at your compound gate: “Just a friendly check-in.” He asks about your phone call today.", logs: ["Grid worker visit at your home 23:15", "Notes added to your file"], to: ["compound", "police"], state: "direct" },
+    nightPetitioner: { because: "Because you went to Zhengzhou about the bank money…", result: "1 a.m.: the front desk calls — two police officers want to “have a chat”. Petitioners checking into hotels trigger alerts.", logs: ["Hotel check-in flagged: petitioner", "Police visit 01:05"], to: ["hotel", "police"], state: "direct" }
+  };
+
   // Backup discussion questions for the presenter, if the room is quiet
   const PROMPTS = {
     sim: { reveal: ["Did anyone try to skip the face scan? Why?", "Would you notice if a Polish carrier started asking for your face?"],
@@ -560,6 +601,8 @@
     intro: ["What's one thing you'd hate a stranger to know about you?", "Is privacy a Western idea — or universal?"],
     daily: ["Which number surprised you most?", "How many of these would be true for you in Poland too?"],
     informres: ["Would you report a classmate who cheated in an exam? Is that different?", "Is informing loyalty or betrayal — and to whom?", "How is this different from “see something, say something” in the West?"],
+    censor: ["Which card surprised you most?", "Is it better to censor a few topics fast — or many slowly?", "What code words would you invent?"],
+    jaywalk: ["Would public shaming stop you jaywalking?", "What if the system gets the face wrong — like it did with Dong Mingzhu?"],
     camhist: ["Why would a government test surveillance on a minority region first?", "Once the cameras exist, can they be used only for crime?"],
     case: ["Would you trade privacy for feeling safe at night?", "Who pays the price for a “safe” society?"],
     file: ["Which line in your file surprised you most?", "Who should be allowed to see a file like this?"],
@@ -660,7 +703,7 @@
   };
 
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { SCENES, POLLS, STEPS, WHO, STATE, KINDS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, buildFile, FILE_WORD };
+  const api = { SCENES, POLLS, STEPS, WHO, STATE, KINDS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, QUIZ, JAYWALK, CARRY, CENSOR, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);
