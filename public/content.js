@@ -511,12 +511,12 @@
     notes: "Present this honestly: these are the strongest arguments the system's supporters make. Then point to the caveats. Links to the class poll about face-recognition cameras in Kraków."
   };
 
-  // Side quest: "Inform on a classmate". Teacher Zhou (周老师), the class counsellor (辅导员 fǔdǎoyuán) —
+  // Side quest: "Inform on a classmate". Teacher Jan (扬老师), the class counsellor (辅导员 fǔdǎoyuán) —
   // in Chinese universities counsellors do the Party's political work with students.
   const INFORM = {
-    caller: "Teacher Zhou", zh: "周老师", role: "Class counsellor · 辅导员 fǔdǎoyuán",
+    caller: "Teacher Jan", zh: "扬老师", role: "Class counsellor · 辅导员 fǔdǎoyuán",
     lines: [
-      "Hello, it's Teacher Zhou, your class counsellor.",
+      "Hello, it's Teacher Jan, your class counsellor.",
       "Someone in your group posted complaints online about the school and the city.",
       "Who was it? Tell me and you get +50 points. Nobody will know it came from you."
     ],
@@ -530,22 +530,26 @@
       ["≈ $15,000", "top reward for a national-security tip under the 2022 Ministry of State Security rules", "China Digital Times (2022)"]
     ],
     ask: "Why did you report — or refuse? Loyalty to the group, to the authority, or to yourself?",
-    // original poster-style portrait: a smiling counsellor with a neat bob, glasses, cardigan and red Party pin
+    // poster-style portrait of Jan (with his OK): wide-brim hat, round gold sunglasses, ponytail, beige blazer, red Party pin
     avatar: `<svg viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="tzbg" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#ffe08a"/><stop offset=".5" stop-color="#f2a33a"/><stop offset="1" stop-color="#c8102e"/></radialGradient></defs>
       <rect width="200" height="200" fill="url(#tzbg)"/>
       <g stroke="#2a1a10" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
-        <path d="M32 200 C36 156 66 142 100 140 C134 142 164 156 168 200Z" fill="#2f5d7c"/>
-        <path d="M84 140 L100 170 L116 140" fill="#f4f1ea"/>
-        <path d="M88 128 h24 v14 c-6 5 -18 5 -24 0z" fill="#f3c19a"/>
-        <path d="M60 96 C56 54 76 38 100 38 C124 38 144 54 140 96 C140 118 134 130 128 132 L72 132 C66 130 60 118 60 96Z" fill="#1d1712"/>
-        <path d="M68 92 C68 66 82 54 100 54 C118 54 132 66 132 92 C132 118 118 134 100 134 C82 134 68 118 68 92Z" fill="#f8cfa6"/>
-        <path d="M66 82 C70 58 88 48 104 50 C92 56 84 66 80 76 C76 70 72 74 66 82Z" fill="#1d1712"/>
+        <path d="M120 116 C132 124 136 140 128 156 C124 146 118 136 112 128Z" fill="#c9a26a"/>
+        <path d="M28 200 C32 158 62 144 100 142 C138 144 168 158 172 200Z" fill="#d9ccb4"/>
+        <path d="M84 140 L100 176 L116 140 L110 136 L100 150 L90 136Z" fill="#f6f6f2"/>
+        <path d="M84 140 L70 150 L86 200 M116 140 L130 150 L114 200" fill="none" stroke="#a89c86" stroke-width="2"/>
+        <path d="M89 126 h22 v14 c-6 5 -16 5 -22 0z" fill="#f0c4a0"/>
+        <path d="M72 94 C72 70 84 60 100 60 C116 60 128 70 128 94 C128 118 116 134 100 134 C84 134 72 118 72 94Z" fill="#f6d0ac"/>
+        <path d="M74 106 C78 126 90 134 100 134 C110 134 122 126 126 106 C122 118 114 124 100 124 C86 124 78 118 74 106Z" fill="#b98f62" stroke="none" opacity=".7"/>
+        <ellipse cx="72" cy="98" rx="5" ry="8" fill="#f0c4a0"/><ellipse cx="128" cy="98" rx="5" ry="8" fill="#f0c4a0"/>
+        <path d="M34 72 C52 62 148 62 166 72 C160 80 40 80 34 72Z" fill="#3c3d2c"/>
+        <path d="M71 70 L74 36 C86 31 114 31 126 36 L129 70Z" fill="#45472f"/>
+        <path d="M70 62 C90 58 110 58 130 62 L130 70 C110 66 90 66 70 70Z" fill="#141414"/>
       </g>
-      <g fill="#ef7f6a" opacity=".5"><ellipse cx="80" cy="108" rx="8" ry="5"/><ellipse cx="120" cy="108" rx="8" ry="5"/></g>
-      <g stroke="#2a1a10" stroke-linecap="round" fill="none"><path d="M80 82 q7 -4 14 0 M106 82 q7 -4 14 0" stroke-width="2.6"/><path d="M82 94 q5 -4 10 0 M108 94 q5 -4 10 0" stroke-width="2.6"/>
-        <g stroke="#7a1020" stroke-width="2"><rect x="76" y="86" width="20" height="14" rx="5"/><rect x="104" y="86" width="20" height="14" rx="5"/><path d="M96 92 h8"/></g>
-        <path d="M100 98 q-3 8 0 10" stroke-width="1.8"/><path d="M88 116 q12 10 24 0" stroke-width="2.4"/></g>
-      <g transform="translate(76 162)"><circle r="5.5" fill="#c8102e" stroke="#ffd24a" stroke-width="1.2"/><path d="M0 -3 L.9 -.9 2.9 -.9 1.3 .3 1.9 2.4 0 1.2 -1.9 2.4 -1.3 .3 -2.9 -.9 -.9 -.9Z" fill="#ffd24a"/></g></svg>`,
+      <g stroke="#caa04a" stroke-width="2.2"><circle cx="87" cy="92" r="10" fill="#1b1b1b"/><circle cx="113" cy="92" r="10" fill="#1b1b1b"/><path d="M97 91 q3 -3 6 0 M77 90 l-5 -2 M123 90 l5 -2" fill="none"/></g>
+      <g fill="#fff" opacity=".35"><ellipse cx="83" cy="88" rx="3" ry="2"/><ellipse cx="109" cy="88" rx="3" ry="2"/></g>
+      <g stroke="#2a1a10" stroke-linecap="round" fill="none"><path d="M100 98 q-3 8 0 11" stroke-width="1.8"/><path d="M90 116 q8 6 18 -1" stroke-width="2.4"/><path d="M90 112 q10 -3 20 0" stroke="#9c7650" stroke-width="2"/></g>
+      <g transform="translate(74 160)"><circle r="5.5" fill="#c8102e" stroke="#ffd24a" stroke-width="1.2"/><path d="M0 -3 L.9 -.9 2.9 -.9 1.3 .3 1.9 2.4 0 1.2 -1.9 2.4 -1.3 .3 -2.9 -.9 -.9 -.9Z" fill="#ffd24a"/></g></svg>`,
     angle: "Collectivism cuts both ways: group loyalty can protect classmates — or be turned into watching each other. Mass denunciation peaked in the Cultural Revolution; informant systems are its quieter heir."
   };
 

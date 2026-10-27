@@ -30,7 +30,7 @@ If the QR ever shows the wrong address, add `&join=https://your-public-url` to t
 
 ## Side quest: inform on a classmate
 
-Right after the Weibo scene, **Teacher Zhou (周老师), the class counsellor (辅导员)**, phones every player privately: the phone rings and vibrates, they accept, and she asks who in the group complained online, offering +50 points. Players tap a classmate's name or refuse. The projector only shows how many have answered; the next step reveals how many reported someone, how many refused, the most-reported names, and real facts about student informants (学生信息员) in Chinese universities. Reporting or refusing also appears in each player's file at the end.
+Right after the Weibo scene, **Teacher Jan (扬老师), the class counsellor (辅导员)**, phones every player privately: the phone rings and vibrates, they accept, and she asks who in the group complained online, offering +50 points. Players tap a classmate's name or refuse. The projector only shows how many have answered; the next step reveals how many reported someone, how many refused, the most-reported names, and real facts about student informants (学生信息员) in Chinese universities. Reporting or refusing also appears in each player's file at the end.
 
 ## Warning calls: Secretary Lin
 

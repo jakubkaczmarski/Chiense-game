@@ -476,7 +476,7 @@ function drawStage() {
     if (step.type === "inform") {
       S.innerHTML = `<div class="talk inform"><div class="eyebrow">☎ Side quest · private calls</div>
         <div class="talkgrid"><div class="talkL"><h1>Your counsellor is calling<br><span style="color:var(--gold)">every phone in the room</span></h1>
-          <p class="lead">Answer it. What you say stays between you and Teacher Zhou.</p>
+          <p class="lead">Answer it. What you say stays between you and Teacher Jan.</p>
           <div class="ringrow">${Array.from({ length: Math.max(3, Math.min(d.players, 18)) }, (_, j) => `<span style="--j:${j}">📱</span>`).join("")}</div>
           <div class="answered"><b>${st.answered}</b> / ${d.players} calls answered<div class="prog"><i style="width:${pct(st.answered, d.players)}%"></i></div></div></div>
         <div class="talkR">${card}<div class="word"><div class="w-k">词 · Word of the side quest</div><div class="w-zh">${esc(INFORM.word.zh)}</div><div class="w-py">${esc(INFORM.word.py)}</div><div class="w-en">${esc(INFORM.word.en)}</div><div class="w-note">${esc(INFORM.word.note)}</div></div></div></div></div>`;

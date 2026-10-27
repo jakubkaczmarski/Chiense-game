@@ -120,7 +120,7 @@ function summary(st) {
   const sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
   if (st.type === "brief") return { tldr: sc.brief.tldr, say: sc.brief.points, ask: sc.brief.ask, extra: sentences(sc.brief.notes) };
   if (st.type === "debrief") return { tldr: sc.debrief.tldr, say: sc.debrief.points, angle: sc.debrief.ir, pro: sc.debrief.pro, extra: sentences(sc.debrief.notes) };
-  if (st.type === "inform") return { tldr: "Every phone gets a private call: name a classmate, or refuse.", say: ["Don't explain — just say: answer your phone", "Teacher Zhou asks who complained online, for +50 points", "Watch the answered counter; Next when most have answered"] };
+  if (st.type === "inform") return { tldr: "Every phone gets a private call: name a classmate, or refuse.", say: ["Don't explain — just say: answer your phone", "Teacher Jan asks who complained online, for +50 points", "Watch the answered counter; Next when most have answered"] };
   if (st.type === "informres") return { tldr: "How many of you reported a classmate — for 50 points?", say: INFORM.facts.map(([n, l, src]) => `${n}: ${l} (${src})`), ask: INFORM.ask, angle: INFORM.angle, extra: ["Reporting also shows up in each player's file at the end (informant / uncooperative)."] };
   if (st.type === "case") return { tldr: CASE.tldr, say: [`Safe at night: ${CASE.safe.rows.map(([n, v]) => n + " " + v + "%").join(", ")} (${CASE.safe.src})`, ...CASE.tiles.map(([n, l, src]) => `${n} ${l} (${src})`)], ask: CASE.ask, cav: CASE.caveats, extra: sentences(CASE.notes) };
   if (st.type === "scene") {
