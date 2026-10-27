@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f4ef">
+<title>Shanghai Life</title>
+<style>
+:root{
+  --bg:#f3f4ef; --card:#ffffff; --ink:#15181a; --muted:#6b7177; --line:#e3e5df;
+  --green:#12a66a; --green-ink:#0b6b45; --red:#d4372c; --red-bg:#fdecea; --amber:#b7791f; --amber-bg:#fdf3e1;
+  --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100dvh;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+.status{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:calc(8px + env(safe-area-inset-top)) 18px 8px;font-size:13px;font-weight:600;background:var(--bg)}
+.status .sig{display:flex;gap:6px;align-items:center;color:var(--muted)}
+.bars{display:inline-flex;gap:2px;align-items:flex-end;height:11px}
+.bars i{width:3px;background:var(--ink);border-radius:1px}
+.appbar{display:flex;align-items:center;gap:10px;padding:6px 18px 14px}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--green);color:#fff;display:grid;place-items:center;font-weight:800;font-size:17px}
+.appbar h1{font-size:18px;letter-spacing:-.01em}
+.appbar small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+main{padding:0 16px;max-width:520px;margin:0 auto}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:0 1px 0 var(--line)}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h2{font-size:24px;line-height:1.15;letter-spacing:-.02em;margin:4px 0 8px}
+p.lead{color:#30363b}
+.clock{font-variant-numeric:tabular-nums;font-weight:800;color:var(--green-ink)}
+.opts{display:grid;gap:10px;margin-top:6px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.opt{width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px;font-weight:600;font-size:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;transition:transform .08s,border-color .15s}
+.opt:active{transform:scale(.98)}
+.opt::after{content:"›";color:var(--muted);font-size:22px;line-height:1}
+.opt[disabled]{opacity:.45;text-decoration:line-through;cursor:not-allowed}
+.opt[disabled]::after{content:"✕";font-size:15px;color:var(--red)}
+.btn{width:100%;background:var(--green);color:#fff;font-weight:700;border-radius:14px;padding:16px;font-size:17px}
+.btn.ghost{background:transparent;color:var(--red);border:1.5px solid var(--red)}
+input{width:100%;font:inherit;font-size:18px;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);background:#fff;margin:10px 0 12px;color:var(--ink)}
+input:focus{outline:2px solid var(--green);border-color:transparent}
+.fine{font-size:13px;color:var(--muted)}
+.banner{border-radius:14px;padding:14px 16px;margin-bottom:12px;font-weight:600}
+.banner.red{background:var(--red-bg);color:var(--red)}
+.banner.amber{background:var(--amber-bg);color:var(--amber)}
+.banner.green{background:#e4f5ec;color:var(--green-ink)}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.receipt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:#101314;color:#d9f7e7;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.receipt .h{color:#8ba597;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.receipt li{list-style:none;padding:4px 0;border-top:1px dashed #2a3330}
+.receipt li:first-of-type{border-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:12px;font-weight:700;padding:5px 10px;border-radius:99px;background:#1d2422;color:#ffd27a}
+.chip.state{background:#3a1512;color:#ff9a8f}
+.idcard{border-radius:16px;padding:16px;background:linear-gradient(135deg,#e7f0ff,#f6efe2);border:1px solid #d9dfe8;display:grid;grid-template-columns:78px 1fr;gap:14px;align-items:center}
+.photo{width:78px;height:96px;border-radius:8px;background:#cfd6e0;display:grid;place-items:end center;overflow:hidden}
+.photo svg{width:70px}
+.idcard dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:13px}
+.idcard dt{color:var(--muted)}
+.idcard dd{font-weight:700}
+.idnum{grid-column:1/-1;font-family:ui-monospace,Menlo,monospace;letter-spacing:.12em;font-size:15px;font-weight:700;margin-top:4px}
+.big{font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{font-weight:600;text-align:right;word-break:break-word}
+.center{text-align:center}
+.pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);margin-right:8px;animation:p 1.4s infinite}
+@keyframes p{50%{opacity:.25}}
+.poll .opt::after{content:""}
+.poll .opt.sel{border-color:var(--green);background:#e4f5ec}
+.receipt .who-l{color:#8ba597;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-top:12px}
+.receipt .chips{margin-top:6px}
+.statel{margin-top:10px;font-size:12px;line-height:1.45;color:#ffd27a;border-top:1px dashed #2a3330;padding-top:8px}
+.statel.direct{color:#ff9a8f}
+.receipt.print .statel{animation:rise .5s both}
+.why{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.why summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--green-ink);list-style:none}
+.why summary::-webkit-details-marker{display:none}
+.why summary::before{content:"▸ "}
+.why[open] summary::before{content:"▾ "}
+.why p{font-size:15px;color:var(--muted);margin-top:6px;line-height:1.45}
+.redband{background:linear-gradient(90deg,#9e0b1f,#c8102e 50%,#9e0b1f);color:#ffd24a;border-radius:12px;padding:10px 14px;margin-bottom:12px;font:700 14px/1.3 "PingFang SC","Noto Sans SC",sans-serif;letter-spacing:.12em;display:flex;align-items:center;gap:10px;border-bottom:2px solid #f4b400}
+.redband small{display:block;font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#ffe9a8}
+.dossier{border-top:10px solid #c8102e;background:#f5f0e4;color:#1d1a14;border-radius:16px;padding:18px;border:1px solid #d9cfb8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;box-shadow:0 2px 0 #d9cfb8}
+.dz-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1d1a14;padding-bottom:10px}
+.dz-cn{font-size:12px;color:#a3281d;letter-spacing:.1em}.dz-t{font:800 20px -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:-.01em}
+.dz-no{font-size:10px;color:#6d6452;text-align:right;max-width:110px;word-break:break-all}
+.dz-id{display:grid;grid-template-columns:78px 1fr;gap:12px;margin:12px 0 4px}
+.dz-name{font:800 20px -apple-system,BlinkMacSystemFont,sans-serif}.dz-sub{font-size:12px;color:#6d6452}
+.dz-stamp{display:inline-block;margin:6px 6px 0 0;font-weight:800;font-size:11px;color:#a3281d;border:2px solid #a3281d;border-radius:4px;padding:3px 6px;transform:rotate(-2deg)}
+.dz-ok{display:inline-block;margin-top:6px;font-size:11px;color:#2d6b4a;border:1.5px solid #2d6b4a;border-radius:4px;padding:3px 6px}
+.dz-sec{margin-top:12px}.dz-h{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8a7f69;border-bottom:1px dashed #cbbf a4;border-bottom:1px dashed #cbbfa4;padding-bottom:3px;margin-bottom:4px}
+.dz-row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:4px 0}
+.dz-row span{color:#6d6452;flex:none}.dz-row b{font-weight:600;text-align:right}
+.inf .dz-row b{color:#8a5a00;text-align:left}.al .dz-row b{color:#a3281d;text-align:left}
+.dz-foot{font:12px/1.45 -apple-system,BlinkMacSystemFont,sans-serif;color:#6d6452;margin-top:14px}
+.enter .dz-row{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+.enter .dz-stamp{animation:slam .5s cubic-bezier(.3,1.6,.5,1) both 1.2s}
+.adprof{margin-top:12px;background:#fff;border-radius:16px;padding:18px;border:1px solid #e4e1ff;box-shadow:0 2px 0 #e4e1ff}
+.ap-cn{font:700 12px ui-monospace,Menlo,monospace;letter-spacing:.1em;color:#5b4bdb}
+.ap-t{font:800 20px -apple-system,BlinkMacSystemFont,sans-serif;color:#1a1640}
+.ap-head p{font-size:13px;color:#6b6890;margin-top:4px}
+.ap-h{font:700 10px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#8b88ad;margin:14px 0 6px}
+.ap-tags{display:flex;flex-wrap:wrap;gap:6px}
+.ap-tag{font-size:12.5px;font-weight:600;color:#2b2470;background:#efedff;border-radius:99px;padding:5px 10px}
+.ap-tag i{font-style:normal;color:#7a6ff0;font-weight:700;margin-left:4px}
+.ap-need{font-size:13.5px;color:#1a1640;padding:3px 0}
+.ap-ads{display:grid;gap:8px}
+.ap-ad{font-size:14px;font-weight:600;color:#1a1640;background:linear-gradient(135deg,#fff7e6,#ffe9f0);border:1px solid #f3d9c8;border-radius:12px;padding:10px 12px}
+.ap-ad span{display:block;font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;color:#b0623a;text-transform:uppercase;margin-bottom:3px}
+.ap-price{font-size:13px;color:#7a2c00;background:#fff1e6;border-radius:10px;padding:8px 10px;margin-bottom:6px}
+.ap-price.law{color:#2d4a6b;background:#eaf1fa}
+.ap-foot{font-size:12px;color:#6b6890;margin-top:12px;line-height:1.45}
+.enter .ap-tag,.enter .ap-need,.enter .ap-ad,.enter .ap-price{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .adprof{background:#17152b;border-color:#2c2850}:root:not([data-theme="light"]) .ap-t,:root:not([data-theme="light"]) .ap-need{color:#ecebff}:root:not([data-theme="light"]) .ap-tag{background:#2a2552;color:#e4e0ff}:root:not([data-theme="light"]) .ap-ad{background:#2b1f22;border-color:#4a3330;color:#ffe9dc}:root:not([data-theme="light"]) .ap-price{background:#2e1d10;color:#ffc9a0}:root:not([data-theme="light"]) .ap-price.law{background:#13243a;color:#bcd4f0}}
+.wordp{margin-top:12px;display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,#9e0b1f,#c8102e);border-radius:12px;padding:10px 14px;color:#ffe9b8}
+.wordp b{font:800 26px "PingFang SC","Noto Sans SC",sans-serif;color:#ffd24a;letter-spacing:.04em}
+.wordp span{font-size:13px;line-height:1.3}
+/* ---- motion ---- */
+.enter > *{animation:rise .55s cubic-bezier(.2,.8,.2,1) both}
+.enter > *:nth-child(2){animation-delay:.07s}.enter > *:nth-child(3){animation-delay:.14s}.enter > *:nth-child(4){animation-delay:.21s}.enter > *:nth-child(5){animation-delay:.28s}.enter > *:nth-child(6){animation-delay:.35s}
+.enter .opts .opt{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+.enter .opts .opt:nth-child(1){animation-delay:.2s}.enter .opts .opt:nth-child(2){animation-delay:.3s}.enter .opts .opt:nth-child(3){animation-delay:.4s}.enter .opts .opt:nth-child(4){animation-delay:.5s}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}}
+.receipt.print li{animation:logline .5s cubic-bezier(.2,.8,.2,1) both}
+.receipt.print .chip{animation:chip .4s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes logline{0%{opacity:0;transform:translateX(-12px)}60%{opacity:1;background:#1d4d36}100%{background:transparent}}
+@keyframes chip{from{transform:scale(0);opacity:0}}
+.receipt.print .h::after{content:"▍";animation:blink .6s steps(1) 6}
+@keyframes blink{50%{opacity:0}}
+.banner{position:relative;overflow:hidden}
+.stamp{position:absolute;right:14px;bottom:12px;font:800 15px/1 ui-monospace,Menlo,monospace;letter-spacing:.15em;color:var(--red);border:2.5px solid var(--red);border-radius:6px;padding:5px 8px;transform:rotate(-12deg);opacity:.85}
+.fresh .stamp{animation:slam .45s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes slam{from{transform:rotate(-12deg) scale(3);opacity:0}}
+#flash{position:fixed;inset:0;background:var(--red);pointer-events:none;opacity:0;z-index:20}
+#flash.run{animation:flash .9s ease-out}
+@keyframes flash{0%,30%{opacity:.55}100%{opacity:0}}
+.idcard{position:relative;overflow:hidden}
+.idcard::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-100%);animation:holo 3.5s ease-in-out infinite}
+@keyframes holo{60%,100%{transform:translateX(100%)}}
+.photo{position:relative}
+.photo::after{content:"";position:absolute;left:0;right:0;height:3px;background:#12a66a;box-shadow:0 0 10px #12a66a;animation:scan 2.2s ease-in-out infinite}
+@keyframes scan{0%,100%{top:4%}50%{top:92%}}
+.facetag{font:700 11px ui-monospace,Menlo,monospace;color:var(--green-ink);letter-spacing:.08em;margin-top:6px}
+.big.pulse-in{animation:popin .6s cubic-bezier(.3,1.6,.5,1) both .2s}
+@keyframes popin{from{transform:scale(.4);opacity:0}}
+@media (prefers-reduced-motion:reduce){*,*::after,*::before{animation:none!important;transition:none!important}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1112;--card:#181c1e;--ink:#eef1ee;--muted:#9aa3a8;--line:#2a2f31;--red-bg:#3a1512;--amber-bg:#3a2a0f}
+  :root:not([data-theme="light"]) .bars i{background:var(--ink)}
+  :root:not([data-theme="light"]) .idcard{background:linear-gradient(135deg,#1d2633,#2b2519);border-color:#333}
+  :root:not([data-theme="light"]) p.lead{color:#d0d5d2}
+  :root:not([data-theme="light"]) input{background:#181c1e}
+  :root:not([data-theme="light"]) .banner.green,:root:not([data-theme="light"]) .poll .opt.sel{background:#0f2d20;color:#7fe3b2}
+  :root:not([data-theme="light"]) .receipt{background:#05110b;border:1px solid #1e3a2c}}
+</style>
+</head>
+<body>
+<div class="status"><span id="sclock">07:00</span><span class="sig">CN Mobile 5G <span class="bars"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:11px"></i></span></span></div>
+<div class="appbar"><div class="logo">生</div><div><h1>Shanghai Life</h1><small>生活 · everything in one app</small></div></div>
+<div id="flash"></div>
+<main id="app"><div class="card center"><span class="pulse"></span>Connecting…</div></main>
+
+<script src="/content.js"></script>
+<script src="/facescan.js"></script>
+<script src="/story.js"></script>
+<script>
+const { SCENES, POLLS, WHO } = window.GAME;
+const app = document.getElementById("app");
+const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}}, del(k){try{localStorage.removeItem(k)}catch{}} };
+let pid = store.get("dds_pid");
+let last = null;          // last payload
+let local = { blockedMsg: null, flash: null, sceneKey: null };
+let es = null;
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json().catch(() => ({})));
+
+// ---------- quiet collection (revealed at the end of the game) ----------
+async function collectMeta() {
+  const m = {
+    lang: navigator.language, langs: (navigator.languages || []).join(","),
+    tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    screen: screen.width + "×" + screen.height, dpr: devicePixelRatio,
+    dark: matchMedia("(prefers-color-scheme: dark)").matches,
+    net: navigator.connection?.effectiveType || "", cores: navigator.hardwareConcurrency || null, mem: navigator.deviceMemory || null
+  };
+  try { if (navigator.getBattery) { const b = await navigator.getBattery(); m.battery = b.level * 100; m.charging = b.charging; } } catch {}
+  return m;
+}
+let hiddenAt = null;
+document.addEventListener("visibilitychange", () => {
+  if (!pid) return;
+  if (document.hidden) { hiddenAt = Date.now(); post("/api/meta", { pid, tabSwitch: 1 }); }
+  else if (hiddenAt) { post("/api/meta", { pid, hiddenMs: Date.now() - hiddenAt }); hiddenAt = null; }
+});
+
+// ---------- connection ----------
+function connect() {
+  if (es) es.close();
+  es = new EventSource("/events?pid=" + encodeURIComponent(pid || "none"));
+  es.onmessage = (e) => {
+    const d = JSON.parse(e.data);
+    if (d.gone) { if (pid) { store.del("dds_pid"); pid = null; } last = d; return renderJoin(d.step); }
+    last = d; render();
+  };
+}
+
+// ---------- views ----------
+function renderJoin(step) {
+  if (step && step.type === "end") { app.innerHTML = `<div class="card center"><h2>Session over</h2><p class="lead">Thanks for playing.</p></div>`; return; }
+  document.getElementById("sclock").textContent = "07:00";
+  app.innerHTML = `
+    <div class="card">
+      <div class="eyebrow">Welcome to Shanghai</div>
+      <h2>Register as a resident</h2>
+      <p class="lead">For the next half hour you live in China. Pick a nickname — any name works.</p>
+      <input id="nick" maxlength="18" placeholder="Nickname" autocomplete="off" autocapitalize="words">
+      <button class="btn" id="go">Register</button>
+      <p class="fine" style="margin-top:12px">Classroom game. Your answers and some technical info are used live during the game. If you allow the camera, face scans run only on this phone — no images are sent. Everything is kept in memory only and deleted when the session ends.</p>
+    </div>`;
+  const go = async () => {
+    const btn = document.getElementById("go"); btn.disabled = true; btn.textContent = "Registering…";
+    const r = await post("/api/join", { name: document.getElementById("nick").value, meta: await collectMeta() });
+    pid = r.pid; store.set("dds_pid", pid); connect();
+  };
+  document.getElementById("go").onclick = go;
+  document.getElementById("nick").onkeydown = (e) => { if (e.key === "Enter") go(); };
+}
+
+function fakeId(name) {
+  let h = 0; for (const c of name + pid) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const d = String(h).padStart(10, "0");
+  return `310104 ${2000 + (h % 7)}${String(1 + (h % 12)).padStart(2, "0")}${String(1 + (h % 28)).padStart(2, "0")} ${d.slice(0, 3)}${h % 10}`;
+}
+const STAR = '<svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg>';
+const silhouette = `<svg viewBox="0 0 70 80"><circle cx="35" cy="28" r="16" fill="#9aa6b6"/><path d="M5 80c2-20 14-30 30-30s28 10 30 30z" fill="#9aa6b6"/></svg>`;
+
+function idCard(me) {
+  return `<div class="idcard"><div class="photo">${silhouette}</div>
+    <dl><dt>Name</dt><dd>${esc(me.name)}</dd><dt>Residence</dt><dd>Shanghai</dd><dt>Status</dt><dd>Registered ✓</dd><dt>Face</dt><dd class="facetag">● ENROLLED</dd>
+    <div class="idnum">${esc(window.GAME.buildFile({ name: me.name, seed: pid }).id)}</div></dl></div>`;
+}
+
+function receipt(logs, to, title = "Data logged", pk, state) {
+  if (!logs.length) return "";
+  const fresh = pk && !printed.has(pk); if (pk) printed.add(pk);
+  const d0 = 250, dc = d0 + logs.length * 420;
+  const stateTxt = window.GAME.STATE[state] || "";
+  return `<div class="receipt${fresh ? " print" : ""}"><div class="h">${title}</div><ul>${logs.map((l, i) => `<li style="animation-delay:${d0 + i * 420}ms">› ${esc(l)}</li>`).join("")}</ul>
+    <div class="who-l">Held by</div>
+    <div class="chips">${to.map((w, i) => `<span class="chip ${w === "police" || w === "govt" ? "state" : ""}" style="animation-delay:${dc + i * 160}ms">${esc(WHO[w])}</span>`).join("")}</div>
+    ${stateTxt ? `<div class="statel ${state}" style="animation-delay:${dc + to.length * 160 + 150}ms">${state === "direct" ? "⚑ " : "⚖ "}${esc(stateTxt)}</div>` : ""}</div>`;
+}
+
+function render() {
+  const d = last; if (!d || !d.me) return;
+  const step = d.step;
+  const scene = step.i !== undefined && (step.type === "scene" || step.type === "reveal") ? SCENES[step.i] : null;
+  document.getElementById("sclock").textContent = scene ? scene.clock : step.type === "lobby" ? "07:00" : "23:59";
+  const key = step.type + ":" + (step.i ?? "");
+  const entering = key !== local.sceneKey;
+  if (entering) { local = { blockedMsg: null, fresh: false, sceneKey: key }; }
+  if (entering && step.type !== "file") { const st = document.querySelector(".story"); if (st) st.remove(); }
+  draw(d, step, scene);
+  app.className = entering ? "enter" : "";
+  if (local.fresh) { app.classList.add("fresh"); local.fresh = false; }
+  if (entering && (step.type === "meta" || step.type === "end")) scramble();
+  if (entering && step.type === "scene" && step.i === 0 && window.FaceScan) FaceScan.preload();
+}
+
+const printed = new Set();
+let flashedBlacklist = false;
+function flash() { const f = document.getElementById("flash"); f.classList.remove("run"); void f.offsetWidth; f.classList.add("run"); }
+function scramble() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const glyphs = "▓▒░#%&@$01ABCDEFX";
+  app.querySelectorAll(".kv dd").forEach((dd, i) => {
+    const final = dd.textContent; let n = 0; const steps = 10 + i * 2;
+    const iv = setInterval(() => {
+      n++;
+      dd.textContent = n >= steps ? final : final.split("").map((c, j) => c === " " || j < (n / steps) * final.length ? c : glyphs[(Math.random() * glyphs.length) | 0]).join("");
+      if (n >= steps) clearInterval(iv);
+    }, 45);
+  });
+}
+
+function draw(d, step, scene) {
+
+  if (step.type === "lobby") {
+    app.innerHTML = `<div class="redband"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><div>欢迎来到上海 · 平安中国<small>WELCOME TO SHANGHAI · SAFE CHINA</small></div></div>${idCard(d.me)}<div class="card center" style="margin-top:12px"><p><span class="pulse"></span><b>${d.players}</b> residents registered</p><p class="fine">Look at the big screen. The day starts soon.</p></div>`;
+    return;
+  }
+
+  if (scene) {
+    const a = d.me.answers[scene.id];
+    const done = a && a.final;
+    const opt = done ? scene.options.find((o) => o.id === a.final) : null;
+
+    if (step.type === "scene" && !done) {
+      const tried = new Set((a?.attempts) || []);
+      app.innerHTML = `
+        ${local.blockedMsg ? `<div class="banner red ${local.fresh ? "shake" : ""}"><span class="stamp">DENIED</span>⛔ ${esc(local.blockedMsg)}<div class="fine" style="color:inherit;opacity:.8;margin-top:6px">Choose again.</div></div>` : ""}
+        <div class="card"><div class="eyebrow"><span class="clock">${scene.clock}</span> · ${esc(scene.title)}</div>
+        <p class="lead" style="margin-top:8px">${esc(scene.story)}</p>
+        ${scene.word ? `<div class="wordp"><b>${esc(scene.word.zh)}</b><span>${esc(scene.word.py)} · ${esc(scene.word.en)}</span></div>` : ""}
+        ${scene.why ? `<details class="why"><summary>Why these choices?</summary><p>${esc(scene.why)}</p></details>` : ""}</div>
+        <div class="opts">${scene.options.map((o) => `<button class="opt" data-id="${o.id}" ${tried.has(o.id) && o.outcome === "blocked" ? "disabled" : ""}>${esc(o.label)}</button>`).join("")}</div>`;
+      app.querySelectorAll(".opt").forEach((b) => b.onclick = () => choose(step.i, b.dataset.id, b));
+      return;
+    }
+
+    if (done) {
+      if (a.blacklisted) {
+        app.innerHTML = `<div class="banner red shake" style="font-size:17px">🚫 ${esc(scene.blacklist)}</div>
+          ${receipt(["Ticket purchase refused — court defaulter list match", "Travel restriction linked to your ID"], ["railway"], "Your record", scene.id + ":bl", "direct")}
+          ${step.type === "reveal" ? explainCard(scene) : waitCard()}`;
+        return;
+      }
+      const cls = opt.outcome === "consequence" ? "amber" : "green";
+      app.innerHTML = `<div class="banner ${cls}">${opt.outcome === "consequence" ? "⚠️ " : "✓ "}${esc(opt.result)}</div>
+        ${receipt(opt.logs, opt.to, "Data logged", scene.id + ":" + opt.id, opt.state)}
+        ${!opt.logs.length ? `<div class="card fine">Nothing new logged this time.</div>` : ""}
+        ${step.type === "reveal" ? explainCard(scene) : waitCard()}`;
+      return;
+    }
+    // reveal but never answered
+    app.innerHTML = `<div class="card"><div class="eyebrow">${esc(scene.title)}</div><p class="lead" style="margin-top:6px">You didn't decide in time. In real life, the day goes on anyway.</p></div>${explainCard(scene)}`;
+    return;
+  }
+
+  if (step.type === "file") {
+    const f = window.GAME.buildFile({ name: d.me.name, answers: d.me.answers, faces: (d.meta && d.meta.faces) || [], seed: pid, device: d.meta && d.meta.device });
+    const openStory = () => {
+      if (document.querySelector(".story") || !window.FileStory) return;
+      FileStory.mount(document.body, { f, me: d.me, meta: d.meta || {}, G: window.GAME, start: local.storyIdx || 0, onIndex: (i) => { local.storyIdx = i; } });
+    };
+    if (!local.storyBuilt) {
+      app.innerHTML = `<div class="redband">${STAR}<div>一人一档<small>ONE PERSON, ONE FILE</small></div></div>
+        <div class="card center"><div class="eyebrow">Your file is ready</div><h2 style="font-size:22px;margin-top:6px">${f.points + f.inferences.length + f.market.tags.length} entries · ${f.tags.length ? f.tags.length + " tag" + (f.tags.length > 1 ? "s" : "") : "no tags"} · ${f.alerts.length} alert${f.alerts.length === 1 ? "" : "s"}</h2>
+        <button class="btn" id="openFile" style="margin-top:12px">Open my file</button></div>`;
+      local.storyBuilt = true;
+      document.getElementById("openFile").onclick = openStory;
+      openStory();
+    } else if (!document.querySelector(".story")) {
+      const b = document.getElementById("openFile"); if (b) b.onclick = openStory;
+    }
+    return;
+  }
+
+  if (step.type === "unique") {
+    const u = d.unique;
+    const meUnique = u.meSmall === 1;
+    app.innerHTML = `<div class="card center">
+      <div class="eyebrow">Anonymity test</div>
+      <p class="lead" style="margin:10px 0">Using only your <b>phone type</b>, <b>language</b>, and <b>three choices</b> (commute, where you slept, Cyberspace ID):</p>
+      <div class="big pulse-in" style="color:${meUnique ? "var(--red)" : "var(--green-ink)"}">${meUnique ? "Unique" : "1 of " + u.meSmall}</div>
+      <p class="lead" style="margin-top:10px">${meUnique ? "Nobody else in this room matches you. Those few “anonymous” details point to <b>you</b>." : `You blend in with ${u.meSmall - 1} other${u.meSmall === 2 ? "" : "s"} — for now.`}</p>
+      <p class="fine" style="margin-top:10px">With all ${SCENES.length} choices: ${u.meFull === 1 ? "you are unique." : "you share a profile with " + (u.meFull - 1) + " other(s)."}</p></div>`;
+    return;
+  }
+
+  if (step.type === "meta" || step.type === "end") {
+    const m = d.meta; const c = m.client || {};
+    const fmt = (ms) => ms == null ? "—" : (ms / 1000).toFixed(1) + " s";
+    const joined = new Date(m.joinedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    app.innerHTML = `
+      <div class="banner red">${step.type === "meta" ? "Plot twist: this game was collecting data about you too. You never saw a cookie banner." : "Here's everything this game knew about you."}</div>
+      <div class="card"><div class="eyebrow">Collected automatically</div>
+      <dl class="kv" style="margin-top:10px">
+        <dt>Device</dt><dd>${esc(m.device.os)}${m.device.osVer ? " · " + (/iP/.test(m.device.os) ? "iOS " : m.device.os === "Android" ? "Android " : "") + esc(m.device.osVer) : ""} ${m.device.model ? "· " + esc(m.device.model) : ""}</dd>
+        <dt>Browser</dt><dd>${esc(m.device.browser)}</dd>
+        <dt>IP address</dt><dd>${esc(m.ip)}</dd>
+        <dt>Language</dt><dd>${esc(c.langs || c.lang)}</dd>
+        <dt>Time zone</dt><dd>${esc(c.tz)}</dd>
+        <dt>Screen</dt><dd>${esc(c.screen)} @${c.dpr || "?"}x</dd>
+        <dt>Dark mode</dt><dd>${c.dark ? "on" : "off"}</dd>
+        ${c.battery != null ? `<dt>Battery</dt><dd>${c.battery}%${c.charging ? " ⚡ charging" : ""}</dd>` : ""}
+        ${c.net ? `<dt>Network</dt><dd>${esc(c.net)}</dd>` : ""}
+        ${c.cores ? `<dt>CPU cores</dt><dd>${c.cores}${c.mem ? " · " + c.mem + " GB RAM" : ""}</dd>` : ""}
+        <dt>Joined at</dt><dd>${joined}</dd>
+        ${m.faces && m.faces.length ? `<dt>Face scans</dt><dd>${m.faces.length} · ${m.faces.some((f) => f.how === "camera") ? "real camera" : m.faces.some((f) => f.how === "refused") ? "you refused" : "simulated"}</dd>` : ""}
+        <dt>Left this tab</dt><dd>${m.tabSwitches} time${m.tabSwitches === 1 ? "" : "s"}${m.hiddenMs ? " · " + Math.round(m.hiddenMs / 1000) + " s away" : ""}</dd>
+      </dl></div>
+      <div class="card"><div class="eyebrow">How long you hesitated</div>
+      <dl class="kv" style="margin-top:10px">${m.hesitation.map((h) => `<dt>${esc(h.title)}</dt><dd>${fmt(h.ms)}${h.attempts > 1 ? " · " + h.attempts + " tries" : ""}</dd>`).join("")}</dl></div>
+      ${step.type === "end" ? endCard(m) : `<p class="fine center">Every website can see most of this. Look up at the screen.</p>`}`;
+    const del = document.getElementById("del");
+    if (del) del.onclick = async () => { await post("/api/delete", { pid }); store.del("dds_pid"); pid = null; app.innerHTML = `<div class="card center"><h2>Deleted.</h2><p class="lead">Your record is gone from the server. That's a GDPR right (Art. 17) — try asking for it in Shanghai.</p></div>`; es && es.close(); };
+    return;
+  }
+
+  if (step.type === "poll" || step.type === "pollres") {
+    const pq = POLLS[step.i]; const mine = d.me.polls[pq.id];
+    app.innerHTML = `<div class="card"><div class="eyebrow">Back in Kraków · vote</div><h2 style="font-size:21px">${esc(pq.q)}</h2></div>
+      <div class="opts poll">${pq.options.map((o, i) => `<button class="opt ${mine === i ? "sel" : ""}" data-i="${i}" ${step.type === "pollres" ? "disabled style='text-decoration:none;opacity:" + (mine === i ? 1 : .5) + "'" : ""}>${esc(o)}${mine === i ? " ✓" : ""}</button>`).join("")}</div>
+      <p class="fine center" style="margin-top:12px">${step.type === "poll" ? (mine !== undefined ? "Vote saved — you can change it." : "Tap to vote.") : "Results are on the screen."}</p>`;
+    if (step.type === "poll") app.querySelectorAll(".opt").forEach((b) => b.onclick = async () => { await post("/api/poll", { pid, option: Number(b.dataset.i) }); });
+    return;
+  }
+}
+
+function explainCard(scene) {
+  return `<div class="card"><div class="eyebrow">What's real here</div><p style="margin-top:6px">${esc(scene.explain)}</p></div>`;
+}
+function waitCard() { return `<p class="fine center"><span class="pulse"></span>Waiting for the others…</p>`; }
+function endCard(m) {
+  return `<div class="card center"><div class="eyebrow">Your day in Shanghai</div><div class="big" style="margin:8px 0">${m.points}</div><p class="lead">data points logged about you</p></div>
+    <button class="btn ghost" id="del">Delete my data now</button>`;
+}
+
+let faceConsented = false;
+async function choose(si, oid, btn) {
+  btn.disabled = true;
+  const opt = SCENES[si].options.find((o) => o.id === oid);
+  let face = null;
+  if (opt.face && window.FaceScan) {
+    face = await FaceScan.run(opt.face, { name: (last && last.me && last.me.name) || "Resident", skipConsent: faceConsented });
+    if (face.how === "camera") faceConsented = true;
+  }
+  const r = await post("/api/answer", { pid, scene: si, option: oid, face });
+  if (r.outcome === "blocked") {
+    local.blockedMsg = SCENES[si].options.find((o) => o.id === oid).result;
+    local.fresh = true;
+    if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+  } else local.blockedMsg = null;
+  if (r.outcome === "blacklisted") { flash(); if (navigator.vibrate) navigator.vibrate([200, 80, 200, 80, 400]); }
+  render();
+}
+
+if (pid) connect(); else { connect(); }
+</script>
+</body>
+</html>
