@@ -91,6 +91,7 @@ Shown back to each player at the end: device and OS (from the user agent), brows
 - Side quest: university student-informant teams since 2008, ¥20–200 per report, lecturers disciplined in 2018 after student reports — China Media Project (2018); up to ≈$15,000 for national-security tips (2022 MSS rules) — China Digital Times
 - Every day in China: 41.06 ZB of data in 2024 — National Data Administration via Xinhua (2025); 306bn non-bank online payments in Q1 2025 — PBOC; 45bn WeChat messages and 410M calls a day (2018) — Tencent via Caixin; 174.5bn parcels in 2024 — State Post Bureau via Jiemian
 - Anonymity / fingerprinting facts: Sweeney (2000); de Montjoye et al., Scientific Reports (2013); Eckersley, EFF Panopticlick (2010)
+- How the cameras came (before the commute): Skynet 2005, Sharp Eyes 2015 "100% coverage by 2020" — IPVM; 40,000 cameras in Urumqi after the 2009 riots (197 dead) — Washington Post via China Digital Times (2010); IJOP app — Human Rights Watch (2019); "may constitute crimes against humanity" — OHCHR (2022)
 - Core Socialist Values slogans on the projector banner are the official 12 values
 - Face-scan medical insurance payment, nationwide in ~3 years — NHSA via english.gov.cn (Jan 2026)
 - TikTok fined €530m for EU data transfers to China (May 2025) — Irish DPC

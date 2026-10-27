@@ -215,6 +215,22 @@ i.rep{background:var(--red)}i.ref{background:var(--green)}
 @keyframes flag{50%{transform:skewY(4deg) scaleX(.96)}}
 .enter .cp-b{animation:rise .5s cubic-bezier(.2,.8,.2,1) both calc(.6s + var(--j) * .12s)}
 .enter .cp-lbl{animation:rise .6s cubic-bezier(.2,.8,.2,1) both 1.6s}
+.camhist h1{font-size:58px;margin:4px 0 22px}
+.chl{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;position:relative}
+.chl::before{content:"";position:absolute;left:0;right:0;top:22px;height:3px;background:linear-gradient(90deg,var(--line),var(--gold),var(--red))}
+.ch{position:relative;padding-top:44px}
+.ch::before{content:"";position:absolute;left:4px;top:13px;width:18px;height:18px;border-radius:50%;background:var(--bg);border:3px solid var(--gold)}
+.ch.xj::before{border-color:var(--red);background:var(--red);box-shadow:0 0 18px var(--red)}
+.ch b{display:block;font:800 26px var(--mono);color:var(--gold)}
+.ch.xj b{color:var(--red)}
+.ch h3{margin:4px 0 6px;font-size:22px}
+.ch h3 span{font-weight:600;color:var(--muted);font-size:18px}
+.ch p{margin:0;font-size:17px;line-height:1.4;color:#d9dfdc}
+.ch.xj{background:linear-gradient(180deg,rgba(200,16,46,.14),transparent);border-radius:12px;padding-left:8px;padding-right:8px}
+.xjbox{margin-top:26px;background:#1f0f10;border:1px solid #8a2a2a;border-left:6px solid var(--red);border-radius:14px;padding:16px 22px;font-size:24px;line-height:1.4}
+.xjbox span{display:block;font-family:var(--mono);font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+.enter .ch{animation:rise .6s cubic-bezier(.2,.8,.2,1) both calc(.3s + var(--j) * .35s)}
+.enter .xjbox{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 2.6s}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -342,7 +358,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <script src="/music.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, CASE, INFORM, INTRO, DAILY } = window.GAME;
+const { SCENES, POLLS, STEPS, CASE, INFORM, INTRO, DAILY, CAMHIST } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const JOIN = (new URLSearchParams(location.search).get("join") || location.origin).replace(/\/$/, "") + "/";
 const $ = (id) => document.getElementById(id);
@@ -418,7 +434,7 @@ function trackFor(step) {
   if (["scene", "reveal", "brief", "debrief"].includes(step.type)) return SCENE_TRACK[SCENES[step.i].id] || "welcome";
   if (["file", "unique", "meta"].includes(step.type)) return "tense";
   if (step.type === "poll" || step.type === "pollres" || step.type === "case") return "reflect";
-  if (step.type === "inform" || step.type === "informres") return "tense";
+  if (step.type === "inform" || step.type === "informres" || step.type === "camhist") return "tense";
   return "welcome";
 }
 
@@ -551,7 +567,7 @@ function drawStage() {
   $("stepLbl").textContent = `${d.stepIndex + 1}/${d.stepCount} · ${step.type}`;
   $("qrmini").style.display = step.type === "lobby" ? "none" : "flex";
   const scene = ["scene", "reveal", "brief", "debrief"].includes(step.type) ? SCENES[step.i] : null;
-  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" || step.type === "intro" || step.type === "daily" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : "23:59";
+  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" || step.type === "intro" || step.type === "daily" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : "23:59";
 
   // feed
   $("feed").innerHTML = d.feed.map((f) => { const isNew = !seenFeed.has(f.id); seenFeed.add(f.id); return `<div class="fl${isNew ? " new" : ""}"><span class="t">${esc(f.t)}</span> <span class="n">${esc(f.name)}</span><br>${esc(f.text)}</div>`; }).join("");
@@ -580,6 +596,15 @@ function drawStage() {
         ${step.type === "debrief" && b.pro ? `<div class="probox"><span>⚖ The case for it</span>${esc(b.pro)}</div>` : ""}
         <div class="upnext"><span>Up next</span>${step.type === "brief" ? `<b>${esc(scene.title)}</b> — choose on your phone 📱` : nextScene ? `<b>${esc(nextScene.clock)} · ${esc(nextScene.brief.title)}</b>` : `<b>The case for it</b> — safety &amp; convenience`}</div>
       </div></div></div>`;
+    return;
+  }
+
+  if (step.type === "camhist") {
+    S.innerHTML = `<div class="talk camhist"><div class="eyebrow">Before the commute · how the cameras came</div>
+      <h1>How China built <span style="color:var(--gold)">Sky Net</span> 天网</h1>
+      <div class="chl">${CAMHIST.timeline.map(([y, t, zh, txt, cls], j) => `<div class="ch ${cls}" style="--j:${j}"><b>${esc(y)}</b><h3>${esc(t)} <span>${esc(zh)}</span></h3><p>${esc(txt)}</p></div>`).join("")}</div>
+      <div class="xjbox"><span>Xinjiang 新疆 · the testing ground</span>${esc(CAMHIST.callout)}</div>
+      <p class="dnote">${esc(CAMHIST.sources)}</p></div>`;
     return;
   }
 

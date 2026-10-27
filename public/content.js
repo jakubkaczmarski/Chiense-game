@@ -352,6 +352,7 @@
   const STEPS = [{ type: "lobby" }, { type: "intro" }, { type: "daily" }];
   // per scene: explain the topic (brief) → play (scene) → results (reveal) → what it means (debrief)
   SCENES.forEach((s, i) => {
+    if (s.id === "metro") STEPS.push({ type: "camhist" }); // how China's camera network was built, before the commute
     STEPS.push({ type: "brief", i }); STEPS.push({ type: "scene", i }); STEPS.push({ type: "reveal", i }); STEPS.push({ type: "debrief", i });
     // side quest after the Weibo scene: the class counsellor phones every player privately
     if (s.id === "post") { STEPS.push({ type: "inform" }); STEPS.push({ type: "informres" }); }
@@ -533,12 +534,29 @@
     intro: ["What's one thing you'd hate a stranger to know about you?", "Is privacy a Western idea — or universal?"],
     daily: ["Which number surprised you most?", "How many of these would be true for you in Poland too?"],
     informres: ["Would you report a classmate who cheated in an exam? Is that different?", "Is informing loyalty or betrayal — and to whom?", "How is this different from “see something, say something” in the West?"],
+    camhist: ["Why would a government test surveillance on a minority region first?", "Once the cameras exist, can they be used only for crime?"],
     case: ["Would you trade privacy for feeling safe at night?", "Who pays the price for a “safe” society?"],
     file: ["Which line in your file surprised you most?", "Who should be allowed to see a file like this?"],
     unique: ["Have you ever believed “anonymous data” was really anonymous?", "What three facts would single you out in this room?"],
     meta: ["Did anyone notice the game tracking you? Why not?", "What do the apps on your phone collect right now?"],
     pollres: ["Why did you vote the way you did?", "Would your answer change if you'd grown up in China?"],
     end: ["Will you change anything after today?", "EU, US or China — which model would you choose, and why?"]
+  };
+
+  // How the camera network was built — and why Xinjiang matters
+  const CAMHIST = {
+    tldr: "Cameras spread city by city — Xinjiang became the testing ground.",
+    timeline: [
+      ["2000s", "Golden Shield", "金盾", "The Ministry of Public Security builds a national police network and databases.", ""],
+      ["2005", "Sky Net", "天网", "Urban CCTV programme launched “to fight crime and prevent disasters”.", ""],
+      ["2010", "Urumqi", "乌鲁木齐", "After the July 2009 riots (197 dead, official figure), 40,000 HD cameras go up in Xinjiang's capital within a year.", "xj"],
+      ["2015", "Sharp Eyes", "雪亮", "Goal: 100% of public space covered by 2020, “no blind spots” — reaching villages too.", ""],
+      ["2016–19", "Xinjiang lab", "新疆", "Checkpoints, phone scanners and the IJOP app flag people for using WhatsApp or “not socialising with neighbours”; DNA and iris scans taken from everyone aged 12–65.", "xj"],
+      ["2019+", "Export", "出口", "Hikvision and Dahua put on the US Entity List; the same tools are sold abroad.", ""]
+    ],
+    callout: "Xinjiang is where China tested the full package — cameras + data + checkpoints + detention. The UN human rights office (2022) said the abuses there “may constitute crimes against humanity”.",
+    say: ["Cameras didn't arrive all at once: police networks (2000s), city CCTV (2005), villages (2015)", "Xinjiang after 2009 became the laboratory — then the tools spread nationwide", "Human Rights Watch (2019) reverse-engineered the police app: it flagged ordinary behaviour", "The UN human rights office (2022): possible crimes against humanity"],
+    sources: "State media via CDT (2010); IPVM (Skynet / Sharp Eyes); Human Rights Watch (2019); OHCHR (2022); US Commerce Dept (2019)"
   };
 
   // "Every day in China": per-day figures derived from official / company annual totals
@@ -616,7 +634,7 @@
   };
 
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, buildFile, FILE_WORD };
+  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);
