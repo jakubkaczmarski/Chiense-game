@@ -200,6 +200,7 @@
     },
     {
       id: "healthcode",
+      nums: {"items": [["800M", "people used WeChat’s health code — over 20 billion displays (2021)"], ["1.2bn", "Alipay health-code uses in its first five weeks (2020)"], ["1,317", "bank depositors in Henan given red codes to stop a protest; 5 officials punished (2022)"], ["13 Dec 2022", "travel code switched off; telecoms said they would delete the data"]], "src": "KrASIA (2021); China Daily (2020); Sixth Tone (2022); Yicai Global / CNBC (2022). The NYT found Alipay’s code appeared to share data with police (2020)."},
       word: { zh: "健康码", py: "jiànkāng mǎ", en: "health code", note: "The green / yellow / red COVID code that decided where you could go." },
       clock: "2022",
       cams: [],
