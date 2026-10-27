@@ -123,7 +123,9 @@ function sceneStats(si) {
     if (a.blacklisted) blacklistedHits++;
     if (a.ms) { msSum += a.ms; msN++; }
   }
-  return { counts, attempts, answered, blocked, avgMs: msN ? Math.round(msSum / msN) : 0, blacklistedHits };
+  const carries = {};
+  for (const p of state.players.values()) { const a = p.answers[scene.id]; (a && a.carries || []).forEach((c) => { carries[c] = carries[c] || []; carries[c].push(p.name); }); }
+  return { carries, counts, attempts, answered, blocked, avgMs: msN ? Math.round(msSum / msN) : 0, blacklistedHits };
 }
 function fingerprintKey(p, keys) {
   const parts = [p.device.os, (p.meta.lang || "").slice(0, 2)];
@@ -387,18 +389,34 @@ const server = http.createServer(async (req, res) => {
     // earlier choices that come back later in the day
     const prev = (id) => player.answers[id] && player.answers[id].final;
     let carry = null;
-    if (scene.id === "breakfast" && (opt.id === "wechat" || opt.id === "delivery") && prev("sim") === "black") carry = "simFrozen";
-    if (scene.id === "train" && opt.outcome === "ok" && !blacklisted) {
-      if (prev("post") === "sensitive") carry = "trainKeyPerson";
-      else if ([...state.players.values()].some((q) => q.inform && q.inform.target === player.name)) carry = "trainReported";
-    }
-    if (scene.id === "night" && opt.id === "home" && player.lin && Object.values(player.lin).includes(false)) carry = "nightGrid";
-    if (scene.id === "night" && opt.id === "hotel" && prev("healthcode") === "zhengzhou") carry = "nightPetitioner";
+    const reported = [...state.players.values()].some((q) => q.inform && q.inform.target === player.name);
+    const linVals = Object.values(player.lin || {});
+    const iphone = /iPhone|iPad/.test((player.device && player.device.os) || "");
+    const jaywalked = state.jaywalker && state.jaywalker.pid === player.pid;
+    const sim = prev("sim");
+    const rules = [
+      [scene.id === "breakfast" && (opt.id === "wechat" || opt.id === "delivery") && sim === "black", "simFrozen"],
+      [scene.id === "metro" && (opt.id === "qr" || opt.id === "taxi") && sim === "black", "metroNoPhone"],
+      [scene.id === "metro" && opt.id === "taxi" && iphone, "iphoneTax"],
+      [scene.id === "doctor" && opt.id === "wechat" && sim === "black", "doctorFrozen"],
+      [scene.id === "doctor" && jaywalked, "jayFine"],
+      [scene.id === "train" && opt.id === "app" && sim === "black", "trainNoPhone"],
+      [scene.id === "train" && opt.outcome === "ok" && !blacklisted && prev("post") === "sensitive", "trainKeyPerson"],
+      [scene.id === "train" && opt.outcome === "ok" && !blacklisted && prev("healthcode") === "zhengzhou", "trainPetitioner"],
+      [scene.id === "train" && opt.outcome === "ok" && !blacklisted && reported, "trainReported"],
+      [scene.id === "night" && opt.id === "wangba" && prev("post") === "sensitive", "cafeRaid"],
+      [scene.id === "night" && opt.id === "hotel" && prev("healthcode") === "zhengzhou", "nightPetitioner"],
+      [scene.id === "night" && opt.id === "home" && linVals.includes(false), "nightGrid"],
+      [scene.id === "night" && player.inform && player.inform.target, "informReward"],
+      [scene.id === "night" && linVals.includes(true) && !linVals.includes(false), "signedPraise"]
+    ];
+    const hit = rules.find(([cond]) => cond); if (hit) carry = hit[1];
     if (carry) {
       const c = CARRY[carry];
-      if (carry === "simFrozen") { a.carryBlocked = carry; addLogs(player, ["WeChat Pay refused: account frozen"], scene.clock); broadcast(); return json(res, 200, { outcome: "blocked", carry }); }
+      a.carries = a.carries || []; if (!a.carries.includes(carry)) a.carries.push(carry);
+      if (c.blocked || carry === "simFrozen") { addLogs(player, c.logs.length ? c.logs : ["WeChat Pay refused: account frozen"], scene.clock); broadcast(); return json(res, 200, { outcome: "blocked", carry }); }
       a.final = opt.id; a.carry = carry; addLogs(player, c.logs, scene.clock); broadcast();
-      return json(res, 200, { outcome: "consequence", carry });
+      return json(res, 200, { outcome: c.good ? "ok" : "consequence", carry });
     }
     if (outcome === "blocked") {
       addLogs(player, opt.logs, scene.clock);

@@ -265,6 +265,10 @@ i.rep{background:var(--red)}i.ref{background:var(--green)}
 .cw-b .vd{font-weight:800;font-size:20px}.cw-b .en{font-family:var(--mono);font-size:13px;color:var(--gold);margin:2px 0 6px}
 .quizchip{position:fixed;left:44px;bottom:20px;z-index:20;background:#1c1606;border:2px solid var(--gold2);border-radius:99px;padding:10px 20px;font:700 17px var(--mono);color:#ffe9a8}
 .quizchip b{color:var(--gold)}
+.carrystrip{margin:10px 0;background:#1a0c0e;border:1px solid #6b2c2c;border-radius:12px;padding:10px 16px;font-size:18px;line-height:1.4}
+.carrystrip span{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:4px}
+.carrystrip div{padding:2px 0}.carrystrip .g b{color:var(--green)}.carrystrip .r b{color:var(--red)}.carrystrip .b b{color:var(--amber)}
+.enter .carrystrip{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .9s}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -393,7 +397,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <script src="/anthem.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, CASE, INFORM, INTRO, DAILY, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR } = window.GAME;
+const { CARRY, SCENES, POLLS, STEPS, CASE, INFORM, INTRO, DAILY, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const JOIN = (new URLSearchParams(location.search).get("join") || location.origin).replace(/\/$/, "") + "/";
 const $ = (id) => document.getElementById(id);
@@ -761,6 +765,7 @@ function drawStage() {
       <h2>${esc(scene.title)}</h2>
       ${scene.id === "train" && st.blacklistedHits ? `<div class="note blk-alert" style="background:#2a0f0c;border-color:#5a1d17;color:#ffc9c3">🚫 ${st.blacklistedHits} of you were refused a ticket — matched to a court blacklist.</div>` : ""}
       ${bars(rows)}
+      ${d.stats && d.stats.carries && Object.keys(d.stats.carries).length ? `<div class="carrystrip"><span>⏪ Earlier choices caught up with</span>${Object.entries(d.stats.carries).map(([k, ns]) => `<div class="${CARRY[k].good ? "g" : CARRY[k].blocked ? "b" : "r"}"><b>${esc(ns.join(", "))}</b> — ${esc(CARRY[k].because.replace(/…$/, ""))}: ${esc(CARRY[k].result.split(/(?<=[.!?])\s/)[0])}</div>`).join("")}</div>` : ""}
       ${scene.guess && d.guess && d.guess.n ? `<div class="gstrip">🎯 <span>Your guess:</span> ${esc(scene.guess.q)} → <b>${esc(scene.guess.answer)}</b> · <em>${Math.round(d.guess.right / d.guess.n * 100)}% of you got it right</em></div>` : ""}
       <div class="note">${esc(scene.explain)}</div>
       ${cols(scene.compare)}`;

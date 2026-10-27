@@ -528,8 +528,8 @@ function draw(d, step, scene) {
         return;
       }
       const cr = a.carry && CARRY[a.carry];
-      const cls = cr || opt.outcome === "consequence" ? "amber" : "green";
-      app.innerHTML = `${cr ? `<div class="banner red shake" style="font-size:15px">⏪ ${esc(cr.because)}</div>` : ""}<div class="banner ${cls}">${cr || opt.outcome === "consequence" ? "⚠️ " : "✓ "}${esc(cr ? cr.result : opt.result)}</div>
+      const bad = (cr && !cr.good) || opt.outcome === "consequence", cls = bad ? "amber" : "green";
+      app.innerHTML = `${cr ? `<div class="banner ${cr.good ? "green" : "red shake"}" style="font-size:15px">⏪ ${esc(cr.because)}</div>` : ""}<div class="banner ${cls}">${bad ? "⚠️ " : cr ? "🎁 " : "✓ "}${esc(cr ? cr.result : opt.result)}</div>
         ${receipt(cr ? cr.logs : opt.logs, cr ? cr.to : opt.to, "Data logged", scene.id + ":" + opt.id, cr ? cr.state : opt.state)}
         ${!opt.logs.length ? `<div class="card fine">Nothing new logged this time.</div>` : ""}
         ${step.type === "reveal" ? guessRes(scene, d) + explainCard(scene) : waitCard()}`;
