@@ -28,6 +28,10 @@ Phones must be able to reach your laptop. Pick one option:
 
 If the QR ever shows the wrong address, add `&join=https://your-public-url` to the screen link.
 
+## Side quest: inform on a classmate
+
+Right after the Weibo scene, **Teacher Zhou (周老师), the class counsellor (辅导员)**, phones every player privately: the phone rings and vibrates, they accept, and she asks who in the group complained online, offering +50 points. Players tap a classmate's name or refuse. The projector only shows how many have answered; the next step reveals how many reported someone, how many refused, the most-reported names, and real facts about student informants (学生信息员) in Chinese universities. Reporting or refusing also appears in each player's file at the end.
+
 ## Warning calls: Secretary Lin
 
 **Secretary Lin (林书记 Lín shūjì)** is an original character: the local Communist Party secretary of your community (社区党委书记). He phones the projector only when someone does something against the rules: asking to skip the SIM face scan, reposting the protest video, walking in without a health code, going to Zhengzhou, buying from a ticket tout, or being on the court debtor list. A ringing call card slides in, he names the players who did it, and speaks in Mandarin while English captions appear. New offenders are batched into one call per offence, and calls queue one after another.
@@ -84,6 +88,7 @@ Shown back to each player at the end: device and OS (from the user agent), brows
 - Grid management (≈1M grids, 4.5M grid workers in COVID) — Wikipedia summary of academic sources
 - QR/mobile wallets vs cash in Chinese shops (projector, breakfast scene): wallets 36% (2017), 48% (2019), 54% (2021), 66% (2023), 79% (2027 forecast) of in-store spending; cash 10.3% (2021), 7% (2023), 3% (2027 forecast) — Worldpay Global Payments Reports 2018–2024. Mobile-payment users 469M (2016) → 583M (2018); 75.4% of internet users aged 60+ use mobile payment (June 2024) — CNNIC
 - "The case for it" step: 94% feel safe walking alone at night in China (3rd in the world) vs 73% world, 71% US, 68% Poland — Gallup Global Safety Report 2025; homicide rate 0.5 per 100k (China 2020) vs Poland 0.68, US 5.8 — UNODC; 89% account ownership, 82% digital merchant payments (2021) — World Bank Global Findex; 95.5% satisfied with central government (2016) — Harvard Ash Center; ~80% of internet users approve of social credit systems (2018) — FU Berlin (Kostka); Mao Yin reunited after 32 years via facial recognition (2020) — AP/ABC
+- Side quest: university student-informant teams since 2008, ¥20–200 per report, lecturers disciplined in 2018 after student reports — China Media Project (2018); up to ≈$15,000 for national-security tips (2022 MSS rules) — China Digital Times
 - Core Socialist Values slogans on the projector banner are the official 12 values
 - Face-scan medical insurance payment, nationwide in ~3 years — NHSA via english.gov.cn (Jan 2026)
 - TikTok fined €530m for EU data transfers to China (May 2025) — Irish DPC

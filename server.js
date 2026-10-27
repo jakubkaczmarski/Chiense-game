@@ -79,6 +79,15 @@ function offenders(si) {
   return out;
 }
 
+function informStats(withNames) {
+  const ps = [...state.players.values()], counts = new Map();
+  let reported = 0, refused = 0;
+  ps.forEach((p) => { if (!p.inform) return; if (p.inform.target) { reported++; counts.set(p.inform.target, (counts.get(p.inform.target) || 0) + 1); } else refused++; });
+  const out = { answered: reported + refused, reported, refused, players: ps.length };
+  if (withNames) out.top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return out;
+}
+
 function sceneStats(si) {
   const scene = SCENES[si];
   const counts = {}, attempts = {};
@@ -154,7 +163,8 @@ function screenPayload() {
   const out = { step, stepIndex: state.step, stepCount: STEPS.length, players: state.players.size, names: [...state.players.values()].map((p) => p.name).slice(-60), feed: state.feed.slice(-14), totalPoints: state.totalPoints };
   if (step.type === "scene" || step.type === "reveal") { out.stats = sceneStats(step.i); out.offenders = offenders(step.i); }
   if (step.type === "unique") { const u = uniqueness(); out.unique = { total: u.total, smallUnique: u.smallUnique, fullUnique: u.fullUnique }; }
-  if (step.type === "file") out.files = [...state.players.values()].map((p) => { const f = buildFile({ name: p.name, answers: p.answers, faces: p.faces, seed: p.pid, device: p.device }); return { name: p.name, id: f.id, tags: f.tags, alerts: f.alerts.length, points: f.points + f.inferences.length, mtags: f.market.tags.map((x) => x.t) }; });
+  if (step.type === "file") out.files = [...state.players.values()].map((p) => { const f = buildFile({ name: p.name, answers: p.answers, faces: p.faces, seed: p.pid, device: p.device, inform: p.inform }); return { name: p.name, id: f.id, tags: f.tags, alerts: f.alerts.length, points: f.points + f.inferences.length, mtags: f.market.tags.map((x) => x.t) }; });
+  if (step.type === "inform" || step.type === "informres") out.inform = informStats(step.type === "informres");
   if (step.type === "meta") out.meta = metaStats();
   if (step.type === "poll" || step.type === "pollres") { out.poll = pollStats(step.i); out.voted = [...state.players.values()].filter((p) => p.polls[POLLS[step.i].id] !== undefined).length; }
   if (step.type === "end") out.meta = metaStats();
@@ -162,7 +172,9 @@ function screenPayload() {
 }
 function playerPayload(p) {
   const step = currentStep();
-  const out = { step, stepIndex: state.step, players: state.players.size, me: { name: p.name, answers: p.answers, polls: p.polls, points: p.points } };
+  const out = { step, stepIndex: state.step, players: state.players.size, me: { name: p.name, answers: p.answers, polls: p.polls, points: p.points, inform: p.inform || null } };
+  if (step.type === "inform") out.classmates = [...state.players.values()].filter((q) => q.pid !== p.pid).map((q) => q.name).sort((a, b) => a.localeCompare(b)).slice(0, 30);
+  if (step.type === "informres") out.inform = informStats(false);
   if (step.type === "scene" || step.type === "reveal") {
     out.blacklisted = SCENES[step.i].id === "train" && state.blacklisted.has(p.pid);
   }
@@ -354,6 +366,18 @@ const server = http.createServer(async (req, res) => {
     if (typeof body.hiddenMs === "number") player.hiddenMs += Math.min(body.hiddenMs, 3600000);
     if (typeof body.battery === "number") player.meta.battery = Math.round(body.battery);
     return json(res, 200, {});
+  }
+
+  if (p === "/api/inform") {
+    if (!player) return json(res, 404, {});
+    if (currentStep().type !== "inform") return json(res, 409, {});
+    if (player.inform) return json(res, 200, player.inform);
+    const target = body.target == null ? null : String(body.target);
+    const ok = target === null || [...state.players.values()].some((q) => q.pid !== player.pid && q.name === target);
+    if (!ok) return json(res, 400, {});
+    player.inform = target ? { target, at: now() } : { refused: true, at: now() };
+    broadcast();
+    return json(res, 200, player.inform);
   }
 
   if (p === "/api/poll") {

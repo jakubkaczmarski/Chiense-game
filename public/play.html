@@ -153,6 +153,25 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
   :root:not([data-theme="light"]) input{background:#181c1e}
   :root:not([data-theme="light"]) .banner.green,:root:not([data-theme="light"]) .poll .opt.sel{background:#0f2d20;color:#7fe3b2}
   :root:not([data-theme="light"]) .receipt{background:#05110b;border:1px solid #1e3a2c}}
+.call{position:relative;border-radius:26px;overflow:hidden;background:#141414;color:#fff;padding:26px 20px 22px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.call .av{width:132px;height:132px;border-radius:50%;overflow:hidden;margin:6px auto 12px;border:3px solid #ffd24a}
+.call .av svg{width:100%;height:100%;display:block}
+.call.ringing .av{animation:ringp 1s infinite}
+@keyframes ringp{0%{box-shadow:0 0 0 0 rgba(47,191,113,.7)}100%{box-shadow:0 0 0 26px rgba(47,191,113,0)}}
+.call .who{font-size:24px;font-weight:800}.call .who small{display:block;font-size:13px;font-weight:600;color:#ffd24a;letter-spacing:.06em;margin-top:2px}
+.call .st{font-size:14px;color:#aaa;margin-top:6px}
+.call .btns{display:flex;justify-content:space-around;margin-top:26px}
+.call .btns button{width:68px;height:68px;border-radius:50%;border:0;font-size:28px;color:#fff;cursor:pointer}
+.call .btns .acc{background:#2fbf71;animation:wig 1s infinite}.call .btns .dec{background:#e5484d}
+@keyframes wig{0%,100%{transform:rotate(0)}10%,30%{transform:rotate(-14deg)}20%,40%{transform:rotate(14deg)}50%{transform:rotate(0)}}
+.bub{background:#262626;border-radius:16px 16px 16px 4px;padding:10px 14px;margin:8px 0;text-align:left;font-size:16px;line-height:1.4;max-width:92%}
+.call.anim .bub{opacity:0;animation:bubin .4s ease forwards}
+@keyframes bubin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.call .names{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center}
+.call.anim .names,.call.anim .refuse{opacity:0;animation:bubin .4s ease forwards 3.2s}
+.call .names button{background:#fff;color:#111;border:0;border-radius:99px;padding:10px 16px;font-weight:700;font-size:15px;cursor:pointer}
+.call .refuse{display:block;width:100%;margin-top:14px;background:transparent;border:1.5px solid #555;color:#ddd;border-radius:14px;padding:12px;font-weight:700;font-size:15px;cursor:pointer}
+.call .pts{font-size:34px;font-weight:800;color:#2fbf71;margin-top:8px}
 </style>
 </head>
 <body>
@@ -165,7 +184,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 <script src="/facescan.js"></script>
 <script src="/story.js"></script>
 <script>
-const { SCENES, POLLS, WHO } = window.GAME;
+const { SCENES, POLLS, WHO, INFORM } = window.GAME;
 const app = document.getElementById("app");
 const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}}, del(k){try{localStorage.removeItem(k)}catch{}} };
 let pid = store.get("dds_pid");
@@ -253,12 +272,26 @@ function receipt(logs, to, title = "Data logged", pk, state) {
     ${stateTxt ? `<div class="statel ${state}" style="animation-delay:${dc + to.length * 160 + 150}ms">${state === "direct" ? "⚑ " : "⚖ "}${esc(stateTxt)}</div>` : ""}</div>`;
 }
 
+// phone ringtone + vibration for the counsellor's call
+let ringT = null, ringN = 0, actx = null;
+function ringOnce() {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume();
+    const t0 = actx.currentTime + 0.02;
+    [0, 0.25].forEach((off) => { const o = actx.createOscillator(), g = actx.createGain(), t = t0 + off; o.frequency.value = 1320; o.type = "square";
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + 0.22); });
+  } catch (e) {}
+  if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+}
+function startRing() { stopRing(); ringN = 0; ringOnce(); ringT = setInterval(() => { if (++ringN > 12) return stopRing(); ringOnce(); }, 2000); }
+function stopRing() { clearInterval(ringT); ringT = null; if (navigator.vibrate) navigator.vibrate(0); }
+
 function render() {
   const d = last; if (!d || !d.me) return;
   const step = d.step;
   const scene = step.i !== undefined && (step.type === "scene" || step.type === "reveal") ? SCENES[step.i] : null;
   const tsc = (step.type === "brief" || step.type === "debrief") ? SCENES[step.i] : null;
-  document.getElementById("sclock").textContent = scene ? scene.clock : tsc ? tsc.clock : step.type === "lobby" ? "07:00" : "23:59";
+  document.getElementById("sclock").textContent = scene ? scene.clock : tsc ? tsc.clock : step.type === "lobby" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : "23:59";
   const key = step.type + ":" + (step.i ?? "");
   const entering = key !== local.sceneKey;
   if (entering) { local = { blockedMsg: null, fresh: false, sceneKey: key }; }
@@ -268,6 +301,8 @@ function render() {
   if (local.fresh) { app.classList.add("fresh"); local.fresh = false; }
   if (entering && (step.type === "meta" || step.type === "end")) scramble();
   if (entering && step.type === "scene" && step.i === 0 && window.FaceScan) FaceScan.preload();
+  if (entering && step.type === "inform" && !d.me.inform) startRing();
+  if (entering && step.type !== "inform") stopRing();
 }
 
 const printed = new Set();
@@ -290,6 +325,34 @@ function draw(d, step, scene) {
 
   if (step.type === "lobby") {
     app.innerHTML = `<div class="redband"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><div>欢迎来到上海 · 平安中国<small>WELCOME TO SHANGHAI · SAFE CHINA</small></div></div>${idCard(d.me)}<div class="card center" style="margin-top:12px"><p><span class="pulse"></span><b>${d.players}</b> residents registered</p><p class="fine">Look at the big screen. The day starts soon.</p></div>`;
+    return;
+  }
+
+  if (step.type === "inform" || step.type === "informres") {
+    const mine = d.me.inform;
+    const head = (cls, st) => `<div class="call ${cls}"><div class="av">${INFORM.avatar}</div><div class="who">${esc(INFORM.zh)} ${esc(INFORM.caller)}<small>${esc(INFORM.role)}</small></div><div class="st">${st}</div>`;
+    if (mine) {
+      app.innerHTML = head("", "Call ended") + `<div class="bub">${esc(mine.target ? INFORM.thanks : INFORM.refused)}</div>
+        ${mine.target ? `<div class="pts">+50</div><p class="fine" style="color:#aaa">You reported <b style="color:#fff">${esc(mine.target)}</b>.</p>` : `<p class="fine" style="color:#aaa">You refused to name anyone.</p>`}
+        <p class="fine" style="color:#888;margin-top:10px">${step.type === "informres" ? "Look at the big screen." : "Wait — results come on the big screen."}</p></div>`;
+      return;
+    }
+    if (step.type === "informres") { app.innerHTML = head("", "Missed call") + `<p class="fine" style="color:#aaa">You didn't answer. That has been noted too.</p></div>`; return; }
+    if (!local.accepted) {
+      app.innerHTML = head("ringing", local.declined ? `Calling again… (${local.declined})` : "is calling you…") + `<div class="btns"><button class="dec" aria-label="Decline">✕</button><button class="acc" aria-label="Accept">✆</button></div></div>`;
+      app.querySelector(".acc").onclick = () => { local.accepted = true; local.anim = true; stopRing(); draw(last, last.step); };
+      app.querySelector(".dec").onclick = () => { local.declined = (local.declined || 0) + 1; stopRing(); app.innerHTML = head("", "Declined") + `</div>`; setTimeout(() => { if (!local.accepted) { startRing(); draw(last, last.step); } }, 1500); };
+      return;
+    }
+    const names = d.classmates || [];
+    app.innerHTML = head(local.anim ? "anim" : "", "On call · 00:12") +
+      INFORM.lines.map((l, i) => `<div class="bub" style="animation-delay:${0.3 + i * 1}s">${esc(l)}</div>`).join("") +
+      `<div class="names">${names.map((n) => `<button data-n="${esc(n)}">${esc(n)}</button>`).join("") || `<p class="fine" style="color:#aaa">(No classmates online yet.)</p>`}</div>
+      <button class="refuse">I don't know anything</button></div>`;
+    local.anim = false;
+    const send = async (target) => { app.querySelectorAll("button").forEach((b) => b.disabled = true); await post("/api/inform", { pid, target }); };
+    app.querySelectorAll(".names button").forEach((b) => b.onclick = () => send(b.dataset.n));
+    app.querySelector(".refuse").onclick = () => send(null);
     return;
   }
 
@@ -347,7 +410,7 @@ function draw(d, step, scene) {
   }
 
   if (step.type === "file") {
-    const f = window.GAME.buildFile({ name: d.me.name, answers: d.me.answers, faces: (d.meta && d.meta.faces) || [], seed: pid, device: d.meta && d.meta.device });
+    const f = window.GAME.buildFile({ name: d.me.name, answers: d.me.answers, faces: (d.meta && d.meta.faces) || [], seed: pid, device: d.meta && d.meta.device, inform: d.me.inform });
     const openStory = () => {
       if (document.querySelector(".story") || !window.FileStory) return;
       FileStory.mount(document.body, { f, me: d.me, meta: d.meta || {}, G: window.GAME, start: local.storyIdx || 0, onIndex: (i) => { local.storyIdx = i; } });

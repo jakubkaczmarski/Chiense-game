@@ -138,6 +138,26 @@ aside h3{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(-
 .enter .srow .sbar i{animation:grow 1.2s cubic-bezier(.2,.8,.2,1) both calc(.4s + var(--j) * .2s)}
 .enter .ct{animation:rise .7s cubic-bezier(.2,.8,.2,1) both calc(.9s + var(--j) * .2s)}
 .enter .cavrow{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 1.9s}
+.tz{display:flex;gap:16px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 18px}
+.tzav{width:96px;height:96px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);flex:none;animation:ringp 1s infinite}
+.tzav svg{width:100%;height:100%;display:block}
+.tzn{font-size:28px;font-weight:800}.tzr{font-family:var(--mono);font-size:13px;color:var(--gold);letter-spacing:.06em}
+@keyframes ringp{0%{box-shadow:0 0 0 0 rgba(47,191,113,.7)}100%{box-shadow:0 0 0 22px rgba(47,191,113,0)}}
+.ringrow{display:flex;flex-wrap:wrap;gap:14px;margin:26px 0;font-size:46px}
+.ringrow span{animation:jig .6s ease-in-out infinite alternate;animation-delay:calc(var(--j) * -.13s)}
+@keyframes jig{from{transform:rotate(-12deg)}to{transform:rotate(12deg) translateY(-4px)}}
+.inform .answered{margin-top:auto}
+.bignum{color:var(--red)}
+.irow{margin-top:18px;max-width:980px}
+.ibar{display:flex;height:40px;background:var(--panel2);border-radius:10px;overflow:hidden}
+.ibar i{display:block;height:100%;transform-origin:left}
+i.rep{background:var(--red)}i.ref{background:var(--green)}
+.ileg{display:flex;gap:22px;margin-top:8px;font-family:var(--mono);font-size:15px;color:var(--muted)}
+.ileg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.topn{margin-top:16px;font-size:24px}.topn span{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:12px}
+.enter .ibar i{animation:grow 1.2s cubic-bezier(.2,.8,.2,1) both .5s}
+.enter .informres .irbox,.enter .informres .topn{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 1.2s}
+.enter .informres .ask{animation-delay:1.6s}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -265,7 +285,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <script src="/music.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, CASE } = window.GAME;
+const { SCENES, POLLS, STEPS, CASE, INFORM } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const JOIN = (new URLSearchParams(location.search).get("join") || location.origin).replace(/\/$/, "") + "/";
 const $ = (id) => document.getElementById(id);
@@ -341,6 +361,7 @@ function trackFor(step) {
   if (["scene", "reveal", "brief", "debrief"].includes(step.type)) return SCENE_TRACK[SCENES[step.i].id] || "welcome";
   if (["file", "unique", "meta"].includes(step.type)) return "tense";
   if (step.type === "poll" || step.type === "pollres" || step.type === "case") return "reflect";
+  if (step.type === "inform" || step.type === "informres") return "tense";
   return "welcome";
 }
 
@@ -418,7 +439,7 @@ function drawStage() {
   $("stepLbl").textContent = `${d.stepIndex + 1}/${d.stepCount} · ${step.type}`;
   $("qrmini").style.display = step.type === "lobby" ? "none" : "flex";
   const scene = ["scene", "reveal", "brief", "debrief"].includes(step.type) ? SCENES[step.i] : null;
-  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" ? "07:00" : "23:59";
+  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : "23:59";
 
   // feed
   $("feed").innerHTML = d.feed.map((f) => { const isNew = !seenFeed.has(f.id); seenFeed.add(f.id); return `<div class="fl${isNew ? " new" : ""}"><span class="t">${esc(f.t)}</span> <span class="n">${esc(f.name)}</span><br>${esc(f.text)}</div>`; }).join("");
@@ -446,6 +467,32 @@ function drawStage() {
         ${step.type === "debrief" && b.pro ? `<div class="probox"><span>⚖ The case for it</span>${esc(b.pro)}</div>` : ""}
         <div class="upnext"><span>Up next</span>${step.type === "brief" ? `<b>${esc(scene.title)}</b> — choose on your phone 📱` : nextScene ? `<b>${esc(nextScene.clock)} · ${esc(nextScene.brief.title)}</b>` : `<b>The case for it</b> — safety &amp; convenience`}</div>
       </div></div></div>`;
+    return;
+  }
+
+  if (step.type === "inform" || step.type === "informres") {
+    const st = d.inform || { answered: 0, reported: 0, refused: 0, players: d.players };
+    const card = `<div class="tz"><div class="tzav">${INFORM.avatar}</div><div><div class="tzn">${esc(INFORM.zh)} ${esc(INFORM.caller)}</div><div class="tzr">${esc(INFORM.role)}</div></div></div>`;
+    if (step.type === "inform") {
+      S.innerHTML = `<div class="talk inform"><div class="eyebrow">☎ Side quest · private calls</div>
+        <div class="talkgrid"><div class="talkL"><h1>Your counsellor is calling<br><span style="color:var(--gold)">every phone in the room</span></h1>
+          <p class="lead">Answer it. What you say stays between you and Teacher Zhou.</p>
+          <div class="ringrow">${Array.from({ length: Math.max(3, Math.min(d.players, 18)) }, (_, j) => `<span style="--j:${j}">📱</span>`).join("")}</div>
+          <div class="answered"><b>${st.answered}</b> / ${d.players} calls answered<div class="prog"><i style="width:${pct(st.answered, d.players)}%"></i></div></div></div>
+        <div class="talkR">${card}<div class="word"><div class="w-k">词 · Word of the side quest</div><div class="w-zh">${esc(INFORM.word.zh)}</div><div class="w-py">${esc(INFORM.word.py)}</div><div class="w-en">${esc(INFORM.word.en)}</div><div class="w-note">${esc(INFORM.word.note)}</div></div></div></div></div>`;
+      return;
+    }
+    const top = st.top || [];
+    S.innerHTML = `<div class="talk informres"><div class="eyebrow">☎ Side quest · results</div>
+      <div class="talkgrid"><div class="talkL">
+        <h1><span class="bignum" data-count="${st.reported}">${st.reported}</span> of ${st.answered || 0} <span style="color:var(--red)">reported a classmate</span></h1>
+        <div class="irow"><div class="ibar"><i class="rep" style="width:${pct(st.reported, st.answered)}%"></i><i class="ref" style="width:${pct(st.refused, st.answered)}%"></i></div>
+          <div class="ileg"><span><i class="rep"></i>Reported · ${st.reported}</span><span><i class="ref"></i>Refused · ${st.refused}</span><span>No answer · ${Math.max(0, d.players - st.answered)}</span></div></div>
+        ${top.length ? `<div class="topn"><span>Most reported</span>${top.map(([n, c]) => `<b>${esc(n)}</b> ×${c}`).join(" · ")}</div>` : ""}
+        <div class="irbox"><span>☆ Collectivism angle</span>${esc(INFORM.angle)}</div>
+        <div class="ask"><span>Ask the room</span>${esc(INFORM.ask)}</div>
+      </div><div class="talkR"><div class="nums" style="margin-top:0"><div class="nums-k">It's real</div><div class="ntiles" style="grid-template-columns:1fr">${INFORM.facts.map(([n, l, src], j) => `<div class="nt" style="--i:${j}"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>
+        <div class="nsrc">${esc([...new Set(INFORM.facts.map((f) => f[2]))].join(" · "))}</div></div></div></div></div>`;
     return;
   }
 

@@ -351,7 +351,11 @@
   // Linear show order controlled by the presenter.
   const STEPS = [{ type: "lobby" }];
   // per scene: explain the topic (brief) → play (scene) → results (reveal) → what it means (debrief)
-  SCENES.forEach((s, i) => { STEPS.push({ type: "brief", i }); STEPS.push({ type: "scene", i }); STEPS.push({ type: "reveal", i }); STEPS.push({ type: "debrief", i }); });
+  SCENES.forEach((s, i) => {
+    STEPS.push({ type: "brief", i }); STEPS.push({ type: "scene", i }); STEPS.push({ type: "reveal", i }); STEPS.push({ type: "debrief", i });
+    // side quest after the Weibo scene: the class counsellor phones every player privately
+    if (s.id === "post") { STEPS.push({ type: "inform" }); STEPS.push({ type: "informres" }); }
+  });
   STEPS.push({ type: "case" });
   STEPS.push({ type: "file" });
   STEPS.push({ type: "unique" });
@@ -433,6 +437,8 @@
     if (b === "cash" || m === "card" || faces.some((f) => f.how === "refused")) file.inferences.push("Avoids digital traces (cash / anonymous card / refused scan) → privacy-conscious");
     if (hc === "zhengzhou") file.inferences.push("Family affected by the Henan bank freeze → grievance against authorities");
     if (p === "sensitive") file.inferences.push("Shares protest content → politically sensitive views");
+    if (rec.inform && rec.inform.target) file.inferences.push(`Reported a classmate (${rec.inform.target}) to the counsellor → reliable informant (信息员)`);
+    if (rec.inform && rec.inform.refused) file.inferences.push("Refused to inform on classmates → uncooperative attitude");
     if (d) file.inferences.push("Recurring skin condition → health status known to insurer and state");
 
     // key personnel (重点人员) — Ministry of Public Security categories reported by HRW
@@ -505,8 +511,46 @@
     notes: "Present this honestly: these are the strongest arguments the system's supporters make. Then point to the caveats. Links to the class poll about face-recognition cameras in Kraków."
   };
 
+  // Side quest: "Inform on a classmate". Teacher Zhou (周老师), the class counsellor (辅导员 fǔdǎoyuán) —
+  // in Chinese universities counsellors do the Party's political work with students.
+  const INFORM = {
+    caller: "Teacher Zhou", zh: "周老师", role: "Class counsellor · 辅导员 fǔdǎoyuán",
+    lines: [
+      "Hello, it's Teacher Zhou, your class counsellor.",
+      "Someone in your group posted complaints online about the school and the city.",
+      "Who was it? Tell me and you get +50 points. Nobody will know it came from you."
+    ],
+    thanks: "Thank you. Your loyalty has been noted. +50 points.",
+    refused: "I see. Your attitude has also been noted.",
+    word: { zh: "信息员", py: "xìnxīyuán", en: "informant", note: "Students recruited by universities to report on classmates and teachers." },
+    facts: [
+      ["Since 2008", "Chinese universities have run teams of student informants (学生信息员) who report on what teachers say in class", "China Media Project (2018)"],
+      ["¥20–200", "paid per report at one university — more for “critical” information", "China Media Project (2018)"],
+      ["2018", "Lecturers in Beijing and Wuhan were disciplined after students reported comments made in class", "China Media Project (2018)"],
+      ["≈ $15,000", "top reward for a national-security tip under the 2022 Ministry of State Security rules", "China Digital Times (2022)"]
+    ],
+    ask: "Why did you report — or refuse? Loyalty to the group, to the authority, or to yourself?",
+    // original poster-style portrait: a smiling counsellor with a neat bob, glasses, cardigan and red Party pin
+    avatar: `<svg viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="tzbg" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#ffe08a"/><stop offset=".5" stop-color="#f2a33a"/><stop offset="1" stop-color="#c8102e"/></radialGradient></defs>
+      <rect width="200" height="200" fill="url(#tzbg)"/>
+      <g stroke="#2a1a10" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M32 200 C36 156 66 142 100 140 C134 142 164 156 168 200Z" fill="#2f5d7c"/>
+        <path d="M84 140 L100 170 L116 140" fill="#f4f1ea"/>
+        <path d="M88 128 h24 v14 c-6 5 -18 5 -24 0z" fill="#f3c19a"/>
+        <path d="M60 96 C56 54 76 38 100 38 C124 38 144 54 140 96 C140 118 134 130 128 132 L72 132 C66 130 60 118 60 96Z" fill="#1d1712"/>
+        <path d="M68 92 C68 66 82 54 100 54 C118 54 132 66 132 92 C132 118 118 134 100 134 C82 134 68 118 68 92Z" fill="#f8cfa6"/>
+        <path d="M66 82 C70 58 88 48 104 50 C92 56 84 66 80 76 C76 70 72 74 66 82Z" fill="#1d1712"/>
+      </g>
+      <g fill="#ef7f6a" opacity=".5"><ellipse cx="80" cy="108" rx="8" ry="5"/><ellipse cx="120" cy="108" rx="8" ry="5"/></g>
+      <g stroke="#2a1a10" stroke-linecap="round" fill="none"><path d="M80 82 q7 -4 14 0 M106 82 q7 -4 14 0" stroke-width="2.6"/><path d="M82 94 q5 -4 10 0 M108 94 q5 -4 10 0" stroke-width="2.6"/>
+        <g stroke="#7a1020" stroke-width="2"><rect x="76" y="86" width="20" height="14" rx="5"/><rect x="104" y="86" width="20" height="14" rx="5"/><path d="M96 92 h8"/></g>
+        <path d="M100 98 q-3 8 0 10" stroke-width="1.8"/><path d="M88 116 q12 10 24 0" stroke-width="2.4"/></g>
+      <g transform="translate(76 162)"><circle r="5.5" fill="#c8102e" stroke="#ffd24a" stroke-width="1.2"/><path d="M0 -3 L.9 -.9 2.9 -.9 1.3 .3 1.9 2.4 0 1.2 -1.9 2.4 -1.3 .3 -2.9 -.9 -.9 -.9Z" fill="#ffd24a"/></g></svg>`,
+    angle: "Collectivism cuts both ways: group loyalty can protect classmates — or be turned into watching each other. Mass denunciation peaked in the Cultural Revolution; informant systems are its quieter heir."
+  };
+
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, buildFile, FILE_WORD };
+  const api = { SCENES, POLLS, STEPS, WHO, STATE, NOTES, CASE, INFORM, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);
