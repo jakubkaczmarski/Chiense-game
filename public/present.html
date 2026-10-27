@@ -42,12 +42,26 @@ button:active{transform:scale(.98)}
 .outline div.cur{background:var(--cred);color:#fff}
 .outline div:hover{background:#1d2427}
 .warn{color:var(--red);font-family:var(--mono)}
+.tldr{font-size:30px;line-height:1.25;font-weight:800;color:var(--gold);margin:6px 0 16px;padding:14px 18px;border-left:6px solid var(--gold);background:#1d1806;border-radius:8px}
+.tldr small{display:block;font:600 11px var(--mono);letter-spacing:.16em;color:var(--muted);margin-bottom:4px}
+.say{list-style:none;padding:0;margin:0}
+.say li{position:relative;padding:8px 0 8px 30px;font-size:21px;border-bottom:1px solid #1f272a}
+.say li::before{content:"▸";position:absolute;left:6px;color:var(--red)}
+.say li b{color:#fff}
+.sec{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:16px 0 4px}
+.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.cmp div{background:#11161d;border:1px solid #23344a;border-radius:10px;padding:8px 12px;font-size:16px}
+.cmp b{display:block;font:700 11px var(--mono);letter-spacing:.14em}
+.printbtn{font:600 13px var(--mono);padding:6px 12px;border-radius:8px}
+@media print{header,aside,.side,.printbtn{display:none!important}body{background:#fff;color:#000}main{display:block;padding:0}#now{display:none}#printall{display:block!important}
+  .pstep{break-inside:avoid;border-bottom:1px solid #ccc;padding:8px 0}.pstep h3{margin:0;font:700 14px system-ui}.pstep .t{font-weight:700;color:#a00;margin:2px 0}.pstep ul{margin:2px 0 0 18px;padding:0;font-size:12px}}
+#printall{display:none}
 </style>
 </head>
 <body>
-<header><b>Presenter console</b><span class="pill">Step <em id="pos">–</em></span><span class="pill">⏱ <em id="timer">0:00</em> on this step</span><span class="pill">👥 <em id="players">0</em> players</span><span class="sp"></span><a id="screenLink" target="_blank">Open projector screen ↗</a></header>
+<header><b>Presenter console</b><span class="pill">Step <em id="pos">–</em></span><span class="pill">⏱ <em id="timer">0:00</em> on this step</span><span class="pill">👥 <em id="players">0</em> players</span><span class="sp"></span><button class="printbtn" onclick="window.print()">🖨 Print all notes</button><a id="screenLink" target="_blank">Open projector screen ↗</a></header>
 <main>
-  <section class="card now" id="now"></section>
+  <section class="card now" id="now"></section><section id="printall"></section>
   <aside class="side">
     <div class="ctrl"><button id="prev">◀ Back</button><button class="next" id="next">Next ▶</button></div>
     <div class="card" id="live"></div>
@@ -97,6 +111,37 @@ $("outline").onclick = (e) => { const k = e.target.dataset.k; if (k !== undefine
 let curKey = null, since = Date.now();
 setInterval(() => { const s = ((Date.now() - since) / 1000) | 0; $("timer").textContent = (s / 60 | 0) + ":" + String(s % 60).padStart(2, "0"); }, 500);
 
+const sentences = (t) => String(t || "").split(/(?<=[.!?])\s+(?=[A-Z“"(])/).filter(Boolean);
+// One summary per step: tldr (one line), say (short bullets), plus optional ask / angle / compare
+function summary(st) {
+  const sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
+  if (st.type === "brief") return { tldr: sc.brief.tldr, say: sc.brief.points, ask: sc.brief.ask, extra: sentences(sc.brief.notes) };
+  if (st.type === "debrief") return { tldr: sc.debrief.tldr, say: sc.debrief.points, angle: sc.debrief.ir, extra: sentences(sc.debrief.notes) };
+  if (st.type === "scene") {
+    const bad = sc.options.filter((o) => o.outcome !== "ok");
+    return { tldr: `${sc.title}: let them choose — don't explain yet.`,
+      say: [`<b>Read:</b> ${esc(sc.story)}`, `<b>Options:</b> ${sc.options.map((o) => esc(o.label)).join(" · ")}`,
+        ...bad.map((o) => `<b>Catch:</b> “${esc(o.label)}” → ${esc(o.result)}`), "Watch the counter; press Next when most have decided"], raw: true };
+  }
+  if (st.type === "reveal") return { tldr: sentences(sc.explain)[0], say: sentences(sc.explain).slice(1).concat(["Ask one person why they chose what they did"]), cmp: sc.compare };
+  if (st.type === "poll" || st.type === "pollres") {
+    const q = POLLS[st.i];
+    return { tldr: q.q, say: st.type === "poll" ? [`Options: ${q.options.join(" · ")}`, "Give 20–30 seconds"] : ["Read the room's result", `China: ${q.china}`] };
+  }
+  const n = NOTES[st.type] || { tldr: "", say: [] };
+  return { tldr: n.tldr, say: n.say };
+}
+function summaryHtml(m) {
+  const li = (x) => `<li>${m.raw ? x : esc(x)}</li>`;
+  return `<div class="tldr"><small>In one line</small>${esc(m.tldr)}</div>
+    <div class="sec">Say</div><ul class="say">${m.say.map(li).join("")}</ul>
+    ${m.ask ? `<div class="box ask"><span>Ask the room</span>${esc(m.ask)}</div>` : ""}
+    ${m.angle ? `<div class="box ir"><span>Political-science angle</span>${esc(m.angle)}</div>` : ""}
+    ${m.cmp ? `<div class="sec">Compare</div><div class="cmp"><div><b style="color:#ff8a7e">CHINA</b>${esc(m.cmp.cn)}</div><div><b style="color:#7cc4ff">EU / POLAND</b>${esc(m.cmp.eu)}</div><div><b style="color:#ffbf47">USA</b>${esc(m.cmp.us)}</div></div>` : ""}
+    ${m.extra && m.extra.length ? `<div class="sec">If you have time</div><ul class="say">${m.extra.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}`;
+}
+$("printall").innerHTML = "<h2>A Day in Shanghai — presenter notes</h2>" + STEPS.map((st, k) => { const m = summary(st); return `<div class="pstep"><h3>${k + 1}. ${esc(label(st))}</h3><div class="t">${esc(m.tldr)}</div><ul>${m.say.map((x) => `<li>${m.raw ? x : esc(x)}</li>`).join("")}${m.ask ? `<li><b>Ask:</b> ${esc(m.ask)}</li>` : ""}${m.angle ? `<li><b>Angle:</b> ${esc(m.angle)}</li>` : ""}</ul></div>`; }).join("");
+
 function render(d) {
   const st = d.step, sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
   const key = st.type + ":" + (st.i ?? "");
@@ -104,19 +149,7 @@ function render(d) {
   $("pos").textContent = `${d.stepIndex + 1} / ${d.stepCount}`;
   $("players").textContent = d.players;
   const isPlay = ["scene", "poll"].includes(st.type);
-  let body = `<span class="type ${isPlay ? "play" : ""}">${isPlay ? "Phones active" : st.type === "brief" || st.type === "debrief" ? "You talk" : "Show & discuss"}</span><h1>${esc(label(st))}</h1>`;
-  if (st.type === "brief" || st.type === "debrief") {
-    const b = st.type === "brief" ? sc.brief : sc.debrief;
-    body += `<ol>${b.points.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>
-      ${st.type === "brief" ? `<div class="box ask"><span>Ask the room</span>${esc(b.ask)}</div>` : `<div class="box ir"><span>Political-science angle</span>${esc(b.ir)}</div>`}
-      <div class="box notes"><span>Your notes</span>${esc(b.notes)}</div>`;
-  } else if (sc) {
-    body += `<p style="font-size:19px">${esc(sc.story)}</p>
-      <div class="box notes"><span>Your notes</span>${esc(NOTES[st.type] || "")}</div>
-      ${st.type === "reveal" ? `<div class="box ir"><span>The real fact</span>${esc(sc.explain)}</div>` : `<div class="box ask"><span>Why these choices (on screen)</span>${esc(sc.why || "")}</div>`}`;
-  } else {
-    body += `<div class="box notes"><span>Your notes</span>${esc(NOTES[st.type] || "")}</div>`;
-  }
+  let body = `<span class="type ${isPlay ? "play" : ""}">${isPlay ? "Phones active" : st.type === "brief" || st.type === "debrief" ? "You talk" : "Show & discuss"}</span><h1>${esc(label(st))}</h1>` + summaryHtml(summary(st));
   $("now").innerHTML = body;
 
   let live = `<div class="k">Live</div>`;
