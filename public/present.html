@@ -58,6 +58,19 @@ button:active{transform:scale(.98)}
 #printall{display:none}
 .box.quiet{background:#14122a;border:1px solid #4b3fa8}.box.quiet ol{margin:4px 0 0;padding-left:22px}.box.quiet li{font-size:19px;margin:4px 0}
 .expl{font-size:16px;line-height:1.45;color:#a9b8b3;margin-top:4px;padding-left:2px}
+.rsx{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.rsx-box{background:#151a1c;border:2px solid #c8102e;border-radius:18px;padding:28px 32px;width:min(520px,92vw);color:#eef3f1;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.rsx-box h2{margin:0 0 8px;font-size:26px;color:#ff6b61}
+.rsx-box p{margin:6px 0;font-size:17px;line-height:1.45;color:#c9d4d0}
+.rsx-box b{color:#fff}
+.rsx-box input{width:100%;margin-top:14px;font:700 22px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;padding:12px 14px;border-radius:10px;border:2px solid #333;background:#0b0d0e;color:#fff}
+.rsx-box input:focus{outline:none;border-color:#c8102e}
+.rsx-row{display:flex;gap:10px;margin-top:18px}
+.rsx-row button{flex:1;font:700 17px ui-monospace,Menlo,monospace;padding:14px;border-radius:12px;border:1px solid #333;cursor:pointer;background:#1d2427;color:#eef3f1}
+.rsx-row .go{background:#c8102e;border-color:#ff7a7a;color:#fff}
+.rsx-row .go:disabled{opacity:.35;cursor:not-allowed}
+.resetbtn{margin-top:4px;width:100%;font:700 14px ui-monospace,Menlo,monospace;padding:12px;border-radius:12px;background:transparent;color:#ff8a7e;border:1px dashed #6b2c2c;cursor:pointer}
+.resetbtn:hover{background:#2a0e10}
 </style>
 </head>
 <body>
@@ -66,6 +79,7 @@ button:active{transform:scale(.98)}
   <section class="card now" id="now"></section><section id="printall"></section>
   <aside class="side">
     <div class="ctrl"><button id="prev">◀ Back</button><button class="next" id="next">Next ▶</button></div>
+    <button class="resetbtn" id="resetbtn" title="Wipe all players and start again">⟲ Reset game for a new class</button>
     <div class="card" id="live"></div>
     <div class="card"><div class="k">Up next</div><div id="upnext"></div></div>
     <div class="card"><div class="k">Run of show — click to jump</div><div class="outline" id="outline"></div></div>
@@ -82,6 +96,27 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 $("screenLink").href = "/screen" + (KEY ? "?key=" + encodeURIComponent(KEY) : "");
 if (!KEY) $("keywarn").hidden = false;
 const host = (action, extra = {}) => KEY && fetch("/api/host", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: KEY, action, ...extra }) });
+
+// Reset with a double check: an explanation, then type RESET to unlock the red button
+function askReset(players, doReset) {
+  if (document.querySelector(".rsx")) return;
+  const el = document.createElement("div"); el.className = "rsx";
+  el.innerHTML = `<div class="rsx-box" role="dialog" aria-modal="true"><h2>⟲ Reset the whole game?</h2>
+    <p>This deletes <b>${players} player${players === 1 ? "" : "s"}</b>, all answers, calls, quizzes and files, and goes back to the lobby.</p>
+    <p>Phones will have to scan the QR code and join again. <b>This can't be undone.</b></p>
+    <p style="margin-top:14px">Type <b>RESET</b> to confirm:</p><input autocomplete="off" spellcheck="false" placeholder="RESET">
+    <div class="rsx-row"><button class="no">Cancel</button><button class="go" disabled>Reset game</button></div></div>`;
+  document.body.appendChild(el);
+  const inp = el.querySelector("input"), go = el.querySelector(".go"), close = () => el.remove();
+  inp.oninput = () => { go.disabled = inp.value.trim().toUpperCase() !== "RESET"; };
+  inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === "Enter" && !go.disabled) go.click(); if (e.key === "Escape") close(); };
+  el.querySelector(".no").onclick = close;
+  el.onclick = (e) => { if (e.target === el) close(); };
+  go.onclick = async () => { go.disabled = true; go.textContent = "Resetting…"; await doReset(); close(); };
+  setTimeout(() => inp.focus(), 50);
+}
+let lastPlayers = 0;
+$("resetbtn").onclick = () => { if (!KEY) return; askReset(lastPlayers, () => host("reset")); };
 $("next").onclick = () => host("next");
 $("prev").onclick = () => host("prev");
 addEventListener("keydown", (e) => {
@@ -187,7 +222,7 @@ function render(d) {
   const key = st.type + ":" + (st.i ?? "");
   if (key !== curKey) { curKey = key; since = Date.now(); }
   $("pos").textContent = `${d.stepIndex + 1} / ${d.stepCount}`;
-  $("players").textContent = d.players;
+  $("players").textContent = d.players; lastPlayers = d.players;
   const isPlay = ["scene", "poll", "inform", "censor"].includes(st.type);
   const sm = summary(st); sm.backup = backup(st); sm.why = (window.EXPLAIN || {})[whyKey(st)]; sm.whyExtra = (window.EXPLAIN || {})[whyKey(st) + ":extra"];
   const qz = quizFor(st); if (qz) sm.say = sm.say.concat([`❓ Phone quiz: “${qz.q}” → ${qz.options[qz.correct]}`]);

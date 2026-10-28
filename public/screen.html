@@ -436,6 +436,17 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 .answered b{color:var(--ink);font-size:44px}
 .prog{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:10px;max-width:700px}
 .prog i{display:block;height:100%;background:var(--green);transition:width .4s}
+.rsx{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.rsx-box{background:#151a1c;border:2px solid #c8102e;border-radius:18px;padding:28px 32px;width:min(520px,92vw);color:#eef3f1;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.rsx-box h2{margin:0 0 8px;font-size:26px;color:#ff6b61}
+.rsx-box p{margin:6px 0;font-size:17px;line-height:1.45;color:#c9d4d0}
+.rsx-box b{color:#fff}
+.rsx-box input{width:100%;margin-top:14px;font:700 22px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;padding:12px 14px;border-radius:10px;border:2px solid #333;background:#0b0d0e;color:#fff}
+.rsx-box input:focus{outline:none;border-color:#c8102e}
+.rsx-row{display:flex;gap:10px;margin-top:18px}
+.rsx-row button{flex:1;font:700 17px ui-monospace,Menlo,monospace;padding:14px;border-radius:12px;border:1px solid #333;cursor:pointer;background:#1d2427;color:#eef3f1}
+.rsx-row .go{background:#c8102e;border-color:#ff7a7a;color:#fff}
+.rsx-row .go:disabled{opacity:.35;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -486,7 +497,26 @@ Music.onChange(musicLbl);
 $("guide").onclick = () => { const on = Guide.toggle(); $("guide").textContent = on ? "☎ Calls on" : "☎ Calls off"; };
 $("next").onclick = () => host("next");
 $("prev").onclick = () => host("prev");
-$("reset").onclick = () => { if (confirm("Wipe all players and restart?")) host("reset"); };
+
+// Reset with a double check: an explanation, then type RESET to unlock the red button
+function askReset(players, doReset) {
+  if (document.querySelector(".rsx")) return;
+  const el = document.createElement("div"); el.className = "rsx";
+  el.innerHTML = `<div class="rsx-box" role="dialog" aria-modal="true"><h2>⟲ Reset the whole game?</h2>
+    <p>This deletes <b>${players} player${players === 1 ? "" : "s"}</b>, all answers, calls, quizzes and files, and goes back to the lobby.</p>
+    <p>Phones will have to scan the QR code and join again. <b>This can't be undone.</b></p>
+    <p style="margin-top:14px">Type <b>RESET</b> to confirm:</p><input autocomplete="off" spellcheck="false" placeholder="RESET">
+    <div class="rsx-row"><button class="no">Cancel</button><button class="go" disabled>Reset game</button></div></div>`;
+  document.body.appendChild(el);
+  const inp = el.querySelector("input"), go = el.querySelector(".go"), close = () => el.remove();
+  inp.oninput = () => { go.disabled = inp.value.trim().toUpperCase() !== "RESET"; };
+  inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === "Enter" && !go.disabled) go.click(); if (e.key === "Escape") close(); };
+  el.querySelector(".no").onclick = close;
+  el.onclick = (e) => { if (e.target === el) close(); };
+  go.onclick = async () => { go.disabled = true; go.textContent = "Resetting…"; await doReset(); close(); };
+  setTimeout(() => inp.focus(), 50);
+}
+$("reset").onclick = () => askReset(last ? last.players : 0, () => host("reset"));
 document.addEventListener("keydown", (e) => {
   if (!KEY) return;
   if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); host("next"); }

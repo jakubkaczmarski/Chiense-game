@@ -83,7 +83,7 @@ When you press Next from the lobby to the first scene, the projector plays a sta
 - The file finale merges each player’s choices and real device data into a police-style profile with system inferences, “key person” tags (petitioner, undermines stability, court defaulter) and Police Cloud–style alerts; the projector shows everyone’s files as a wall.
 - During a **scene**, the screen shows only how many have decided (no spoilers). **Reveal** shows the bars, blocked attempts, the real fact and the China / EU / US comparison.
 - On the **train** scene, if 10+ people play, one random player is on the court list of judgment defaulters and is refused a ticket.
-- **Reset** wipes all players. Do a test run with 2–3 phones, then press Reset before class.
+- **⟲ Reset game for a new class** (presenter console, under Next) or **Reset** (projector controls) wipes all players and goes back to the lobby. It asks twice: a warning with the player count, then you must type RESET. Do a test run with 2–3 phones, then reset before class.
 
 ## Face scan (real camera, on-device only)
 
