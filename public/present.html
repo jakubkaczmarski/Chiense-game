@@ -73,7 +73,7 @@ button:active{transform:scale(.98)}
 </main>
 <script src="/content.js"></script>
 <script>
-const { SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR, CARRY } = window.GAME;
+const { LOYALTY, SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR, CARRY } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -110,6 +110,7 @@ function label(st) {
     case "meta": return "Plot twist — the game tracked you";
     case "poll": return "Poll: " + POLLS[st.i].q;
     case "pollres": return "Poll results: " + POLLS[st.i].q;
+    case "award": return "🏅 Award ceremony — most loyal Party member";
     case "end": return "End — back to the slides";
   }
   return st.type;
@@ -131,6 +132,7 @@ function summary(st) {
   if (st.type === "censor") return { tldr: CENSOR.tldr, say: CENSOR.say, extra: CENSOR.cards.map((c) => `${c.en} ${c.zh} — ${c.verdict}: ${c.story}`) };
   if (st.type === "camhist") return { tldr: CAMHIST.tldr, say: CAMHIST.say, angle: CAMHIST.callout, extra: CAMHIST.timeline.map(([y, t, zh, txt]) => `${y} · ${t} (${zh}): ${txt}`) };
   if (st.type === "daily") return { tldr: DAILY.tldr, say: DAILY.say, extra: DAILY.items.map((it) => `${it.n} ${it.label} — ${it.src}`) };
+  if (st.type === "award") return { tldr: LOYALTY.tldr, say: LOYALTY.say, ask: LOYALTY.ask };
   if (st.type === "intro") return { tldr: INTRO.tldr, say: INTRO.say, extra: [`Definition: “${INTRO.def}” (${INTRO.defBy})`, ...INTRO.timeline.map(([y, t]) => `${y}: ${t}`)] };
   if (st.type === "inform") return { tldr: "Every phone gets a private call: name a classmate, or refuse.", say: ["Don't explain — just say: answer your phone", "Teacher Jan asks who complained online, for +50 points", "Watch the answered counter; Next when most have answered"] };
   if (st.type === "informres") return { tldr: "How many of you reported a classmate — for 50 points?", say: INFORM.facts.map(([n, l, src]) => `${n}: ${l} (${src})`), ask: INFORM.ask, angle: INFORM.angle, extra: ["Reporting also shows up in each player's file at the end (informant / uncooperative)."] };
@@ -194,6 +196,8 @@ function render(d) {
     live += `<div class="big">${d.guess.n} / ${d.players}</div><div>guessed the number · ${d.guess.right} right so far</div>`;
   } else if (st.type === "inform" && d.inform) {
     live += `<div class="big">${d.inform.answered} / ${d.players}</div><div>answered · <span style="color:var(--red)">${d.inform.reported} reported</span> · ${d.inform.refused} refused</div>`;
+  } else if (st.type === "award" && d.award && d.award.top) {
+    live += `<div>🏅 Winner</div><div class="big">${esc(d.award.top.name)}</div><div>${d.award.top.score} points${d.award.bottom ? ` · ⚠️ Key person: <b>${esc(d.award.bottom.name)}</b> (${d.award.bottom.score})` : ""}</div>`;
   } else if (st.type === "poll") {
     live += `<div class="big">${d.voted || 0} / ${d.players}</div><div>voted</div>`;
   } else live += `<div class="big">${d.players}</div><div>players in the room</div>`;

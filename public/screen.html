@@ -30,7 +30,7 @@ header{display:flex;align-items:center;gap:28px;padding:14px 28px;border-bottom:
 .stat.red b{color:var(--red)}
 .spacer{flex:1}
 .wrap{display:grid;grid-template-columns:1fr 420px;min-height:0}
-#stage{padding:32px 44px 24px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+#stage{position:relative;padding:32px 44px 24px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 aside{border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0}
 aside h3{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--muted);padding:16px 20px;border-bottom:1px solid var(--line);font-weight:600}
 #feed{flex:1;overflow:hidden;font-family:var(--mono);font-size:14px;padding:6px 0;display:flex;flex-direction:column;justify-content:flex-end}
@@ -271,6 +271,36 @@ i.rep{background:var(--red)}i.ref{background:var(--green)}
 .carrystrip span{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:4px}
 .carrystrip div{padding:2px 0}.carrystrip .g b{color:var(--green)}.carrystrip .r b{color:var(--red)}.carrystrip .b b{color:var(--amber)}
 .enter .carrystrip{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .9s}
+.award h1{font-size:54px;margin:4px 0 18px}
+.awgrid{display:grid;grid-template-columns:1.25fr 1fr;gap:26px}
+.aw{position:relative;border-radius:20px;padding:24px 28px;min-height:420px;overflow:hidden}
+.aw.top{background:radial-gradient(120% 100% at 20% 0%,#5a3a06,#1d1305 70%);border:3px solid var(--gold2);box-shadow:0 0 60px rgba(244,180,0,.25)}
+.aw.bot{background:radial-gradient(120% 100% at 80% 0%,#3d0a0f,#140607 70%);border:3px solid var(--cred)}
+.medal{position:absolute;right:26px;top:16px;width:120px;animation:swing 2.4s ease-in-out infinite;transform-origin:60px 0}
+@keyframes swing{50%{transform:rotate(6deg)}}
+.aw-k{font-family:var(--mono);font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.aw.bot .aw-k{color:#ff8a7e}
+.aw-n{font-size:72px;font-weight:900;line-height:1.05;margin:10px 0 6px;letter-spacing:-.02em}
+.aw.top .aw-n{color:#fff3c4;text-shadow:0 0 30px rgba(255,210,74,.5)}
+.aw-s{font-family:var(--mono);font-size:22px;color:var(--muted)}.aw-s span{font-size:40px;font-weight:800;color:var(--gold)}
+.aw.bot .aw-s span{color:var(--red)}
+.aw ul{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:8px}
+.aw li{font-size:21px;padding-left:30px;position:relative}
+.aw li.p::before{content:"✓";position:absolute;left:4px;color:var(--green);font-weight:900}
+.aw li.m::before{content:"✗";position:absolute;left:4px;color:var(--red);font-weight:900}
+.aw-stamp{position:absolute;right:24px;top:26px;font:900 34px "PingFang SC","Noto Sans SC",sans-serif;color:var(--red);border:4px solid var(--red);border-radius:10px;padding:4px 12px;transform:rotate(-10deg);opacity:.85}
+.awrank{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.awrank span{background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-size:18px}
+.awrank em{font-style:normal;font-family:var(--mono);color:var(--gold);margin-left:6px}
+.award .ask{margin-top:14px}
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:30}
+.confetti i{position:absolute;top:-40px;left:calc(var(--x) * 1%);font-style:normal;color:var(--gold);font-size:26px;opacity:0;animation:fall 4.5s ease-in var(--d) 2}
+.confetti i:nth-child(3n){color:#ff5a4e}
+@keyframes fall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(1100px) rotate(var(--r))}}
+.enter .aw.top{animation:rise .8s cubic-bezier(.2,.8,.2,1) both .3s}
+.enter .aw.bot{animation:rise .8s cubic-bezier(.2,.8,.2,1) both 1.6s}
+.enter .awrank span{animation:rise .5s cubic-bezier(.2,.8,.2,1) both calc(2.4s + var(--j) * .12s)}
+.enter .award .ask{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 3.4s}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -575,6 +605,8 @@ function render() {
   if (kickoff) startJingle();
   lastKey = key;
   if (entering && window.Music) Music.setMood(trackFor(d.step));
+  if (entering && d.step.type === "award" && window.Guide) { Guide.hang(); Guide.reset(); }
+  if (entering && d.step.type === "award" && window.Anthem) { if (window.Music && Music.isOn()) Music.duck(6000); Anthem.play(0.9); setTimeout(() => Anthem.play(0.9), Anthem.length * 1000 + 200); }
   // Director Lin phones in only when someone breaks the rules, and names them
   if (window.Guide && d.offenders && (d.step.type === "scene" || d.step.type === "reveal")) Guide.report(SCENES[d.step.i].id, d.offenders);
   if (window.Guide && d.players === 0) Guide.reset();
@@ -830,6 +862,24 @@ function drawStage() {
         ? `<div style="margin-top:12px">${pq.options.map((o) => `<span class="pill">${esc(o)}</span>`).join("")}</div><div class="answered"><b>${d.voted}</b> / ${d.players} voted<div class="prog"><i style="width:${pct(d.voted, d.players)}%"></i></div></div>`
         : `${bars(pq.options.map((o, i) => ({ label: o + "  ·  " + pct(d.poll[i], total) + "%", n: d.poll[i] })), total)}
            <div class="cols" style="grid-template-columns:1fr"><div class="col cn"><h4>MEANWHILE IN CHINA</h4>${esc(pq.china)}</div></div>`}`;
+    return;
+  }
+
+  if (step.type === "award") {
+    const aw = d.award || { list: [], n: 0 }, top = aw.top, bot = aw.bottom;
+    const medal = `<svg viewBox="0 0 120 150" class="medal" aria-hidden="true"><path d="M30 0h22l14 44H44z" fill="#c8102e"/><path d="M68 0h22L76 44H54z" fill="#a50e16"/><circle cx="60" cy="94" r="46" fill="#f4b400" stroke="#ffe08a" stroke-width="5"/><circle cx="60" cy="94" r="34" fill="#ffd24a"/><path d="M60 68l7.6 15.4 17 2.5-12.3 12 2.9 16.9L60 107l-15.2 8 2.9-16.9-12.3-12 17-2.5z" fill="#c8102e"/></svg>`;
+    const list = (arr, cls) => arr.map((x) => `<li class="${cls}">${esc(x)}</li>`).join("");
+    S.innerHTML = `<div class="talk award"><div class="eyebrow">表彰大会 · Award ceremony of the Party committee</div>
+      <h1>The Party honours its <span style="color:var(--gold)">most loyal member</span></h1>
+      <div class="awgrid">
+        <div class="aw top">${top ? `${medal}<div class="aw-k">优秀党员 · Outstanding Party Member</div><div class="aw-n">${esc(top.name)}</div>
+          <div class="aw-s"><span data-count="${top.score}">${top.score}</span> loyalty points</div><ul>${list(top.plus, "p")}</ul>` : `<div class="aw-n">—</div>`}</div>
+        <div class="aw bot">${bot ? `<div class="aw-stamp">重点人员</div><div class="aw-k">⚠️ Most dangerous element · Key person</div><div class="aw-n">${esc(bot.name)}</div>
+          <div class="aw-s"><span data-count="${bot.score}">${bot.score}</span> loyalty points</div><ul>${list(bot.minus.length ? bot.minus : ["Suspiciously quiet all day"], "m")}</ul>` : `<div class="aw-k">Only one player — no enemies of the people today.</div>`}</div>
+      </div>
+      <div class="awrank">${aw.list.slice(0, 8).map((x, j) => `<span style="--j:${j}"><b>${j + 1}.</b> ${esc(x.name)} <em>${x.score}</em></span>`).join("")}</div>
+      <div class="ask"><span>Ask the room</span>In China, who would be better off tomorrow — the Model Citizen or the Key Person? Who would you rather be?</div>
+      <div class="confetti">${Array.from({ length: 40 }, (_, j) => `<i style="--x:${(j * 37) % 100};--d:${(j % 7) * 0.45}s;--r:${(j * 53) % 360}deg">${j % 3 ? "★" : "✦"}</i>`).join("")}</div></div>`;
     return;
   }
 

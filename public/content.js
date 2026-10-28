@@ -371,6 +371,7 @@
   STEPS.push({ type: "unique" });
   STEPS.push({ type: "meta" });
   POLLS.forEach((p, i) => { STEPS.push({ type: "poll", i }); STEPS.push({ type: "pollres", i }); });
+  STEPS.push({ type: "award" }); // the Party committee honours its most loyal member
   STEPS.push({ type: "end" });
 
   // Speaker notes for the presenter console (/present)
@@ -592,6 +593,16 @@
     nightPetitioner: { because: "Because you went to Zhengzhou about the bank money…", result: "1 a.m.: the front desk calls — two police officers want to “have a chat”. Petitioners checking into hotels trigger alerts.", logs: ["Hotel check-in flagged: petitioner", "Police visit 01:05"], to: ["hotel", "police"], state: "direct" }
   };
 
+  // Loyalty score for the award ceremony: what the Party would reward or punish
+  const LOYALTY = {
+    kind: { quick: 10, future: 10, comfort: 5, safe: 5, voice: 0, cheap: 0, private: -5, rebel: -15 },
+    blockedTry: -10, informed: 20, refusedInform: -10, signed: 15, refusedSign: -20, quizRight: 3, guessRight: 2, jaywalked: -5, blacklisted: -10,
+    titles: [[60, "优秀党员", "Outstanding Party Member"], [30, "模范公民", "Model Citizen"], [0, "普通群众", "Ordinary member of the masses"], [-30, "后进分子", "Backward element"], [-1e9, "重点人员", "Key person — under watch"]],
+    tldr: "The Party committee honours its most loyal member — and names its most dangerous element.",
+    say: ["Points came from what you did: quick apps, reporting a classmate, signing the self-criticism, correct quizzes", "Lost points: cash, refusing scans, pushing back, hanging up on Secretary Lin", "Real tradition: every year the Party names “优秀共产党员” — Outstanding Communist Party Members", "Hand the winner the prize, then ask the room"],
+    ask: "In China, who would be better off tomorrow — the Model Citizen or the Key Person? Who would you rather be?"
+  };
+
   // Backup discussion questions for the presenter, if the room is quiet
   const PROMPTS = {
     sim: { reveal: ["Did anyone try to skip the face scan? Why?", "Would you notice if a Polish carrier started asking for your face?"],
@@ -614,6 +625,7 @@
     daily: ["Which number surprised you most?", "How many of these would be true for you in Poland too?"],
     informres: ["Would you report a classmate who cheated in an exam? Is that different?", "Is informing loyalty or betrayal — and to whom?", "How is this different from “see something, say something” in the West?"],
     censor: ["Which card surprised you most?", "Is it better to censor a few topics fast — or many slowly?", "What code words would you invent?"],
+    award: ["Did anyone change their behaviour once Secretary Lin started calling?", "Is rewarding loyalty worse than punishing dissent — or the same thing?"],
     jaywalk: ["Would public shaming stop you jaywalking?", "What if the system gets the face wrong — like it did with Dong Mingzhu?"],
     camhist: ["Why would a government test surveillance on a minority region first?", "Once the cameras exist, can they be used only for crime?"],
     case: ["Would you trade privacy for feeling safe at night?", "Who pays the price for a “safe” society?"],
@@ -715,7 +727,7 @@
   };
 
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { SCENES, POLLS, STEPS, WHO, STATE, KINDS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, QUIZ, JAYWALK, CARRY, CENSOR, buildFile, FILE_WORD };
+  const api = { LOYALTY, SCENES, POLLS, STEPS, WHO, STATE, KINDS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, QUIZ, JAYWALK, CARRY, CENSOR, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);

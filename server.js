@@ -6,7 +6,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-const { QUIZ, CARRY, CENSOR, SCENES, POLLS, STEPS, buildFile } = require("./public/content.js");
+const { LOYALTY, QUIZ, CARRY, CENSOR, SCENES, POLLS, STEPS, buildFile } = require("./public/content.js");
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST_KEY = process.env.HOST_KEY || crypto.randomBytes(3).toString("hex");
@@ -181,6 +181,41 @@ function pollStats(pi) {
 }
 
 // ---------- payloads ----------
+// loyalty score per player for the award ceremony
+function loyalty(p) {
+  const L = LOYALTY; let score = 0; const plus = [], minus = [];
+  const add = (n, txt) => { score += n; (n >= 0 ? plus : minus).push([n, txt]); };
+  for (const sc of SCENES) {
+    const a = p.answers[sc.id]; if (!a) continue;
+    const blocked = a.attempts.filter((id) => (sc.options.find((o) => o.id === id) || {}).outcome === "blocked").length;
+    if (blocked) add(L.blockedTry * blocked, sc.id === "sim" ? "Tried to skip the face scan" : sc.id === "healthcode" ? "Tried to walk in without a code" : sc.id === "train" ? "Tried to buy from a ticket tout" : "Tried something forbidden");
+    const o = a.final && sc.options.find((x) => x.id === a.final);
+    if (o && L.kind[o.kind] !== undefined) {
+      const n = L.kind[o.kind];
+      if (n > 0 && o.kind === "quick") add(n, `Used the official app (${sc.title.replace(/^Flashback: /, "")})`);
+      else if (n > 0) add(n, o.label);
+      else if (n < 0) add(n, o.label);
+    }
+    if (a.blacklisted) add(L.blacklisted, "On the court debtor list");
+  }
+  if (p.inform && p.inform.target) add(L.informed, `Reported ${p.inform.target} to Teacher Jan`);
+  if (p.inform && p.inform.refused) add(L.refusedInform, "Refused to inform on classmates");
+  const lin = Object.values(p.lin || {});
+  if (lin.includes(true)) add(L.signed, "Signed a self-criticism");
+  if (lin.includes(false)) add(L.refusedSign, "Refused to sign a self-criticism");
+  const qr = Object.entries(p.quiz || {}).filter(([k, v]) => QUIZ[k] && QUIZ[k].correct === v).length;
+  if (qr) add(qr * L.quizRight, `${qr} quiz answer${qr > 1 ? "s" : ""} correct — studied hard`);
+  const gr = Object.entries(p.guesses || {}).filter(([k, v]) => { const sc = SCENES.find((x) => x.id === k); return sc && sc.guess && sc.guess.correct === v; }).length;
+  if (gr) add(gr * L.guessRight, `${gr} statistic${gr > 1 ? "s" : ""} guessed right`);
+  if (state.jaywalker && state.jaywalker.pid === p.pid) add(L.jaywalked, "Caught jaywalking");
+  const t = L.titles.find(([min]) => score >= min);
+  return { name: p.name, score, zh: t[1], title: t[2], plus: plus.sort((x, y) => y[0] - x[0]).slice(0, 4).map((x) => x[1]), minus: minus.sort((x, y) => x[0] - y[0]).slice(0, 4).map((x) => x[1]) };
+}
+function awards() {
+  const list = [...state.players.values()].map(loyalty).sort((a, b) => b.score - a.score);
+  return { list, top: list[0] || null, bottom: list.length > 1 ? list[list.length - 1] : null, n: list.length };
+}
+
 function screenPayload() {
   const step = currentStep();
   const out = { step, stepIndex: state.step, stepCount: STEPS.length, players: state.players.size, names: [...state.players.values()].map((p) => p.name).slice(-60), feed: state.feed.slice(-14), totalPoints: state.totalPoints };
@@ -192,6 +227,7 @@ function screenPayload() {
   if (step.type === "unique") { const u = uniqueness(); out.unique = { total: u.total, smallUnique: u.smallUnique, fullUnique: u.fullUnique }; }
   if (step.type === "file") out.files = [...state.players.values()].map((p) => { const f = buildFile({ name: p.name, answers: p.answers, faces: p.faces, seed: p.pid, device: p.device, inform: p.inform, lin: p.lin }); return { name: p.name, id: f.id, tags: f.tags, alerts: f.alerts.length, points: f.points + f.inferences.length, mtags: f.market.tags.map((x) => x.t) }; });
   if (step.type === "inform" || step.type === "informres") out.inform = informStats(step.type === "informres");
+  if (step.type === "award") out.award = awards();
   if (step.type === "meta") out.meta = metaStats();
   if (step.type === "poll" || step.type === "pollres") { out.poll = pollStats(step.i); out.voted = [...state.players.values()].filter((p) => p.polls[POLLS[step.i].id] !== undefined).length; }
   if (step.type === "end") out.meta = metaStats();
@@ -200,6 +236,7 @@ function screenPayload() {
 function playerPayload(p) {
   const step = currentStep();
   const out = { step, stepIndex: state.step, players: state.players.size, me: { name: p.name, answers: p.answers, polls: p.polls, points: p.points, inform: p.inform || null, guesses: p.guesses || {}, lin: p.lin || {}, quiz: p.quiz || {}, censor: p.censor || {} } };
+  if (step.type === "award") { const aw = awards(), me = aw.list.findIndex((x) => x.name === p.name); out.award = { me: aw.list[me] || loyalty(p), rank: me + 1, n: aw.n, top: aw.top && aw.top.name === p.name, bottom: aw.bottom && aw.bottom.name === p.name }; }
   if (step.type === "jaywalk") out.jaywalked = !!(state.jaywalker && state.jaywalker.pid === p.pid);
   if (step.type === "reveal") out.guess = guessStats(step.i);
   if (step.type === "inform") out.classmates = [...state.players.values()].filter((q) => q.pid !== p.pid).map((q) => q.name).sort((a, b) => a.localeCompare(b)).slice(0, 30);

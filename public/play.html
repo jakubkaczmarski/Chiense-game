@@ -256,6 +256,19 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 .fc-bk{transform:rotateY(180deg);overflow:auto;font-size:12.5px;line-height:1.35}
 .fc-bk.ban{background:#2a0b0f;color:#ffe9e6;border:1.5px solid #c8102e}.fc-bk.okk{background:#0f2a1b;color:#e2fbe9;border:1.5px solid #2fbf71}
 .fc-v{font-weight:800;font-size:13px;margin-bottom:3px}.fc-r{font:700 11px ui-monospace,Menlo,monospace;color:#ffd24a;margin-bottom:4px}
+.awp{border-radius:22px;padding:22px 20px;text-align:center;background:#fff;box-shadow:0 1px 0 var(--line);animation:fadein .5s ease}
+.awp.gold{background:radial-gradient(120% 90% at 50% 0%,#fff2b8,#ffd24a);border:3px solid #e0a800}
+.awp.red{background:radial-gradient(120% 90% at 50% 0%,#ffe1de,#fff);border:3px solid #d4372c}
+.awp-big{font-size:72px;line-height:1;animation:ringp 1.2s infinite;display:inline-block;border-radius:50%}
+.awp-h{font-size:22px;font-weight:900;margin:8px 0 4px}
+.awp-k{font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:16px}
+.awp-zh{font:900 44px/1.1 "PingFang SC","Noto Sans SC",sans-serif;color:#c8102e;margin-top:4px}
+.awp-t{font-weight:800;font-size:17px}
+.awp-s{margin-top:8px;color:var(--muted)}.awp-s b{font-size:28px;color:#1a1a1a}
+.awp ul{list-style:none;padding:0;margin:12px 0 0;text-align:left;display:grid;gap:6px}
+.awp li{font-size:15px;padding-left:24px;position:relative}
+.awp li.p::before{content:"✓";position:absolute;left:4px;color:#12a66a;font-weight:900}
+.awp li.m::before{content:"✗";position:absolute;left:4px;color:#d4372c;font-weight:900}
 </style>
 </head>
 <body>
@@ -390,6 +403,7 @@ function render() {
   if (entering && (step.type === "meta" || step.type === "end")) scramble();
   if (entering && step.type === "scene" && step.i === 0 && window.FaceScan) FaceScan.preload();
   if (entering && step.type === "inform" && !d.me.inform) startRing();
+  if (entering && step.type === "award" && d.award && (d.award.top || d.award.bottom) && navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 600]);
   if (entering && (step.type === "scene" || step.type === "poll") && navigator.vibrate) navigator.vibrate([120, 80, 120]);
   // an unanswered ringing call must never block a new question
   if (entering && ["scene", "poll", "inform", "censor"].includes(step.type)) { const r = document.querySelector(".linph.ring"); if (r) { r.remove(); stopRing(); } }
@@ -568,6 +582,20 @@ function draw(d, step, scene) {
       <div class="big pulse-in" style="color:${meUnique ? "var(--red)" : "var(--green-ink)"}">${meUnique ? "Unique" : "1 of " + u.meSmall}</div>
       <p class="lead" style="margin-top:10px">${meUnique ? "Nobody else in this room matches you. Those few “anonymous” details point to <b>you</b>." : `You blend in with ${u.meSmall - 1} other${u.meSmall === 2 ? "" : "s"} — for now.`}</p>
       <p class="fine" style="margin-top:10px">With all ${SCENES.length} choices: ${u.meFull === 1 ? "you are unique." : "you share a profile with " + (u.meFull - 1) + " other(s)."}</p></div>`;
+    return;
+  }
+
+  if (step.type === "award") {
+    const aw = d.award; if (!aw) return;
+    const m = aw.me, cls = aw.top ? "gold" : aw.bottom ? "red" : m.score >= 0 ? "ok" : "red";
+    app.innerHTML = `<div class="awp ${cls}">
+      ${aw.top ? `<div class="awp-big">🏅</div><div class="awp-h">You are the Outstanding Party Member!</div><p>Collect your prize from the presenter. 🧧</p>`
+        : aw.bottom ? `<div class="awp-big">⚠️</div><div class="awp-h">You are the Most Dangerous Element</div><p>A grid worker will be assigned to you. Look at the big screen.</p>` : ""}
+      <div class="awp-k">Your title</div><div class="awp-zh">${esc(m.zh)}</div><div class="awp-t">${esc(m.title)}</div>
+      <div class="awp-s"><b>${m.score}</b> loyalty points · #${aw.rank} of ${aw.n}</div>
+      ${m.plus.length ? `<ul>${m.plus.map((x) => `<li class="p">${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${m.minus.length ? `<ul>${m.minus.map((x) => `<li class="m">${esc(x)}</li>`).join("")}</ul>` : ""}
+      <p class="fine" style="margin-top:14px">👀 Look at the big screen for the winner.</p></div>`;
     return;
   }
 
