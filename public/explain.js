@@ -85,6 +85,21 @@
       "Didi listed on the New York Stock Exchange on 30 June 2021 against Beijing's wishes. Two days later it was put under a cybersecurity review and removed from app stores. Beijing feared US access to Chinese mapping and travel data.",
       "China's 2021 laws are strict for companies — consent, minimal data, fines. But state organs have broad exceptions. Compare: GDPR also has exceptions for police, but courts and data-protection authorities check them."
     ],
+    vpn: [
+      "Just set the scene: blocked apps, a friend abroad. Let them decide.",
+      "Using a VPN without approval is illegal, but millions do it and most are never punished. Enforcement is unpredictable — and that uncertainty is what keeps people careful.",
+      "At 14:00 (doctor explain slide) about half the VPN users get a fine and Secretary Lin calls them — on the projector and on their phone."
+    ],
+    "vpn:extra": [
+      "The confiscated money was all his income earned while working through a VPN — it was treated as “illegal income”.",
+      "So the “safe” WeChat option isn't private either: pictures are checked too."
+    ],
+    map: [
+      "Don't talk over it at first — let the dots move. The clock runs from 07:00 to 23:30.",
+      "Point at the counter: each flash is a record a company or the state keeps, tied to a real name.",
+      "Cash and the cash metro card cut the digital trail — but street and station cameras still see you. Privacy choices only reduce, never remove, the trail.",
+      "Researchers showed 4 location points are enough to identify 95% of people (de Montjoye, 2013). Location is the most revealing data there is."
+    ],
     redlight: [
       "Don't mention the cameras — the surprise on the next screen is the lesson.",
       "In 2012 Chinese netizens joked about “Chinese-style road crossing”: wait until enough people gather, then all walk on red — no one can stop a crowd. Cameras with face recognition ended that logic: the camera matches every face.",

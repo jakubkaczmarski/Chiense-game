@@ -317,6 +317,25 @@ i.rep{background:var(--red)}i.ref{background:var(--green)}
 .jw-also{margin:10px 0 0;font-size:22px;color:#ffb3ab}
 .jw-stat{display:flex;gap:28px;margin-top:10px;font-family:var(--mono);font-size:18px;color:var(--muted)}
 .jw-stat b{color:var(--ink);font-size:24px}
+.gfw{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;text-align:center;width:100%}
+.gfw-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.gfw-row span{background:#1d2427;border-radius:99px;padding:6px 12px;font-size:17px;text-decoration:line-through;color:#8fa19b;animation:rise .5s both calc(.4s + var(--j)*.15s)}
+.gfw-wall{margin:16px 0;font:800 22px/1.4 "PingFang SC","Noto Sans SC",sans-serif;color:#ff8a7e}
+.gfw-me{font-size:20px}
+.mapwrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+.mapwrap h1{font-size:46px;margin:2px 0 10px}
+.mapsvg{width:100%;flex:1;min-height:0;background:#0a1214;border:1px solid var(--line);border-radius:16px}
+.maphud{position:absolute;right:18px;top:64px;background:rgba(7,9,10,.85);border:1px solid var(--line);border-radius:14px;padding:12px 18px;font-family:var(--mono)}
+.maphud b{display:block;font-size:48px;color:var(--gold);line-height:1}
+.maphud span{font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.maphud .pc b{font-size:36px;color:var(--red);margin-top:10px}
+.mapnote{font-size:17px;color:var(--muted);margin-top:8px}
+.ml{font:600 15px var(--mono);fill:#9fb3ad}.ml .zh{font:800 17px "PingFang SC","Noto Sans SC",sans-serif;fill:#ffe9a8}
+.ml.river{fill:#4f8fbf;font-size:16px}.ml.line{fill:#7ac143;font-size:14px}
+.mn{font:700 14px var(--mono)}
+.mp{font:600 13px var(--mono);fill:#fff;paint-order:stroke;stroke:#000;stroke-width:4px}
+.pring{animation:pring 1.6s ease-out forwards;transform-box:fill-box;transform-origin:center}
+@keyframes pring{0%{transform:scale(.4);opacity:1}100%{transform:scale(2.6);opacity:0}}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -445,7 +464,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <script src="/anthem.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { REDLIGHT, CARRY, SCENES, POLLS, STEPS, CASE, INFORM, INTRO, DAILY, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR } = window.GAME;
+const { VPN, REDLIGHT, CARRY, SCENES, POLLS, STEPS, CASE, INFORM, INTRO, DAILY, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const JOIN = (new URLSearchParams(location.search).get("join") || location.origin).replace(/\/$/, "") + "/";
 const $ = (id) => document.getElementById(id);
@@ -604,6 +623,90 @@ function startJingle() {
   document.body.appendChild(o); setTimeout(() => o.remove(), 2600);
 }
 
+// ---------- live map of everyone's day ----------
+const MAP = {
+  home: [380, 170], stall: [445, 150], jat: [420, 250], ppl: [585, 305], ljz: [880, 285], office: [935, 215], cross: [985, 340],
+  hosp: [590, 480], hq: [90, 410], bar: [660, 410], hotel: [705, 365], cafe: [610, 560]
+};
+const LINE2 = [[90, 410], [220, 365], [320, 305], [420, 250], [585, 305], [730, 300], [880, 285]];
+function seg(a, b, n = 8) { const out = []; for (let k = 1; k <= n; k++) out.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]); return out; }
+function along(line, from, to) { const i = line.findIndex((p) => p[0] === from[0] && p[1] === from[1]), j = line.findIndex((p) => p[0] === to[0] && p[1] === to[1]); const pts = i <= j ? line.slice(i, j + 1) : line.slice(j, i + 1).reverse(); const out = []; for (let k = 1; k < pts.length; k++) out.push(...seg(pts[k - 1], pts[k], 5)); return out; }
+function curve(a, b, c, n = 14) { const out = []; for (let k = 1; k <= n; k++) { const t = k / n; out.push([(1 - t) ** 2 * a[0] + 2 * (1 - t) * t * c[0] + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * c[1] + t * t * b[1]]); } return out; }
+// a route = list of legs {t0, t1, pts, ping}
+function route(p, j) {
+  const off = [((j * 37) % 17) - 8, ((j * 53) % 15) - 7], legs = [], o = (pt) => [pt[0] + off[0], pt[1] + off[1]];
+  let pos = MAP.home, t = 7.5;
+  const go = (t1, pts, ping) => { legs.push({ t0: t, t1, pts: pts.map(o), ping }); pos = pts.length ? pts[pts.length - 1] : pos; t = t1; };
+  go(7.5, [MAP.home], p.sim === "black" ? "Cell tower · stranger's SIM" : "Cell tower · your SIM");
+  if (p.breakfast === "delivery") go(8.2, [MAP.home], "Meituan order · GPS");
+  else go(8.2, seg(pos, MAP.stall, 4), p.breakfast === "cash" ? "Street CCTV" : "WeChat Pay · stall QR");
+  if (p.metro === "taxi") go(8.8, curve(pos, MAP.ljz, [660, 110]), "Didi GPS route");
+  else { go(8.6, seg(pos, MAP.jat, 4), p.metro === "card" ? "Metro CCTV" : "Metro gate · QR"); go(8.8, along(LINE2, MAP.jat, MAP.ljz), "Exit gate · Lujiazui"); }
+  go(8.87, seg(pos, MAP.cross, 3), p.redlight === "cross" || p.redlight === "crowd" ? "📸 JAYWALKER" : "Crossing camera");
+  go(9.0, seg(pos, MAP.office, 3), "Office badge");
+  go(12.5, [MAP.office], p.post ? "Weibo · IP: Shanghai" : null);
+  if (p.vpn === "vpn") go(12.75, [MAP.office], "VPN traffic log");
+  go(14.0, curve(pos, MAP.hosp, [820, 480]), p.doctor === "face" ? "Hospital face scan" : "Hospital booking");
+  go(15.0, curve(pos, MAP.office, [820, 480]), null);
+  go(18.5, along(LINE2, MAP.ljz, MAP.hq), p.train ? "12306 face gate" : "Metro line 2");
+  go(21.0, along(LINE2, MAP.hq, MAP.ppl).concat(seg(MAP.ppl, MAP.bar, 4)), "WeChat Pay · bar");
+  if (p.night === "hotel") go(22.5, seg(pos, MAP.hotel, 4), "Hotel → police");
+  else if (p.night === "wangba") go(22.5, seg(pos, MAP.cafe, 4), "Internet café · ID scan");
+  else if (p.night === "home") go(22.9, curve(pos, MAP.home, [520, 280]), "Didi GPS · gate face scan");
+  return legs;
+}
+function posAt(legs, h) {
+  let last = legs[0] ? legs[0].pts[0] : [0, 0]; const trail = [last];
+  for (const L of legs) {
+    if (h >= L.t1) { trail.push(...L.pts); last = L.pts[L.pts.length - 1] || last; continue; }
+    if (h <= L.t0) break;
+    const f = (h - L.t0) / (L.t1 - L.t0), n = Math.max(1, Math.floor(f * L.pts.length));
+    trail.push(...L.pts.slice(0, n)); last = L.pts[n - 1] || last; break;
+  }
+  return { at: last, trail };
+}
+let mapAnim = null;
+function drawMap(S, d) {
+  const ps = (d.map || []).slice(0, 30), colors = ["#ffd24a", "#ff5a4e", "#7cc4ff", "#3ee08f", "#ffbf47", "#c7b9ff", "#ff8fb1", "#8ef0e0"];
+  const routes = ps.map((p, j) => ({ p, legs: route(p, j), c: colors[j % colors.length] }));
+  const lbl = (pt, zh, en, dx = 0, dy = 0) => `<text x="${pt[0] + dx}" y="${pt[1] + dy}" class="ml"><tspan class="zh">${zh}</tspan> ${en}</text>`;
+  S.innerHTML = `<div class="mapwrap"><div class="eyebrow">轨迹 guǐjì · trajectory · one day, ${ps.length} people</div><h1>This is what your <span style="color:var(--gold)">location data</span> looks like</h1>
+    <svg class="mapsvg" viewBox="0 0 1300 660" preserveAspectRatio="xMidYMid meet">
+      <defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <g stroke="#14232a" stroke-width="1">${Array.from({ length: 26 }, (_, k) => `<path d="M${k * 50} 0V660"/>`).join("")}${Array.from({ length: 14 }, (_, k) => `<path d="M0 ${k * 50}H1300"/>`).join("")}</g>
+      <path d="M770 0 C730 160 830 230 790 340 C750 450 740 550 830 660" stroke="#1d4b6e" stroke-width="34" fill="none" stroke-linecap="round"/>
+      <path d="M770 0 C730 160 830 230 790 340 C750 450 740 550 830 660" stroke="#2a6a96" stroke-width="2" fill="none" opacity=".6"/>
+      <polyline points="${LINE2.map((p) => p.join(",")).join(" ")}" fill="none" stroke="#7ac143" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+      ${LINE2.map((p) => `<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="#0a1214" stroke="#7ac143" stroke-width="3"/>`).join("")}
+      <g class="mlabels">${lbl(MAP.hq, "虹桥", "Hongqiao station", -60, 42)}${lbl(MAP.home, "静安", "Jing'an · home", -110, -26)}${lbl(MAP.ppl, "人民广场", "People's Sq.", -50, 40)}
+        ${lbl(MAP.office, "陆家嘴", "Lujiazui · office", 26, -10)}${lbl(MAP.hosp, "瑞金医院", "Ruijin Hospital", -60, 42)}${lbl(MAP.bar, "新天地", "Xintiandi bar", 24, 34)}
+        <text x="850" y="630" class="ml river">黄浦江 Huangpu River</text><text x="150" y="350" class="ml line">Metro Line 2</text></g>
+      <g id="trails"></g><g id="pings"></g><g id="dots"></g>
+    </svg>
+    <div class="maphud"><span>Shanghai time</span><b id="mclock">07:00</b><div class="pc"><span>Location pings logged</span><b id="mpings">0</b></div></div>
+    <div class="mapnote">Every dot is one of you. Every flash is a record kept by a company or the state — even the “private” choices are seen by cameras.</div></div>`;
+  cancelAnimationFrame(mapAnim);
+  const svg = S.querySelector(".mapsvg"), gT = svg.querySelector("#trails"), gP = svg.querySelector("#pings"), gD = svg.querySelector("#dots");
+  const pings = []; routes.forEach((r) => r.legs.forEach((L) => { if (L.ping) pings.push({ t: L.t1, at: L.pts[L.pts.length - 1], text: L.ping, c: r.c, name: r.p.name }); }));
+  pings.sort((a, b) => a.t - b.t);
+  const T0 = performance.now(), DUR = 22000, H0 = 7, H1 = 23.5; let shown = 0;
+  const frame = () => {
+    if (!document.body.contains(svg)) return;
+    const h = Math.min(H1, H0 + (performance.now() - T0) / DUR * (H1 - H0));
+    gT.innerHTML = routes.map((r) => { const q = posAt(r.legs, h); return `<polyline points="${q.trail.map((p) => p.join(",")).join(" ")}" fill="none" stroke="${r.c}" stroke-width="3" opacity=".55" stroke-linejoin="round"/>`; }).join("");
+    gD.innerHTML = routes.map((r) => { const q = posAt(r.legs, h); return `<g filter="url(#glow)"><circle cx="${q.at[0]}" cy="${q.at[1]}" r="9" fill="${r.c}"/></g><text x="${q.at[0] + 12}" y="${q.at[1] - 10}" class="mn" fill="${r.c}">${esc(r.p.name)}</text>`; }).join("");
+    while (shown < pings.length && pings[shown].t <= h) {
+      const pg = pings[shown++], el = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      el.innerHTML = `<circle cx="${pg.at[0]}" cy="${pg.at[1]}" r="10" fill="none" stroke="${pg.text.startsWith("📸") ? "#ff3b30" : pg.c}" stroke-width="3" class="pring"/><text x="${pg.at[0] + 14}" y="${pg.at[1] + 22}" class="mp">${esc(pg.text)}</text>`;
+      gP.appendChild(el); setTimeout(() => el.querySelector("text") && el.querySelector("text").remove(), 2600);
+      document.getElementById("mpings").textContent = shown;
+    }
+    const hh = Math.floor(h), mm = Math.floor((h - hh) * 60); const ck = document.getElementById("mclock"); if (ck) ck.textContent = String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
+    if (h < H1) mapAnim = requestAnimationFrame(frame);
+  };
+  mapAnim = requestAnimationFrame(frame);
+}
+
 // red-light countdown (90 → 0, then loops)
 let rlStart = 0;
 setInterval(() => { const el = document.getElementById("rlnum"); if (!el) return; const t = Math.floor((performance.now() - rlStart) / 1000); el.textContent = String(90 - (t % 91)).padStart(2, "0"); }, 250);
@@ -626,10 +729,11 @@ function render() {
   if (kickoff) startJingle();
   lastKey = key;
   if (entering && window.Music) Music.setMood(trackFor(d.step));
-  if (entering && d.step.type === "award" && window.Guide) { Guide.hang(); Guide.reset(); }
+  if (entering && ["award", "map", "file"].includes(d.step.type) && window.Guide) Guide.hang();
   if (entering && d.step.type === "award" && window.Anthem) { if (window.Music && Music.isOn()) Music.duck(6000); Anthem.play(0.9); setTimeout(() => Anthem.play(0.9), Anthem.length * 1000 + 200); }
   // Director Lin phones in only when someone breaks the rules, and names them
   if (window.Guide && d.offenders && (d.step.type === "scene" || d.step.type === "reveal")) Guide.report(SCENES[d.step.i].id, d.offenders);
+  if (window.Guide && d.vpnFined && d.vpnFined.length && ["brief", "scene", "reveal", "debrief"].includes(d.step.type)) Guide.report("vpn", d.vpnFined.map((name) => ({ name, opt: "fined" })));
   if (window.Guide && d.players === 0) Guide.reset();
   drawStage();
   if (d.quiz) { const qk = d.step.type === "debrief" ? "debrief:" + SCENES[d.step.i].id : d.step.type; if (QUIZ[qk]) $("stage").insertAdjacentHTML("beforeend", `<div class="quizchip">❓ Quiz on your phones · <b>${d.quiz.n}</b>/${d.players} answered${d.quiz.n ? ` · <b>${Math.round(d.quiz.right / d.quiz.n * 100)}%</b> right` : ""}</div>`); }
@@ -663,7 +767,7 @@ function drawStage() {
   $("stepLbl").textContent = `${d.stepIndex + 1}/${d.stepCount} · ${step.type}`;
   $("qrmini").style.display = step.type === "lobby" ? "none" : "flex";
   const scene = ["scene", "reveal", "brief", "debrief"].includes(step.type) ? SCENES[step.i] : null;
-  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" || step.type === "intro" || step.type === "daily" ? "07:00" : step.type === "redlight" || step.type === "jaywalk" ? "08:52" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : step.type === "jaywalk" ? "08:52" : step.type === "censor" ? "12:45" : "23:59";
+  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" || step.type === "intro" || step.type === "daily" ? "07:00" : step.type === "vpn" ? "12:45" : step.type === "redlight" || step.type === "jaywalk" ? "08:52" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : step.type === "jaywalk" ? "08:52" : step.type === "censor" ? "12:45" : "23:59";
 
   // feed
   $("feed").innerHTML = d.feed.map((f) => { const isNew = !seenFeed.has(f.id); seenFeed.add(f.id); return `<div class="fl${isNew ? " new" : ""}"><span class="t">${esc(f.t)}</span> <span class="n">${esc(f.name)}</span><br>${esc(f.text)}</div>`; }).join("");
@@ -695,6 +799,21 @@ function drawStage() {
       </div></div></div>`;
     return;
   }
+
+  if (step.type === "vpn") {
+    const v = d.vpn || { vpn: 0, wechat: 0, skip: 0 }, n = v.vpn + v.wechat + v.skip;
+    S.innerHTML = `<div class="talk vpnst"><div class="eyebrow"><span class="clock">${VPN.clock}</span> · Lunch break · decide on your phone</div>
+      <div class="rlgrid"><div class="talkL"><h1>Instagram is blocked. <span style="color:var(--gold)">Climb the wall?</span></h1>
+        <p class="lead">${esc(VPN.story)}</p>
+        <div class="pills">${VPN.options.map((o) => `<span class="pill"><b class="pk">${esc(KINDS[o.kind] || "")}</b>${esc(o.label)}</span>`).join("")}</div>
+        <div class="answered"><b>${n}</b> / ${d.players} decided<div class="prog"><i style="width:${pct(n, d.players)}%"></i></div></div></div>
+      <div class="rlpole"><div class="gfw"><div class="gfw-row">${["Instagram", "Google", "WhatsApp", "YouTube", "Wikipedia"].map((x, j) => `<span style="--j:${j}">${x}</span>`).join("")}</div>
+        <div class="gfw-wall">🧱🧱🧱🧱🧱🧱<br>防火长城 · Great Firewall<br>🧱🧱🧱🧱🧱🧱</div><div class="gfw-me">📱 You, in Shanghai</div></div>
+        <div class="rlword"><b>${esc(VPN.word.zh)}</b><span>${esc(VPN.word.py)} · ${esc(VPN.word.en)}</span></div></div></div></div>`;
+    return;
+  }
+
+  if (step.type === "map") { drawMap(S, d); return; }
 
   if (step.type === "redlight") {
     const r = d.redlight || { wait: 0, cross: 0, crowd: 0 }, n = r.wait + r.cross + r.crowd;

@@ -48,6 +48,14 @@ Every talk slide (intro, data scale, camera history, each debrief, the case for 
 
 Just before the end, the projector holds a 表彰大会 (award ceremony): the player with the most loyalty points becomes **优秀党员 · Outstanding Party Member** (gold card, medal, confetti, the Internationale), and the lowest scorer is named **重点人员 · Most Dangerous Element**. Points come from the day: official apps and quick choices (+), reporting a classmate (+20), signing the self-criticism (+15), correct quizzes and guesses (+); cash and private choices (−), pushing back (−15), forbidden attempts (−10), refusing to inform (−10) or to sign (−20), being caught jaywalking (−5). Every phone shows its own title, score, rank and reasons. The presenter console names the winner in advance, so you can have a prize ready (a red envelope 🧧 or White Rabbit candy).
 
+## VPN dilemma
+
+After the censorship game: a friend in Kraków sends an Instagram link. Use a VPN to “climb the wall” (翻墙), ask for the photos on WeChat (where images are scanned too), or don't open it. At 14:00 about half the VPN users are fined ¥200 and Secretary Lin calls them, on the projector and on their phone. Based on real cases, e.g. the 2023 Chengde programmer whose ¥1.06 million income was confiscated (China Digital Times).
+
+## Your day on the map
+
+After the file finale, the projector replays the whole day on a stylised map of Shanghai (Jing'an home, Line 2, People's Square, Lujiazui office, Ruijin Hospital, Xintiandi, Hongqiao) in about 20 seconds. Every player is a moving dot following their real choices (metro or Didi, hospital, train, hotel / internet café / home), and every location record flashes as it is logged — the counter shows how many pings the room produced.
+
 ## Guess the number
 
 On every explain slide, phones get a quick “guess the number” question (e.g. *How many mobile phone subscriptions does China have?* 900 million / 1.3 billion / 1.8 billion). The projector shows how many have guessed; after the scene, the results screen and every phone reveal the answer and the share of the room that got it right.

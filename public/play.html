@@ -272,6 +272,8 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 .rlph{display:flex;align-items:center;justify-content:center;gap:16px;margin:12px 0;background:#141414;border-radius:14px;padding:10px}
 .rlph-man{font-size:40px;animation:rlb 1s ease-in-out infinite}.rlph-n{font:800 40px ui-monospace,Menlo,monospace;color:#ff3b30}.rlph-cam{font-size:30px}
 @keyframes rlb{50%{opacity:.5}}
+.igmsg{margin-top:10px;background:#f1f3f6;border-radius:16px 16px 16px 4px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;font-size:15px}
+.igmsg span{color:#3b5bdb;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -286,7 +288,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 <script src="/anthem.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { REDLIGHT, SCENES, POLLS, WHO, INFORM, DAILY, CASE, KINDS, QUIZ, CARRY, CENSOR } = window.GAME;
+const { VPN, REDLIGHT, SCENES, POLLS, WHO, INFORM, DAILY, CASE, KINDS, QUIZ, CARRY, CENSOR } = window.GAME;
 const app = document.getElementById("app");
 const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}}, del(k){try{localStorage.removeItem(k)}catch{}} };
 let pid = store.get("dds_pid");
@@ -395,7 +397,7 @@ function render() {
   const step = d.step;
   const scene = step.i !== undefined && (step.type === "scene" || step.type === "reveal") ? SCENES[step.i] : null;
   const tsc = (step.type === "brief" || step.type === "debrief") ? SCENES[step.i] : null;
-  document.getElementById("sclock").textContent = scene ? scene.clock : tsc ? tsc.clock : step.type === "lobby" ? "07:00" : step.type === "redlight" || step.type === "jaywalk" ? "08:52" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : step.type === "jaywalk" ? "08:52" : step.type === "censor" ? "12:45" : "23:59";
+  document.getElementById("sclock").textContent = scene ? scene.clock : tsc ? tsc.clock : step.type === "lobby" ? "07:00" : step.type === "vpn" ? "12:45" : step.type === "redlight" || step.type === "jaywalk" ? "08:52" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : step.type === "jaywalk" ? "08:52" : step.type === "censor" ? "12:45" : "23:59";
   const key = step.type + ":" + (step.i ?? "");
   const entering = key !== local.sceneKey;
   if (entering) { local = { blockedMsg: null, fresh: false, sceneKey: key }; }
@@ -408,6 +410,7 @@ function render() {
   if (entering && step.type === "scene" && step.i === 0 && window.FaceScan) FaceScan.preload();
   if (entering && step.type === "inform" && !d.me.inform) startRing();
   if (entering && step.type === "redlight") rlT0 = Date.now();
+  if (d.me.vpnFined && !linShown.has("vpn:fined")) setTimeout(() => linCall("vpn:fined"), 2500);
   if (entering && step.type === "jaywalk" && d.jaywalked && navigator.vibrate) navigator.vibrate([300, 100, 300]);
   if (entering && step.type === "award" && d.award && (d.award.top || d.award.bottom) && navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 600]);
   if (entering && (step.type === "scene" || step.type === "poll") && navigator.vibrate) navigator.vibrate([120, 80, 120]);
@@ -436,6 +439,23 @@ function draw(d, step, scene) {
 
   if (step.type === "lobby") {
     app.innerHTML = `<div class="redband"><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><svg width="14" height="14" viewBox="0 0 24 24" style="fill:#ffd24a;vertical-align:-2px"><path d="M12 1.8l2.9 7.1 7.6.4-5.9 4.8 2 7.4L12 17.3l-6.6 4.2 2-7.4-5.9-4.8 7.6-.4z"/></svg><div>欢迎来到上海 · 平安中国<small>WELCOME TO SHANGHAI · SAFE CHINA</small></div></div>${idCard(d.me)}<div class="card center" style="margin-top:12px"><p><span class="pulse"></span><b>${d.players}</b> residents registered</p><p class="fine">Look at the big screen. The day starts soon.</p></div>`;
+    return;
+  }
+
+  if (step.type === "vpn") {
+    const mine = d.me.vpn, o = mine && VPN.options.find((x) => x.id === mine);
+    app.innerHTML = `<div class="card"><div class="eyebrow"><span class="clock">${VPN.clock}</span> · A message from Kraków</div>
+      <div class="igmsg"><b>Ola 🇵🇱</b><span>look at my holiday!! 🏖 instagram.com/p/…</span></div>
+      <p class="lead" style="margin-top:8px">${esc(VPN.story)}</p>
+      <div class="wordp"><b>${esc(VPN.word.zh)}</b><span>${esc(VPN.word.py)} · ${esc(VPN.word.en)}</span></div></div>
+      ${o ? `<div class="banner ${mine === "vpn" ? "amber" : "green"}">${mine === "vpn" ? "🌐 " : "✓ "}${esc(o.result)}</div><div class="waitanim"><div class="bar"><i></i></div><p class="fine center">Waiting for the others…</p></div>`
+        : `<div class="opts">${VPN.options.map((x) => `<button class="opt" data-vp="${x.id}"><span class="optl"><span class="kind k-${x.kind}">${esc(KINDS[x.kind] || "")}</span>${esc(x.label)}</span></button>`).join("")}</div>`}`;
+    app.querySelectorAll("[data-vp]").forEach((b) => b.onclick = async () => { app.querySelectorAll("[data-vp]").forEach((x) => x.disabled = true); await post("/api/vpn", { pid, choice: b.dataset.vp }); });
+    return;
+  }
+
+  if (step.type === "map") {
+    app.innerHTML = idleCard({ kick: "23:59 · Your day", title: "Your day as a dot on the map", look: "Look at the big screen — find your name", word: { zh: "轨迹", py: "guǐjì", en: "track / movement trail" }, next: "Every ping on the map is a real record somebody keeps" });
     return;
   }
 
@@ -575,7 +595,7 @@ function draw(d, step, scene) {
   }
 
   if (step.type === "file") {
-    const f = window.GAME.buildFile({ name: d.me.name, answers: d.me.answers, faces: (d.meta && d.meta.faces) || [], seed: pid, device: d.meta && d.meta.device, inform: d.me.inform, lin: d.me.lin });
+    const f = window.GAME.buildFile({ name: d.me.name, answers: d.me.answers, faces: (d.meta && d.meta.faces) || [], seed: pid, device: d.meta && d.meta.device, inform: d.me.inform, lin: d.me.lin, vpn: d.me.vpn, vpnFined: d.me.vpnFined });
     const openStory = () => {
       if (document.querySelector(".story") || !window.FileStory) return;
       FileStory.mount(document.body, { f, me: d.me, meta: d.meta || {}, G: window.GAME, start: local.storyIdx || 0, onIndex: (i) => { local.storyIdx = i; } });

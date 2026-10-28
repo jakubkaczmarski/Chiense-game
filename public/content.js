@@ -363,11 +363,12 @@
     if (s.id === "metro") STEPS.push({ type: "camhist" }); // how China's camera network was built, before the commute
     STEPS.push({ type: "brief", i }); STEPS.push({ type: "scene", i }); STEPS.push({ type: "reveal", i }); STEPS.push({ type: "debrief", i });
     // side quest after the Weibo scene: the class counsellor phones every player privately
-    if (s.id === "post") { STEPS.push({ type: "censor" }); STEPS.push({ type: "inform" }); STEPS.push({ type: "informres" }); }
+    if (s.id === "post") { STEPS.push({ type: "censor" }); STEPS.push({ type: "vpn" }); STEPS.push({ type: "inform" }); STEPS.push({ type: "informres" }); }
     if (s.id === "metro") { STEPS.push({ type: "redlight" }); STEPS.push({ type: "jaywalk" }); } // red-light dilemma, then the shame screen
   });
   STEPS.push({ type: "case" });
   STEPS.push({ type: "file" });
+  STEPS.push({ type: "map" }); // everyone's day as moving dots on a map of Shanghai
   STEPS.push({ type: "unique" });
   STEPS.push({ type: "meta" });
   POLLS.forEach((p, i) => { STEPS.push({ type: "poll", i }); STEPS.push({ type: "pollres", i }); });
@@ -474,6 +475,7 @@
     if (n === "hotel") file.alerts.push("Local resident stayed in a hotel in their own city");
     if (n === "wangba") file.alerts.push("Overnight at an internet café — browsing log available");
     if (sim === "black") file.alerts.push("Traded SIM card — anti-fraud system");
+    if (rec.vpn === "vpn") file.alerts.push(rec.vpnFined ? "Illegal VPN use — fined ¥200, warning on record" : "Encrypted traffic to a foreign VPN server detected");
     if (hc === "zhengzhou") file.alerts.push("Travel to Zhengzhou during depositor protests");
     if (p === "sensitive") file.alerts.push("Sensitive content posted from a real-name account");
     if (file.tags.length) file.alerts.push("Assigned to grid worker for regular check-ins");
@@ -579,6 +581,22 @@
     say: ["Let them choose — don't mention cameras yet", "“Chinese-style crossing” (中国式过马路) is a real 2012 internet meme: wait for a group, then everyone crosses on red", "Next screen reveals who got caught"]
   };
 
+  // VPN dilemma after the censorship game
+  const VPN = {
+    clock: "12:45",
+    story: "Your friend in Kraków sends you an Instagram link: “look at my holiday!” Instagram, Google and WhatsApp are blocked in China.",
+    word: { zh: "翻墙", py: "fān qiáng", en: "“climbing the wall” — using a VPN" },
+    options: [
+      { id: "vpn", kind: "rebel", label: "Use a VPN to “climb the wall” (翻墙)", result: "Instagram loads — holiday photos! But your phone just opened an encrypted tunnel to a server abroad, and your carrier can see that it did." },
+      { id: "wechat", kind: "comfort", label: "Ask her to send the photos on WeChat instead", result: "The photos arrive in WeChat — where images are scanned too: researchers found WeChat filters sensitive pictures in chats." },
+      { id: "skip", kind: "safe", label: "Don't open it — not worth the risk", result: "You reply “so nice! 😍” without looking. That's self-censorship in action." }
+    ],
+    fine: "Your phone connected to a foreign VPN server at 12:46. Fined ¥200 and a warning for “illegally connecting to international networks”.",
+    tldr: "Instagram is blocked. Do you climb the wall?",
+    say: ["Let them choose — don't mention fines yet", "Most VPN users are never punished — but enforcement is random, which is the point: everyone stays careful", "Some VPN users will get a fine and a call from Secretary Lin at 14:00"],
+    facts: ["2023, Chengde: a programmer using a VPN to work for a foreign company was fined ¥200 and had ¥1.06 million (three years of income) confiscated (China Digital Times).", "Citizen Lab (2017–19) found WeChat automatically blocks sensitive images in chats and Moments, not just words."]
+  };
+
   // The jaywalker moment
   const JAYWALK = {
     tldr: "One of you just got caught jaywalking — and the city put your face on a screen.",
@@ -639,6 +657,8 @@
     daily: ["Which number surprised you most?", "How many of these would be true for you in Poland too?"],
     informres: ["Would you report a classmate who cheated in an exam? Is that different?", "Is informing loyalty or betrayal — and to whom?", "How is this different from “see something, say something” in the West?"],
     censor: ["Which card surprised you most?", "Is it better to censor a few topics fast — or many slowly?", "What code words would you invent?"],
+    vpn: ["Have you ever used a VPN? Why?", "If only some VPN users get fined, why does nearly everyone become careful?"],
+    map: ["How many apps on your phone know where you were today?", "Would you share your location history with the police if it helped solve a crime?"],
     redlight: ["Who would cross on red in Kraków? Would a camera change that?"],
     award: ["Did anyone change their behaviour once Secretary Lin started calling?", "Is rewarding loyalty worse than punishing dissent — or the same thing?"],
     jaywalk: ["Would public shaming stop you jaywalking?", "What if the system gets the face wrong — like it did with Dong Mingzhu?"],
@@ -742,7 +762,7 @@
   };
 
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { REDLIGHT, LOYALTY, SCENES, POLLS, STEPS, WHO, STATE, KINDS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, QUIZ, JAYWALK, CARRY, CENSOR, buildFile, FILE_WORD };
+  const api = { VPN, REDLIGHT, LOYALTY, SCENES, POLLS, STEPS, WHO, STATE, KINDS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, QUIZ, JAYWALK, CARRY, CENSOR, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);

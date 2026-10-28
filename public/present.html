@@ -75,7 +75,7 @@ button:active{transform:scale(.98)}
 <script src="/content.js"></script>
 <script src="/explain.js"></script>
 <script>
-const { REDLIGHT, LOYALTY, SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR, CARRY } = window.GAME;
+const { VPN, REDLIGHT, LOYALTY, SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR, CARRY } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -99,6 +99,8 @@ function label(st) {
     case "scene": return `${sc.clock} · Play: ${sc.title}`;
     case "reveal": return `${sc.clock} · Results: ${sc.title}`;
     case "debrief": return `${sc.clock} · Debrief: ${sc.debrief.title}`;
+    case "vpn": return "🌐 12:45 · Instagram is blocked — use a VPN?";
+    case "map": return "🗺 Your day on the map — location data";
     case "redlight": return "🚦 08:52 · Red light — cross or wait?";
     case "jaywalk": return "Jaywalker caught! (Shenzhen 2017)";
     case "censor": return "Side game — banned or allowed on Weibo?";
@@ -131,6 +133,8 @@ function summary(st) {
   const sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
   if (st.type === "brief") return { tldr: sc.brief.tldr, say: sc.brief.points.concat(sc.guess ? [`📱 Phones: “${sc.guess.q}” — answer ${sc.guess.answer} (revealed on the results screen)`] : []), ask: sc.brief.ask, extra: sentences(sc.brief.notes) };
   if (st.type === "debrief") return { tldr: sc.debrief.tldr, say: sc.debrief.points, angle: sc.debrief.ir, pro: sc.debrief.pro, extra: sentences(sc.debrief.notes) };
+  if (st.type === "vpn") return { tldr: VPN.tldr, say: VPN.say.concat([`Options: ${VPN.options.map((o) => (KINDS[o.kind] || "") + " " + o.label).join(" · ")}`]), extra: VPN.facts };
+  if (st.type === "map") return { tldr: "One day, every one of you — as dots on a map.", say: ["The map replays the whole day in about 20 seconds: every dot is a student", "Each flash is a location record: metro gates, payments, Didi GPS, hospital, 12306, hotel", "Even “private” choices (cash, cash card) show up — cameras fill the gaps", "Location history reveals home, work, health, habits and who you meet"] };
   if (st.type === "redlight") return { tldr: REDLIGHT.tldr, say: REDLIGHT.say.concat([`Options: ${REDLIGHT.options.map((o) => (KINDS[o.kind] || "") + " " + o.label).join(" · ")}`]) };
   if (st.type === "jaywalk") return { tldr: JAYWALK.tldr, say: JAYWALK.say, angle: JAYWALK.angle, extra: ["Sources: " + JAYWALK.sources] };
   if (st.type === "censor") return { tldr: CENSOR.tldr, say: CENSOR.say, extra: CENSOR.cards.map((c) => `${c.en} ${c.zh} — ${c.verdict}: ${c.story}`) };
@@ -204,6 +208,8 @@ function render(d) {
     live += `<div class="big">${d.guess.n} / ${d.players}</div><div>guessed the number · ${d.guess.right} right so far</div>`;
   } else if (st.type === "inform" && d.inform) {
     live += `<div class="big">${d.inform.answered} / ${d.players}</div><div>answered · <span style="color:var(--red)">${d.inform.reported} reported</span> · ${d.inform.refused} refused</div>`;
+  } else if (st.type === "vpn" && d.vpn) {
+    const v = d.vpn; live += `<div class="big">${v.vpn + v.wechat + v.skip} / ${d.players}</div><div>🌐 VPN ${v.vpn} · 💬 WeChat ${v.wechat} · 🙈 skip ${v.skip} — about half the VPN users get fined at 14:00</div>`;
   } else if (st.type === "redlight" && d.redlight) {
     const r = d.redlight; live += `<div class="big">${r.wait + r.cross + r.crowd} / ${d.players}</div><div>🟢 wait ${r.wait} · 🏃 cross ${r.cross} · 👥 crowd ${r.crowd} — every crosser will be caught</div>`;
   } else if (st.type === "award" && d.award && d.award.top) {

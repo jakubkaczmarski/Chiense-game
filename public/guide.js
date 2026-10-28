@@ -24,6 +24,9 @@
     "train:tout": {
       en: "you tried to buy a ticket from a tout. The name on the ticket must match your face. This has been noted.",
       zh: (n) => `${one(n) ? "你" : "你们"}想从黄牛手里买票。车票上的名字必须和你的脸一致。这件事已经记录了。` },
+    "vpn:fined": {
+      en: "your phone connected to a foreign VPN server at 12:46. That is illegal international networking. Fine: ¥200 and a warning on your record.",
+      zh: (n) => `${one(n) ? "你" : "你们"}的手机连接了境外VPN服务器。这是非法联网。罚款两百元，并给予警告。` },
     "train:blacklist": {
       en: "you are on the court list of judgment defaulters. No train for you. Pay your debts first.",
       zh: (n) => `${one(n) ? "你" : "你们"}在失信被执行人名单上。不能坐火车。先把债还了。` }

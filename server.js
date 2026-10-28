@@ -6,7 +6,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-const { REDLIGHT, LOYALTY, QUIZ, CARRY, CENSOR, SCENES, POLLS, STEPS, buildFile } = require("./public/content.js");
+const { VPN, REDLIGHT, LOYALTY, QUIZ, CARRY, CENSOR, SCENES, POLLS, STEPS, buildFile } = require("./public/content.js");
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST_KEY = process.env.HOST_KEY || crypto.randomBytes(3).toString("hex");
@@ -208,6 +208,8 @@ function loyalty(p) {
   const gr = Object.entries(p.guesses || {}).filter(([k, v]) => { const sc = SCENES.find((x) => x.id === k); return sc && sc.guess && sc.guess.correct === v; }).length;
   if (gr) add(gr * L.guessRight, `${gr} statistic${gr > 1 ? "s" : ""} guessed right`);
   if (p.redlight === "wait") add(5, "Waited for the green light");
+  if (p.vpn === "vpn") add(-10, p.vpnFined ? "Used a VPN — fined" : "Used a VPN to climb the wall");
+  if (p.vpn === "skip") add(5, "Didn't open a foreign link");
   if (state.jaywalkPids && state.jaywalkPids.has(p.pid)) add(L.jaywalked, p.redlight === "crowd" ? "Crossed on red with the crowd — caught" : "Crossed on red — caught on camera");
   const t = L.titles.find(([min]) => score >= min);
   return { name: p.name, score, zh: t[1], title: t[2], plus: plus.sort((x, y) => y[0] - x[0]).slice(0, 4).map((x) => x[1]), minus: minus.sort((x, y) => x[0] - y[0]).slice(0, 4).map((x) => x[1]) };
@@ -223,11 +225,14 @@ function screenPayload() {
   if (step.type === "scene" || step.type === "reveal") { out.stats = sceneStats(step.i); out.offenders = offenders(step.i); }
   if (step.type === "brief" || step.type === "reveal") out.guess = guessStats(step.i);
   { const qk = quizKey(step); if (qk) out.quiz = quizStats(qk); }
+  { const ps = [...state.players.values()]; if (step.type === "vpn") out.vpn = { vpn: ps.filter((p) => p.vpn === "vpn").length, wechat: ps.filter((p) => p.vpn === "wechat").length, skip: ps.filter((p) => p.vpn === "skip").length };
+    out.vpnFined = ps.filter((p) => p.vpnFined).map((p) => p.name); }
+  if (step.type === "map") out.map = [...state.players.values()].map((p) => ({ name: p.name, sim: p.answers.sim && p.answers.sim.final, breakfast: p.answers.breakfast && p.answers.breakfast.final, metro: p.answers.metro && p.answers.metro.final, post: p.answers.post && p.answers.post.final, doctor: p.answers.doctor && p.answers.doctor.final, train: p.answers.train && p.answers.train.final, night: p.answers.night && p.answers.night.final, redlight: p.redlight || null, vpn: p.vpn || null }));
   if (step.type === "redlight" || step.type === "jaywalk") { const ps = [...state.players.values()]; out.redlight = { wait: ps.filter((p) => p.redlight === "wait").length, cross: ps.filter((p) => p.redlight === "cross").length, crowd: ps.filter((p) => p.redlight === "crowd").length }; }
   if (step.type === "jaywalk") { if (state.jaywalker) out.jaywalker = { name: state.jaywalker.name, id: state.jaywalker.id, at: state.jaywalker.at }; out.caught = [...state.players.values()].filter((p) => state.jaywalkPids && state.jaywalkPids.has(p.pid)).map((p) => p.name); }
   if (step.type === "censor") { out.censor = censorStats(); out.flip = !!state.flip; }
   if (step.type === "unique") { const u = uniqueness(); out.unique = { total: u.total, smallUnique: u.smallUnique, fullUnique: u.fullUnique }; }
-  if (step.type === "file") out.files = [...state.players.values()].map((p) => { const f = buildFile({ name: p.name, answers: p.answers, faces: p.faces, seed: p.pid, device: p.device, inform: p.inform, lin: p.lin }); return { name: p.name, id: f.id, tags: f.tags, alerts: f.alerts.length, points: f.points + f.inferences.length, mtags: f.market.tags.map((x) => x.t) }; });
+  if (step.type === "file") out.files = [...state.players.values()].map((p) => { const f = buildFile({ name: p.name, answers: p.answers, faces: p.faces, seed: p.pid, device: p.device, inform: p.inform, lin: p.lin, vpn: p.vpn, vpnFined: p.vpnFined }); return { name: p.name, id: f.id, tags: f.tags, alerts: f.alerts.length, points: f.points + f.inferences.length, mtags: f.market.tags.map((x) => x.t) }; });
   if (step.type === "inform" || step.type === "informres") out.inform = informStats(step.type === "informres");
   if (step.type === "award") out.award = awards();
   if (step.type === "meta") out.meta = metaStats();
@@ -240,7 +245,7 @@ function playerPayload(p) {
   const out = { step, stepIndex: state.step, players: state.players.size, me: { name: p.name, answers: p.answers, polls: p.polls, points: p.points, inform: p.inform || null, guesses: p.guesses || {}, lin: p.lin || {}, quiz: p.quiz || {}, censor: p.censor || {} } };
   if (step.type === "award") { const aw = awards(), me = aw.list.findIndex((x) => x.name === p.name); out.award = { me: aw.list[me] || loyalty(p), rank: me + 1, n: aw.n, top: aw.top && aw.top.name === p.name, bottom: aw.bottom && aw.bottom.name === p.name }; }
   if (step.type === "jaywalk") { out.jaywalked = !!(state.jaywalkPids && state.jaywalkPids.has(p.pid)); out.featured = !!(state.jaywalker && state.jaywalker.pid === p.pid); }
-  out.me.redlight = p.redlight || null;
+  out.me.redlight = p.redlight || null; out.me.vpn = p.vpn || null; out.me.vpnFined = !!p.vpnFined;
   if (step.type === "reveal") out.guess = guessStats(step.i);
   if (step.type === "inform") out.classmates = [...state.players.values()].filter((q) => q.pid !== p.pid).map((q) => q.name).sort((a, b) => a.localeCompare(b)).slice(0, 30);
   if (step.type === "informres") out.inform = informStats(false);
@@ -291,6 +296,12 @@ function addLogs(p, logs, clock) {
 function onStepEnter() {
   const step = currentStep();
   state.flip = false;
+  if (step.type === "brief" && SCENES[step.i].id === "doctor" && !state.vpnDone) {
+    // enforcement is random: about half of the VPN users get fined (at least one if anyone used a VPN)
+    state.vpnDone = true;
+    const users = [...state.players.values()].filter((p) => p.vpn === "vpn").sort(() => Math.random() - 0.5);
+    users.slice(0, Math.max(users.length ? 1 : 0, Math.ceil(users.length / 2))).forEach((p) => { p.vpnFined = true; addLogs(p, ["Fined ¥200 for illegal VPN use — warning on record"], "14:00"); });
+  }
   if (step.type === "jaywalk" && !state.jaywalkDone) {
     // everyone who crossed on red (alone or with the crowd) is caught; one is featured on the big screen
     state.jaywalkDone = true;
@@ -508,6 +519,18 @@ const server = http.createServer(async (req, res) => {
     }
     broadcast();
     return json(res, 200, {});
+  }
+
+  if (p === "/api/vpn") {
+    if (!player) return json(res, 404, {});
+    if (currentStep().type !== "vpn") return json(res, 409, {});
+    if (!VPN.options.some((o) => o.id === body.choice)) return json(res, 400, {});
+    if (!player.vpn) {
+      player.vpn = body.choice;
+      addLogs(player, [body.choice === "vpn" ? "Encrypted connection to a foreign server — carrier traffic log" : body.choice === "wechat" ? "Photos received in WeChat — images scanned" : "Link received, not opened"], VPN.clock);
+    }
+    broadcast();
+    return json(res, 200, { choice: player.vpn });
   }
 
   if (p === "/api/redlight") {
