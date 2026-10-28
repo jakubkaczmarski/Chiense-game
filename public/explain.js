@@ -85,6 +85,12 @@
       "Didi listed on the New York Stock Exchange on 30 June 2021 against Beijing's wishes. Two days later it was put under a cybersecurity review and removed from app stores. Beijing feared US access to Chinese mapping and travel data.",
       "China's 2021 laws are strict for companies — consent, minimal data, fines. But state organs have broad exceptions. Compare: GDPR also has exceptions for police, but courts and data-protection authorities check them."
     ],
+    redlight: [
+      "Don't mention the cameras — the surprise on the next screen is the lesson.",
+      "In 2012 Chinese netizens joked about “Chinese-style road crossing”: wait until enough people gather, then all walk on red — no one can stop a crowd. Cameras with face recognition ended that logic: the camera matches every face.",
+      "Everyone who crossed — alone or with the crowd — is caught. One face goes on the big screen; the rest are listed underneath.",
+      "Wait = clean record (+5 loyalty), cross = shame screen, a fine at the doctor's later and −5 loyalty."
+    ],
     jaywalk: [
       "Big LED screens next to crossings showed a photo, name and part of the ID number of people caught crossing on red — public shaming as a policy tool.",
       "Police said jaywalking went down at the crossings with screens. Ask the room whether shame works — and whether it's fair.",

@@ -243,7 +243,7 @@ i.rep{background:var(--red)}i.ref{background:var(--green)}
 .gstrip span{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
 .gstrip b{color:var(--gold)}.gstrip em{font-style:normal;color:var(--green);font-weight:700}
 .enter .gbox{animation:rise .7s cubic-bezier(.2,.8,.2,1) both .7s}
-.jwall{flex:1;display:flex;flex-direction:column;background:#000;border:6px solid var(--red);border-radius:18px;padding:24px 30px;animation:jwb 1s steps(2) 4}
+.jwall{flex:1;display:flex;flex-direction:column;background:#000;border:6px solid var(--red);border-radius:18px;padding:24px 30px 64px;animation:jwb 1s steps(2) 4}
 @keyframes jwb{50%{border-color:var(--gold)}}
 .jw-top{font:800 34px var(--mono);color:#ff4b3e;text-align:center;letter-spacing:.06em;text-shadow:0 0 18px rgba(255,75,62,.6)}
 .jw-body{display:grid;grid-template-columns:420px 1fr;gap:48px;margin-top:28px;align-items:center}
@@ -301,6 +301,22 @@ i.rep{background:var(--red)}i.ref{background:var(--green)}
 .enter .aw.bot{animation:rise .8s cubic-bezier(.2,.8,.2,1) both 1.6s}
 .enter .awrank span{animation:rise .5s cubic-bezier(.2,.8,.2,1) both calc(2.4s + var(--j) * .12s)}
 .enter .award .ask{animation:rise .7s cubic-bezier(.2,.8,.2,1) both 3.4s}
+.rlgrid{display:grid;grid-template-columns:1fr 420px;gap:40px;flex:1;min-height:0}
+.redlight h1{font-size:64px;margin:6px 0 14px}
+.redlight .talkL{display:flex;flex-direction:column}
+.rlpole{display:flex;flex-direction:column;align-items:center;gap:18px}
+.rlbox{background:#111;border:6px solid #2a2a2a;border-radius:24px;padding:24px 30px;display:flex;align-items:center;gap:24px;box-shadow:inset 0 0 30px #000}
+.rlman{width:120px;fill:#ff2a2a;filter:drop-shadow(0 0 18px #ff2a2a);animation:rlb 1s ease-in-out infinite}
+@keyframes rlb{50%{opacity:.55}}
+.rlnum{font:800 96px var(--mono);color:#ff3b30;text-shadow:0 0 18px #ff3b30;min-width:130px;text-align:center}
+.rlcam{font-size:60px;animation:rlcam 3s ease-in-out infinite}
+@keyframes rlcam{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+.rlword{background:linear-gradient(135deg,#7d0a17,var(--cred));border:1px solid var(--gold2);border-radius:14px;padding:12px 20px;text-align:center}
+.rlword b{display:block;font:800 52px "PingFang SC","Noto Sans SC",sans-serif;color:var(--gold)}
+.rlword span{font-family:var(--mono);font-size:16px;color:#ffe9b8}
+.jw-also{margin:10px 0 0;font-size:22px;color:#ffb3ab}
+.jw-stat{display:flex;gap:28px;margin-top:10px;font-family:var(--mono);font-size:18px;color:var(--muted)}
+.jw-stat b{color:var(--ink);font-size:24px}
 .paystats{background:#160d0a;border:1px solid #4a2a12;border-radius:14px;padding:14px 18px 12px}
 .ps-k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .ps-sub{font-size:15px;color:#e7d6bd;margin-top:4px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -429,7 +445,7 @@ h2{font-size:44px;line-height:1.08;letter-spacing:-.02em;margin:8px 0 14px;font-
 <script src="/anthem.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { CARRY, SCENES, POLLS, STEPS, CASE, INFORM, INTRO, DAILY, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR } = window.GAME;
+const { REDLIGHT, CARRY, SCENES, POLLS, STEPS, CASE, INFORM, INTRO, DAILY, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const JOIN = (new URLSearchParams(location.search).get("join") || location.origin).replace(/\/$/, "") + "/";
 const $ = (id) => document.getElementById(id);
@@ -506,7 +522,7 @@ function trackFor(step) {
   if (["scene", "reveal", "brief", "debrief"].includes(step.type)) return SCENE_TRACK[SCENES[step.i].id] || "welcome";
   if (["file", "unique", "meta"].includes(step.type)) return "tense";
   if (step.type === "poll" || step.type === "pollres" || step.type === "case") return "reflect";
-  if (["inform", "informres", "camhist", "jaywalk", "censor"].includes(step.type)) return "tense";
+  if (["inform", "informres", "camhist", "jaywalk", "redlight", "censor"].includes(step.type)) return "tense";
   return "welcome";
 }
 
@@ -588,6 +604,10 @@ function startJingle() {
   document.body.appendChild(o); setTimeout(() => o.remove(), 2600);
 }
 
+// red-light countdown (90 → 0, then loops)
+let rlStart = 0;
+setInterval(() => { const el = document.getElementById("rlnum"); if (!el) return; const t = Math.floor((performance.now() - rlStart) / 1000); el.textContent = String(90 - (t % 91)).padStart(2, "0"); }, 250);
+
 // live counters on the "Every day in China" step
 let dailyStart = 0;
 setInterval(() => {
@@ -602,6 +622,7 @@ function render() {
   const entering = key !== lastKey, prevKey = lastKey;
   const kickoff = entering && prevKey === "lobby:" && d.step.type !== "lobby"; // start jingle when leaving the lobby
   if (entering && d.step.type === "daily") dailyStart = performance.now();
+  if (entering && d.step.type === "redlight") rlStart = performance.now();
   if (kickoff) startJingle();
   lastKey = key;
   if (entering && window.Music) Music.setMood(trackFor(d.step));
@@ -642,7 +663,7 @@ function drawStage() {
   $("stepLbl").textContent = `${d.stepIndex + 1}/${d.stepCount} · ${step.type}`;
   $("qrmini").style.display = step.type === "lobby" ? "none" : "flex";
   const scene = ["scene", "reveal", "brief", "debrief"].includes(step.type) ? SCENES[step.i] : null;
-  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" || step.type === "intro" || step.type === "daily" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : step.type === "jaywalk" ? "08:52" : step.type === "censor" ? "12:45" : "23:59";
+  $("hClock").textContent = scene ? scene.clock : step.type === "lobby" || step.type === "intro" || step.type === "daily" ? "07:00" : step.type === "redlight" || step.type === "jaywalk" ? "08:52" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : step.type === "jaywalk" ? "08:52" : step.type === "censor" ? "12:45" : "23:59";
 
   // feed
   $("feed").innerHTML = d.feed.map((f) => { const isNew = !seenFeed.has(f.id); seenFeed.add(f.id); return `<div class="fl${isNew ? " new" : ""}"><span class="t">${esc(f.t)}</span> <span class="n">${esc(f.name)}</span><br>${esc(f.text)}</div>`; }).join("");
@@ -675,8 +696,25 @@ function drawStage() {
     return;
   }
 
+  if (step.type === "redlight") {
+    const r = d.redlight || { wait: 0, cross: 0, crowd: 0 }, n = r.wait + r.cross + r.crowd;
+    S.innerHTML = `<div class="talk redlight"><div class="eyebrow"><span class="clock">${REDLIGHT.clock}</span> · On the way to work · decide on your phone</div>
+      <div class="rlgrid"><div class="talkL"><h1>Red light. <span style="color:var(--red)">Do you cross?</span></h1>
+        <p class="lead">${esc(REDLIGHT.story)}</p>
+        <div class="pills">${REDLIGHT.options.map((o) => `<span class="pill"><b class="pk">${esc(KINDS[o.kind] || "")}</b>${esc(o.label)}</span>`).join("")}</div>
+        <div class="answered"><b>${n}</b> / ${d.players} decided<div class="prog"><i style="width:${pct(n, d.players)}%"></i></div></div></div>
+      <div class="rlpole"><div class="rlbox"><svg viewBox="0 0 100 160" class="rlman"><circle cx="50" cy="26" r="13"/><path d="M38 44h24l6 46h-10l-2 50h-10l-2-40-2 40h-10l-2-50h-10z"/></svg><div class="rlnum" id="rlnum">90</div></div>
+        <div class="rlcam">📹</div><div class="rlword"><b>${esc(REDLIGHT.word.zh)}</b><span>${esc(REDLIGHT.word.py)} · ${esc(REDLIGHT.word.en)}</span></div></div></div></div>`;
+    return;
+  }
+
   if (step.type === "jaywalk") {
-    const j = d.jaywalker;
+    const j = d.jaywalker, r = d.redlight || { wait: 0, cross: 0, crowd: 0 }, caught = d.caught || [];
+    if (!j) {
+      S.innerHTML = `<div class="talk"><div class="eyebrow">闯红灯曝光台 · Jaywalker exposure screen</div><h1 style="color:var(--green)">Nobody crossed on red. 👏</h1>
+        <p class="lead">${r.wait} model citizen${r.wait === 1 ? "" : "s"} waited for green. The camera has nothing to show today — this time.</p></div>`;
+      return;
+    }
     const px = Array.from({ length: 144 }, (_, k) => { const x = k % 12, y = (k / 12) | 0; const face = (x - 5.5) ** 2 / 20 + (y - 5.8) ** 2 / 30 < 1; const v = face ? 150 + ((k * 37) % 80) : 30 + ((k * 13) % 40); return `<i style="background:rgb(${v},${Math.max(0, v - 25)},${Math.max(0, v - 40)})"></i>`; }).join("");
     S.innerHTML = `<div class="jwall"><div class="jw-top">⚠️ 闯红灯曝光台 · JAYWALKER CAUGHT · 行人闯红灯</div>
       <div class="jw-body"><div class="jw-face">${px}<div class="jw-scan"></div></div>
@@ -685,6 +723,8 @@ function drawStage() {
           <div class="k">Location</div><div class="v">Century Ave × Lujiazui Ring Rd</div>
           <div class="k">Time</div><div class="v">08:52:17 · crossed on red</div>
           <div class="k">Match</div><div class="v" style="color:var(--green)">97.3% · face recognition</div></div></div>
+      ${caught.length > 1 ? `<div class="jw-also">Also caught: ${caught.filter((x) => x !== j.name).map(esc).join(" · ")}</div>` : ""}
+      <div class="jw-stat"><span>🟢 Waited <b>${r.wait}</b></span><span>🏃 Crossed alone <b>${r.cross}</b></span><span>👥 Crossed with the crowd <b>${r.crowd}</b> — all caught</span></div>
       <div class="jw-foot">请遵守交通规则 · Please obey traffic rules · Your face is shown to deter others</div></div>`;
     return;
   }

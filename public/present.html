@@ -75,7 +75,7 @@ button:active{transform:scale(.98)}
 <script src="/content.js"></script>
 <script src="/explain.js"></script>
 <script>
-const { LOYALTY, SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR, CARRY } = window.GAME;
+const { REDLIGHT, LOYALTY, SCENES, POLLS, STEPS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, KINDS, QUIZ, JAYWALK, CENSOR, CARRY } = window.GAME;
 const KEY = new URLSearchParams(location.search).get("key");
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -99,6 +99,7 @@ function label(st) {
     case "scene": return `${sc.clock} · Play: ${sc.title}`;
     case "reveal": return `${sc.clock} · Results: ${sc.title}`;
     case "debrief": return `${sc.clock} · Debrief: ${sc.debrief.title}`;
+    case "redlight": return "🚦 08:52 · Red light — cross or wait?";
     case "jaywalk": return "Jaywalker caught! (Shenzhen 2017)";
     case "censor": return "Side game — banned or allowed on Weibo?";
     case "camhist": return "How the cameras came — Sky Net & Xinjiang";
@@ -130,6 +131,7 @@ function summary(st) {
   const sc = st.i !== undefined && ["brief", "scene", "reveal", "debrief"].includes(st.type) ? SCENES[st.i] : null;
   if (st.type === "brief") return { tldr: sc.brief.tldr, say: sc.brief.points.concat(sc.guess ? [`📱 Phones: “${sc.guess.q}” — answer ${sc.guess.answer} (revealed on the results screen)`] : []), ask: sc.brief.ask, extra: sentences(sc.brief.notes) };
   if (st.type === "debrief") return { tldr: sc.debrief.tldr, say: sc.debrief.points, angle: sc.debrief.ir, pro: sc.debrief.pro, extra: sentences(sc.debrief.notes) };
+  if (st.type === "redlight") return { tldr: REDLIGHT.tldr, say: REDLIGHT.say.concat([`Options: ${REDLIGHT.options.map((o) => (KINDS[o.kind] || "") + " " + o.label).join(" · ")}`]) };
   if (st.type === "jaywalk") return { tldr: JAYWALK.tldr, say: JAYWALK.say, angle: JAYWALK.angle, extra: ["Sources: " + JAYWALK.sources] };
   if (st.type === "censor") return { tldr: CENSOR.tldr, say: CENSOR.say, extra: CENSOR.cards.map((c) => `${c.en} ${c.zh} — ${c.verdict}: ${c.story}`) };
   if (st.type === "camhist") return { tldr: CAMHIST.tldr, say: CAMHIST.say, angle: CAMHIST.callout, extra: CAMHIST.timeline.map(([y, t, zh, txt]) => `${y} · ${t} (${zh}): ${txt}`) };
@@ -195,13 +197,15 @@ function render(d) {
     if (d.offenders && d.offenders.length) live += `<p style="margin:10px 0 0">☎ Secretary Lin will call: <b>${esc(d.offenders.map((o) => o.name).join(", "))}</b></p>`;
   } else if (d.quiz) {
     live += `<div class="big">${d.quiz.n} / ${d.players}</div><div>answered the quiz · ${d.quiz.n ? Math.round(d.quiz.right / d.quiz.n * 100) : 0}% right</div>`;
-    if (st.type === "jaywalk" && d.jaywalker) live += `<p style="margin:8px 0 0">📸 Caught: <b>${esc(d.jaywalker.name)}</b></p>`;
+    if (st.type === "jaywalk" && d.jaywalker) live += `<p style="margin:8px 0 0">📸 On screen: <b>${esc(d.jaywalker.name)}</b>${(d.caught || []).length > 1 ? ` · also caught: ${esc(d.caught.filter((x) => x !== d.jaywalker.name).join(", "))}` : ""}</p>`;
   } else if (st.type === "censor") {
     live += `<button id="flipBtn" style="width:100%;margin-top:6px">🃏 ${d.flip ? "Unflip" : "Flip all"} cards on projector (F)</button>`;
   } else if (st.type === "brief" && d.guess) {
     live += `<div class="big">${d.guess.n} / ${d.players}</div><div>guessed the number · ${d.guess.right} right so far</div>`;
   } else if (st.type === "inform" && d.inform) {
     live += `<div class="big">${d.inform.answered} / ${d.players}</div><div>answered · <span style="color:var(--red)">${d.inform.reported} reported</span> · ${d.inform.refused} refused</div>`;
+  } else if (st.type === "redlight" && d.redlight) {
+    const r = d.redlight; live += `<div class="big">${r.wait + r.cross + r.crowd} / ${d.players}</div><div>🟢 wait ${r.wait} · 🏃 cross ${r.cross} · 👥 crowd ${r.crowd} — every crosser will be caught</div>`;
   } else if (st.type === "award" && d.award && d.award.top) {
     live += `<div>🏅 Winner</div><div class="big">${esc(d.award.top.name)}</div><div>${d.award.top.score} points${d.award.bottom ? ` · ⚠️ Key person: <b>${esc(d.award.bottom.name)}</b> (${d.award.bottom.score})` : ""}</div>`;
   } else if (st.type === "poll") {

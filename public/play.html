@@ -269,6 +269,9 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 .awp li{font-size:15px;padding-left:24px;position:relative}
 .awp li.p::before{content:"✓";position:absolute;left:4px;color:#12a66a;font-weight:900}
 .awp li.m::before{content:"✗";position:absolute;left:4px;color:#d4372c;font-weight:900}
+.rlph{display:flex;align-items:center;justify-content:center;gap:16px;margin:12px 0;background:#141414;border-radius:14px;padding:10px}
+.rlph-man{font-size:40px;animation:rlb 1s ease-in-out infinite}.rlph-n{font:800 40px ui-monospace,Menlo,monospace;color:#ff3b30}.rlph-cam{font-size:30px}
+@keyframes rlb{50%{opacity:.5}}
 </style>
 </head>
 <body>
@@ -283,7 +286,7 @@ input:focus{outline:2px solid var(--green);border-color:transparent}
 <script src="/anthem.js"></script>
 <script src="/guide.js"></script>
 <script>
-const { SCENES, POLLS, WHO, INFORM, DAILY, CASE, KINDS, QUIZ, CARRY, CENSOR } = window.GAME;
+const { REDLIGHT, SCENES, POLLS, WHO, INFORM, DAILY, CASE, KINDS, QUIZ, CARRY, CENSOR } = window.GAME;
 const app = document.getElementById("app");
 const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}}, del(k){try{localStorage.removeItem(k)}catch{}} };
 let pid = store.get("dds_pid");
@@ -371,6 +374,7 @@ function receipt(logs, to, title = "Data logged", pk, state) {
     ${stateTxt ? `<div class="statel ${state}" style="animation-delay:${dc + to.length * 160 + 150}ms">${state === "direct" ? "⚑ " : "⚖ "}${esc(stateTxt)}</div>` : ""}</div>`;
 }
 
+let rlT0 = 0; setInterval(() => { const el = document.getElementById("rlph"); if (el) el.textContent = String(90 - (Math.floor((Date.now() - rlT0) / 1000) % 91)).padStart(2, "0"); }, 250);
 // phone ringtone + vibration for the counsellor's call
 let ringT = null, ringN = 0, actx = null;
 function ringOnce() {
@@ -391,7 +395,7 @@ function render() {
   const step = d.step;
   const scene = step.i !== undefined && (step.type === "scene" || step.type === "reveal") ? SCENES[step.i] : null;
   const tsc = (step.type === "brief" || step.type === "debrief") ? SCENES[step.i] : null;
-  document.getElementById("sclock").textContent = scene ? scene.clock : tsc ? tsc.clock : step.type === "lobby" ? "07:00" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : step.type === "jaywalk" ? "08:52" : step.type === "censor" ? "12:45" : "23:59";
+  document.getElementById("sclock").textContent = scene ? scene.clock : tsc ? tsc.clock : step.type === "lobby" ? "07:00" : step.type === "redlight" || step.type === "jaywalk" ? "08:52" : step.type === "inform" || step.type === "informres" ? "13:00" : step.type === "camhist" ? "08:30" : step.type === "jaywalk" ? "08:52" : step.type === "censor" ? "12:45" : "23:59";
   const key = step.type + ":" + (step.i ?? "");
   const entering = key !== local.sceneKey;
   if (entering) { local = { blockedMsg: null, fresh: false, sceneKey: key }; }
@@ -403,6 +407,8 @@ function render() {
   if (entering && (step.type === "meta" || step.type === "end")) scramble();
   if (entering && step.type === "scene" && step.i === 0 && window.FaceScan) FaceScan.preload();
   if (entering && step.type === "inform" && !d.me.inform) startRing();
+  if (entering && step.type === "redlight") rlT0 = Date.now();
+  if (entering && step.type === "jaywalk" && d.jaywalked && navigator.vibrate) navigator.vibrate([300, 100, 300]);
   if (entering && step.type === "award" && d.award && (d.award.top || d.award.bottom) && navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 600]);
   if (entering && (step.type === "scene" || step.type === "poll") && navigator.vibrate) navigator.vibrate([120, 80, 120]);
   // an unanswered ringing call must never block a new question
@@ -433,12 +439,26 @@ function draw(d, step, scene) {
     return;
   }
 
+  if (step.type === "redlight") {
+    const mine = d.me.redlight, o = mine && REDLIGHT.options.find((x) => x.id === mine);
+    app.innerHTML = `<div class="card"><div class="eyebrow"><span class="clock">${REDLIGHT.clock}</span> · On the way to work</div>
+      <p class="lead" style="margin-top:6px">${esc(REDLIGHT.story)}</p>
+      <div class="rlph"><span class="rlph-man">🚷</span><span class="rlph-n" id="rlph">90</span><span class="rlph-cam">📹</span></div>
+      <div class="wordp"><b>${esc(REDLIGHT.word.zh)}</b><span>${esc(REDLIGHT.word.py)} · ${esc(REDLIGHT.word.en)}</span></div></div>
+      ${o ? `<div class="banner ${mine === "wait" ? "green" : "amber"}">${mine === "wait" ? "✓ " : "🏃 "}${esc(o.result)}</div><div class="waitanim"><div class="bar"><i></i></div><p class="fine center">Did a camera see you? Look at the big screen next.</p></div>`
+        : `<div class="opts">${REDLIGHT.options.map((x) => `<button class="opt" data-rl="${x.id}"><span class="optl"><span class="kind k-${x.kind}">${esc(KINDS[x.kind] || "")}</span>${esc(x.label)}</span></button>`).join("")}</div>`}`;
+    app.querySelectorAll("[data-rl]").forEach((b) => b.onclick = async () => { app.querySelectorAll("[data-rl]").forEach((x) => x.disabled = true);
+      if (b.dataset.rl !== "wait" && navigator.vibrate) navigator.vibrate([40, 40, 40]); await post("/api/redlight", { pid, choice: b.dataset.rl }); });
+    return;
+  }
+
   if (step.type === "jaywalk") {
     const caught = d.jaywalked;
     const px = Array.from({ length: 64 }, (_, k) => { const x = k % 8, y = (k / 8) | 0; const face = (x - 3.5) ** 2 / 9 + (y - 3.8) ** 2 / 14 < 1; const v = face ? 150 + ((k * 37) % 70) : 40 + ((k * 13) % 30); return `<i style="background:rgb(${v},${v - 20},${v - 30})"></i>`; }).join("");
     app.innerHTML = (caught ? `<div class="jw"><div class="jw-k">⚠️ 闯红灯 · JAYWALKER CAUGHT</div><div class="jw-px">${px}</div>
         <div class="jw-n">${esc(d.me.name)}</div><div class="jw-t">Century Ave × Lujiazui Ring Rd · 08:52</div>
-        <p>📸 Face recognition caught <b>you</b> crossing on red. Your face, name and part of your ID number are on the big screen right now.</p></div>` : "")
+        <p>📸 Face recognition caught <b>you</b> crossing on red${d.me.redlight === "crowd" ? " — the crowd didn't hide you; the camera matched every face" : ""}. ${d.featured ? "Your face, name and part of your ID number are on the big screen right now." : "You're on the list under the big photo — and your fine is on its way."}</p></div>`
+      : d.me.redlight === "wait" ? `<div class="banner green">✓ You waited for green. 3 minutes late — and a clean record. +5 loyalty.</div>` : "")
       + quizBox(d, step) + (caught ? "" : idleCard({ kick: "Meanwhile at a crossing…", title: "Someone got caught", look: "Look at the big screen — is it you?", word: { zh: "闯红灯", py: "chuǎng hóngdēng", en: "running a red light" } }));
     return;
   }

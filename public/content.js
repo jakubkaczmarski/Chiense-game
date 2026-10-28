@@ -364,7 +364,7 @@
     STEPS.push({ type: "brief", i }); STEPS.push({ type: "scene", i }); STEPS.push({ type: "reveal", i }); STEPS.push({ type: "debrief", i });
     // side quest after the Weibo scene: the class counsellor phones every player privately
     if (s.id === "post") { STEPS.push({ type: "censor" }); STEPS.push({ type: "inform" }); STEPS.push({ type: "informres" }); }
-    if (s.id === "metro") STEPS.push({ type: "jaywalk" }); // a random player gets "caught jaywalking"
+    if (s.id === "metro") { STEPS.push({ type: "redlight" }); STEPS.push({ type: "jaywalk" }); } // red-light dilemma, then the shame screen
   });
   STEPS.push({ type: "case" });
   STEPS.push({ type: "file" });
@@ -396,7 +396,7 @@
   // what kind of choice each option is — shown as a tag so the choices are clearly different
   const KINDS = {
     quick: "⚡ Quick", private: "🛡 Private", rebel: "✊ Push back", comfort: "🛋 Comfort", cheap: "💸 Cheap",
-    safe: "🙂 Play safe", voice: "📣 Speak up", future: "🤖 High-tech"
+    group: "👥 Follow the crowd", safe: "🙂 Play safe", voice: "📣 Speak up", future: "🤖 High-tech"
   };
   const STATE = {
     direct: "Sent to the state automatically",
@@ -565,6 +565,20 @@
     sources: "HuffPost UK (2018); CS Monitor / Global Voices (2010); Hong Kong Free Press (2021); NYT via Deccan Herald (2021)"
   };
 
+  // Red-light dilemma before the jaywalker shame screen
+  const REDLIGHT = {
+    clock: "08:52",
+    story: "You're late for work. The pedestrian light at Century Avenue is red — and it stays red for 90 seconds. No cars are coming.",
+    word: { zh: "闯红灯", py: "chuǎng hóngdēng", en: "running a red light" },
+    options: [
+      { id: "wait", kind: "safe", label: "Wait for green — you'll be 3 minutes late", result: "You wait. Your boss frowns, but your record stays clean." },
+      { id: "cross", kind: "rebel", label: "Cross on red — the road is empty", result: "You dash across. Above the crossing, a camera blinks…" },
+      { id: "crowd", kind: "group", label: "Wait for a crowd, then all cross together (中国式过马路)", result: "Six people gather, then everyone walks. Safety in numbers — surely the camera can't catch all of you?" }
+    ],
+    tldr: "You're late, the light is red, the road is empty. Do you cross?",
+    say: ["Let them choose — don't mention cameras yet", "“Chinese-style crossing” (中国式过马路) is a real 2012 internet meme: wait for a group, then everyone crosses on red", "Next screen reveals who got caught"]
+  };
+
   // The jaywalker moment
   const JAYWALK = {
     tldr: "One of you just got caught jaywalking — and the city put your face on a screen.",
@@ -584,7 +598,7 @@
     trainNoPhone: { blocked: true, because: "Because you bought a street SIM at 07:30…", result: "12306 sends the verification code to your cut-off number. No ticket in the app — go to the counter.", logs: ["12306 verification failed: phone number disabled"] },
     // bad: it works, but with a price
     iphoneTax: { because: "Because you're on an iPhone…", result: "Didi quotes you more than an Android user for the same ride. A Fudan University study found iPhone users got smaller discounts (¥2.07 vs ¥4.12) — “big-data swindling” (大数据杀熟).", logs: ["Fare personalised by device type"], to: ["didi"], state: "demand" },
-    jayFine: { because: "Because you were caught jaywalking at 08:52…", result: "A text arrives in the waiting room: your jaywalking fine has been issued to your phone number. The whole waiting room saw your face on the screen this morning.", logs: ["Jaywalking fine sent to your phone number", "Photo kept on the public “exposure” screen"], to: ["police"], state: "direct" },
+    jayFine: { because: "Because you crossed on red at 08:52…", result: "A text arrives in the waiting room: your jaywalking fine has been issued to your phone number. The whole waiting room saw your face on the screen this morning.", logs: ["Jaywalking fine sent to your phone number", "Photo kept on the public “exposure” screen"], to: ["police"], state: "direct" },
     trainPetitioner: { because: "Because you went to Zhengzhou about the bank money…", result: "The gate flags you as a petitioner on the move. Police call your local station to check you're not heading to Beijing to complain.", logs: ["Petitioner travel alert at the station gate", "Local police notified"], to: ["railway", "police"], state: "direct" },
     cafeRaid: { because: "Because you reposted the protest video at 12:30…", result: "2 a.m.: police walk through the internet café checking IDs. The system matched your ID to a flagged Weibo account — they take a photo of your screen.", logs: ["ID check at internet café 02:00", "Browsing session photographed"], to: ["netcafe", "police"], state: "direct" },
     // good: the system rewards you
@@ -625,6 +639,7 @@
     daily: ["Which number surprised you most?", "How many of these would be true for you in Poland too?"],
     informres: ["Would you report a classmate who cheated in an exam? Is that different?", "Is informing loyalty or betrayal — and to whom?", "How is this different from “see something, say something” in the West?"],
     censor: ["Which card surprised you most?", "Is it better to censor a few topics fast — or many slowly?", "What code words would you invent?"],
+    redlight: ["Who would cross on red in Kraków? Would a camera change that?"],
     award: ["Did anyone change their behaviour once Secretary Lin started calling?", "Is rewarding loyalty worse than punishing dissent — or the same thing?"],
     jaywalk: ["Would public shaming stop you jaywalking?", "What if the system gets the face wrong — like it did with Dong Mingzhu?"],
     camhist: ["Why would a government test surveillance on a minority region first?", "Once the cameras exist, can they be used only for crime?"],
@@ -727,7 +742,7 @@
   };
 
   const FILE_WORD = { zh: "一人一档", py: "yī rén yī dàng", en: "one person, one file", note: "Police software that merges everything about you into a single profile." };
-  const api = { LOYALTY, SCENES, POLLS, STEPS, WHO, STATE, KINDS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, QUIZ, JAYWALK, CARRY, CENSOR, buildFile, FILE_WORD };
+  const api = { REDLIGHT, LOYALTY, SCENES, POLLS, STEPS, WHO, STATE, KINDS, NOTES, CASE, INFORM, INTRO, DAILY, PROMPTS, CAMHIST, QUIZ, JAYWALK, CARRY, CENSOR, buildFile, FILE_WORD };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GAME = api;
 })(this);

@@ -36,9 +36,9 @@ Right after the Weibo scene, **Teacher Jan (扬老师), the class counsellor (�
 
 After the Weibo scene, every phone gets 12 cards — 7 censored (Winnie the Pooh, “empty chair”, “May 35th”, “I disagree”, the letter N, “lying flat”, Peng Shuai) and 5 trick cards that are allowed (“Democracy”, “Freedom”, “Xi Jinping”, “Tiananmen”, panda). Tap **Banned** or **Allowed** and the card flips to show the real story. The projector shows how the room voted; press **F** (or the console button) to flip all cards.
 
-## Jaywalker caught
+## Red light: cross or wait? → Jaywalker caught
 
-After the commute, the projector flashes a “jaywalker shame screen” with a random player's name, a masked ID number and a pixelated face — like Shenzhen's LED screens from April 2017 (13,930 people shown at one crossing in 10 months; in 2018 Ningbo's system “caught” Dong Mingzhu's face on a bus advert). The caught player's phone says so; everyone else gets a quick quiz.
+After the commute, phones get a dilemma: you're late, the light is red for 90 seconds, no cars — wait, cross alone, or wait for a crowd and all cross together (中国式过马路, “Chinese-style crossing”). Everyone who crosses is caught. Then the projector flashes a “jaywalker shame screen” with one crosser's name, a masked ID number and a pixelated face, and lists everyone else who was caught — like Shenzhen's LED screens from April 2017 (13,930 people shown at one crossing in 10 months; in 2018 Ningbo's system “caught” Dong Mingzhu's face on a bus advert). The caught player's phone says so; everyone else gets a quick quiz.
 
 ## Quizzes and consequences
 
